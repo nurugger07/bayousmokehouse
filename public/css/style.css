@@ -766,18 +766,75 @@ main {
   margin-top: var(--space-5);
 }
 
-/* One day, one row. */
+/* One day, one row. Sometimes a plain <div> (no description to
+   expand), sometimes a <details> (description available) — the row
+   layout applies to whichever element actually holds the row content. */
 .schedule-day {
+  background-color: var(--color-charcoal-soft);
+  border-left: 4px solid var(--color-ember);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.schedule-day:not(details),
+.schedule-day__summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
-  background-color: var(--color-charcoal-soft);
-  border-left: 4px solid var(--color-ember);
-  border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-5);
-  box-shadow: var(--shadow-sm);
+}
+
+.schedule-day__summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.schedule-day__summary::-webkit-details-marker {
+  display: none;
+}
+
+.schedule-day__toggle {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-ember);
+  border-radius: 50%;
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.schedule-day__toggle::before,
+.schedule-day__toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: var(--color-ember);
+  transform: translate(-50%, -50%);
+}
+
+.schedule-day__toggle::before {
+  width: 12px;
+  height: 2px;
+}
+
+.schedule-day__toggle::after {
+  width: 2px;
+  height: 12px;
+}
+
+.schedule-day[open] .schedule-day__toggle {
+  transform: rotate(45deg);
+}
+
+.schedule-day__panel {
+  padding: 0 var(--space-5) var(--space-4);
+}
+
+.schedule-day__description {
+  color: var(--color-text-inverse-muted);
 }
 
 .schedule-day__name {
@@ -810,39 +867,14 @@ main {
   font-size: var(--fs-sm);
 }
 
-.schedule-day__status {
-  font-family: var(--font-heading);
-  font-size: var(--fs-sm);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--color-swamp-green);
-}
-
-/* "Off" / no-event state — dims the row and mutes the border/status
-   so it reads at a glance as closed without disappearing entirely. */
-.schedule-day__status--off {
-  color: var(--color-off);
-  font-family: var(--font-body);
-  font-style: italic;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.schedule-day:has(.schedule-day__status--off) {
-  border-left-color: var(--color-off);
-  opacity: 0.7;
-}
-
-/* Fallback modifier for browsers without :has(), or to force the
-   state from a server-rendered class instead of a child selector. */
-.schedule-day--off {
-  border-left-color: var(--color-off);
-  opacity: 0.7;
-}
-
 @media (min-width: 768px) {
-  .schedule-day {
+  .schedule-day:not(details),
+  .schedule-day__summary {
     padding: var(--space-4) var(--space-6);
+  }
+
+  .schedule-day__panel {
+    padding: 0 var(--space-6) var(--space-4);
   }
 
   .schedule-day__name {
