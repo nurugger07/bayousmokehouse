@@ -11,7 +11,7 @@
 
    <link rel="preconnect" href="https://fonts.googleapis.com">
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Caveat:wght@400;600;700&family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/css2?family=Rye&family=Droid+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
 
    Table of contents:
      1. Color Palette
@@ -68,8 +68,8 @@
 /* ===== 2. Typography Variables & Spacing/Sizing Scale ===== */
 :root {
   /* Fonts — see <link> tags in file header comment */
-  --font-heading: 'Bevan', 'Georgia', serif;        /* bold slab-serif — signage feel */
-  --font-body: 'Lato', -apple-system, 'Helvetica Neue', Arial, sans-serif; /* readable workhorse */
+  --font-heading: 'Rye', 'Georgia', serif;          /* rustic Western/signage display face */
+  --font-body: 'Droid Serif', Georgia, 'Times New Roman', serif; /* readable serif body */
   --font-script: 'Caveat', cursive;                 /* handwritten accent — use sparingly */
 
   /* Type scale */
@@ -608,6 +608,24 @@ main {
   text-align: center;
 }
 
+/* Full-bleed photo hero — one large image instead of a flat color
+   block, with a dark gradient overlay so text stays legible. */
+.hero--photo {
+  background-image:
+    linear-gradient(180deg, rgba(30, 23, 18, 0.55), rgba(30, 23, 18, 0.75)),
+    url('/images/site/website-main.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+}
+
+.hero--photo .container {
+  width: 100%;
+}
+
 .hero h1 {
   color: var(--color-cream);
   font-size: var(--fs-2xl);
@@ -618,14 +636,6 @@ main {
   margin: var(--space-4) auto var(--space-6);
   font-size: var(--fs-md);
   color: var(--color-text-inverse-muted);
-}
-
-.hero__image {
-  max-width: 480px;
-  width: 100%;
-  margin: var(--space-6) auto 0;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
 }
 
 @media (min-width: 768px) {
