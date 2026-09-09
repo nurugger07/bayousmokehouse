@@ -58,7 +58,7 @@ module.exports = [
     items: [
       {
         name: 'Low-Country Peel & Eat Shrimp (GF)',
-        price: null,
+        price: '$16.75',
         description: 'A taste of the Carolina Low Country in Northern Colorado! Shell-on shrimp seasoned with our signature Southern spice blend and served peel-and-eat style with cocktail sauce. Roll up your sleeves, peel \'em & dig in!',
         image: '/images/food/peel-and-eat-shrimp.jpg',
       },

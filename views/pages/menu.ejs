@@ -22,10 +22,10 @@
             <details class="menu-item">
               <summary class="menu-item__summary">
                 <span class="menu-item__name"><%= item.name %></span>
+                <span class="menu-item__toggle" aria-hidden="true"></span>
                 <% if (item.price) { %>
                   <span class="menu-item__price"><%= item.price %></span>
                 <% } %>
-                <span class="menu-item__toggle" aria-hidden="true"></span>
               </summary>
               <div class="menu-item__panel">
                 <% if (item.image) { %>
