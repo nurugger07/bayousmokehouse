@@ -40,6 +40,8 @@ async function sendContactNotification({ message, detailUrl }) {
       .filter(Boolean)
       .join('\n'),
   });
+
+  console.log(`Contact notification email sent to ${recipient} for message #${message.id}.`);
 }
 
 module.exports = { sendContactNotification };
