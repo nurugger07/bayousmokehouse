@@ -37,4 +37,10 @@ describe('GET /menu', () => {
     expect(text).toContain('/images/food/jambalaya-plate.jpg');
     expect(text).toContain('/images/food/smoked-chicken-wings.jpg');
   });
+
+  it('renders each item as an expandable accordion, not a card grid', () => {
+    expect(text).toContain('<details');
+    expect(text).toContain('<summary');
+    expect(text).not.toContain('card-grid');
+  });
 });

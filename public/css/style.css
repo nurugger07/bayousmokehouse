@@ -21,7 +21,7 @@
      5. Layout & Container
      6. Utilities
      7. Buttons
-     8. Cards
+     8. Menu List (accordion)
      9. Forms
     10. Header & Nav
     11. Hero
@@ -342,82 +342,100 @@ main {
   font-size: var(--fs-sm);
 }
 
-/* ===== 8. Cards ===== */
-/* Generic reusable card — menu items, catering packages, etc. */
-.card {
+/* ===== 8. Menu List (accordion) ===== */
+/* Name + price row per item; click/tap to expand into photo +
+   description. Native <details>/<summary> — no JS needed, and
+   unlike an accordion `name` group, each item opens independently. */
+.menu-list {
   display: flex;
   flex-direction: column;
-  background-color: var(--color-parchment);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-7);
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+.menu-item {
+  border-bottom: 1px solid var(--color-border);
 }
 
-.card__image {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  background-color: var(--color-wood-light);
-}
-
-.card__body {
+.menu-item__summary {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-5);
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  cursor: pointer;
+  list-style: none;
 }
 
-.card__title {
+.menu-item__summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu-item__name {
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
   color: var(--color-wood-dark);
-  margin: 0;
 }
 
-.card__meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.card__description {
-  color: var(--color-text-muted);
-  font-size: var(--fs-base);
-}
-
-.card__price {
+.menu-item__price {
   font-family: var(--font-heading);
-  font-size: var(--fs-md);
   color: var(--color-ember);
-  margin-top: auto;
-  padding-top: var(--space-2);
+  margin-left: auto;
 }
 
-/* Responsive grid wrapper for multiple cards (menu grid, etc.) */
-.card-grid {
-  display: grid;
-  grid-template-columns: 1fr;
+.menu-item__toggle {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--color-ember);
+  border-radius: 50%;
+  position: relative;
+  transition: transform var(--transition-fast);
+}
+
+.menu-item__toggle::before,
+.menu-item__toggle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: var(--color-ember);
+  transform: translate(-50%, -50%);
+}
+
+.menu-item__toggle::before {
+  width: 12px;
+  height: 2px;
+}
+
+.menu-item__toggle::after {
+  width: 2px;
+  height: 12px;
+}
+
+.menu-item[open] .menu-item__toggle {
+  transform: rotate(45deg);
+}
+
+.menu-item__panel {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-5);
+  padding-bottom: var(--space-5);
 }
 
-@media (min-width: 600px) {
-  .card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.menu-item__image {
+  width: 220px;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
-@media (min-width: 1024px) {
-  .card-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.menu-item__description {
+  flex: 1;
+  min-width: 220px;
+  color: var(--color-text-muted);
 }
 
 /* ===== 9. Forms ===== */
