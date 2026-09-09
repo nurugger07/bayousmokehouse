@@ -8,6 +8,7 @@ const {
   softDeleteMessage,
   restoreMessage,
 } = require('../models/contactMessages');
+const { addNote, listNotesForMessage } = require('../models/messageNotes');
 
 const router = express.Router();
 
@@ -42,7 +43,22 @@ router.get('/messages/:id', async (req, res, next) => {
       return res.status(404).render('errors/404');
     }
 
-    res.render('admin/message-detail', { message });
+    const notes = await listNotesForMessage(message.id);
+    res.render('admin/message-detail', { message, notes });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/messages/:id/notes', async (req, res, next) => {
+  try {
+    const note = (req.body.note || '').trim();
+
+    if (note) {
+      await addNote(req.params.id, note);
+    }
+
+    res.redirect(`/admin/messages/${req.params.id}`);
   } catch (err) {
     next(err);
   }

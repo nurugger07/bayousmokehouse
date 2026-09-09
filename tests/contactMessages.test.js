@@ -10,7 +10,7 @@ const {
 } = require('../models/contactMessages');
 
 afterEach(async () => {
-  await pool.query('TRUNCATE contact_messages RESTART IDENTITY');
+  await pool.query('TRUNCATE contact_messages RESTART IDENTITY CASCADE');
 });
 
 afterAll(async () => {

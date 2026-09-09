@@ -1,5 +1,6 @@
 const express = require('express');
 const { createMessage } = require('../models/contactMessages');
+const { sendContactNotification } = require('../services/mailer');
 
 const router = express.Router();
 
@@ -43,7 +44,15 @@ router.post('/contact', async (req, res, next) => {
   }
 
   try {
-    await createMessage({ name, email, phone, message });
+    const created = await createMessage({ name, email, phone, message });
+
+    // Best-effort notification — a failed email must never fail the
+    // visitor's submission, which is already safely saved above.
+    const detailUrl = `${req.protocol}://${req.get('host')}/admin/messages/${created.id}`;
+    sendContactNotification({ message: created, detailUrl }).catch((err) => {
+      console.error('Failed to send contact notification email:', err);
+    });
+
     res.redirect('/contact?submitted=1');
   } catch (err) {
     next(err);

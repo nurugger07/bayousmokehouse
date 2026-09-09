@@ -24,3 +24,14 @@ CREATE TABLE IF NOT EXISTS "session" (
 );
 
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+
+-- Admin-authored notes documenting communication about a contact
+-- message (e.g. "called back 9/10, booked catering for the 14th").
+CREATE TABLE IF NOT EXISTS contact_message_notes (
+    id                  SERIAL PRIMARY KEY,
+    contact_message_id  INTEGER NOT NULL REFERENCES contact_messages(id) ON DELETE CASCADE,
+    note                TEXT NOT NULL,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contact_message_notes_message_id ON contact_message_notes (contact_message_id);

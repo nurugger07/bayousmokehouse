@@ -36,6 +36,29 @@
           <button type="submit" class="btn btn--small btn--secondary">Delete</button>
         </form>
       </div>
+
+      <h2>Notes</h2>
+      <% if (notes.length === 0) { %>
+        <p>No notes yet.</p>
+      <% } %>
+      <div class="menu-list">
+        <% notes.forEach(function(note) { %>
+          <div class="menu-item">
+            <div class="menu-item__panel" style="display: flex;">
+              <p class="menu-item__description">
+                <%= note.note %>
+                <br><small><%= new Date(note.created_at).toLocaleString() %></small>
+              </p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <form class="contact-form" method="POST" action="/admin/messages/<%= message.id %>/notes">
+        <label for="note">Add a Note</label>
+        <textarea id="note" name="note" rows="3" required></textarea>
+        <button type="submit" class="btn btn--small btn--primary">Add Note</button>
+      </form>
     </div>
   </section>
 </main>

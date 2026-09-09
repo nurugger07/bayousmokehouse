@@ -6,7 +6,7 @@ const { createMessage } = require('../models/contactMessages');
 const CORRECT_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
 
 afterEach(async () => {
-  await pool.query('TRUNCATE contact_messages RESTART IDENTITY');
+  await pool.query('TRUNCATE contact_messages RESTART IDENTITY CASCADE');
 });
 
 afterAll(async () => {
@@ -122,5 +122,32 @@ describe('admin message management', () => {
     await agent.post(`/admin/messages/${message.id}/restore`);
     row = (await pool.query('SELECT * FROM contact_messages WHERE id = $1', [message.id])).rows[0];
     expect(row.deleted_at).toBeNull();
+  });
+});
+
+describe('message notes', () => {
+  it('adds a note and shows it on the detail page', async () => {
+    const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
+    const agent = await loggedInAgent();
+
+    await agent
+      .post(`/admin/messages/${message.id}/notes`)
+      .type('form')
+      .send({ note: 'Called back, left a voicemail.' });
+
+    const detail = await agent.get(`/admin/messages/${message.id}`);
+    expect(detail.text).toContain('Called back, left a voicemail.');
+  });
+
+  it('does not add an empty note', async () => {
+    const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
+    const agent = await loggedInAgent();
+
+    await agent.post(`/admin/messages/${message.id}/notes`).type('form').send({ note: '   ' });
+
+    const { rows } = await pool.query('SELECT * FROM contact_message_notes WHERE contact_message_id = $1', [
+      message.id,
+    ]);
+    expect(rows).toHaveLength(0);
   });
 });
