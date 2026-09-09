@@ -83,6 +83,44 @@ describe('admin message management', () => {
     expect(archivedList.text).toContain('jane@example.com');
   });
 
+  it('filters messages by category', async () => {
+    await createMessage({
+      name: 'Jane',
+      email: 'jane@example.com',
+      message: 'party',
+      category: 'private_event',
+    });
+    await createMessage({
+      name: 'Bob',
+      email: 'bob@example.com',
+      message: 'brewery gig',
+      category: 'brewery_event',
+    });
+    const agent = await loggedInAgent();
+
+    const privateList = await agent.get('/admin/messages?category=private_event');
+    const breweryList = await agent.get('/admin/messages?category=brewery_event');
+
+    expect(privateList.text).toContain('jane@example.com');
+    expect(privateList.text).not.toContain('bob@example.com');
+    expect(breweryList.text).toContain('bob@example.com');
+    expect(breweryList.text).not.toContain('jane@example.com');
+  });
+
+  it('shows the category on the message detail page', async () => {
+    const message = await createMessage({
+      name: 'Jane',
+      email: 'jane@example.com',
+      message: 'party',
+      category: 'private_event',
+    });
+    const agent = await loggedInAgent();
+
+    const res = await agent.get(`/admin/messages/${message.id}`);
+
+    expect(res.text).toContain('Private Event');
+  });
+
   it('does not change status just from viewing the detail page (GET must not have side effects)', async () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
     const agent = await loggedInAgent();

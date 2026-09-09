@@ -16,54 +16,71 @@
   </section>
 
   <section id="schedule" class="schedule">
-    <div class="container">
-      <h2>This Week's Schedule: <%= schedule.weekStart %> &ndash; <%= schedule.weekEnd %></h2>
+    <div class="container schedule__layout">
+      <div class="schedule__intro">
+        <h2>This Week's Schedule</h2>
+        <p class="schedule__intro-text">We're out slinging Southern smoke all over Northern Colorado. Check the list for where to find us this week.</p>
+        <p class="schedule__intro-text">Want us at your next event?</p>
+        <a href="/contact" class="btn btn--primary">Book the Bayou</a>
+      </div>
 
-      <% if (schedule.unavailable) { %>
-        <p class="schedule__note">Schedule temporarily unavailable &mdash; check back soon.</p>
-      <% } else if (schedule.days.length === 0) { %>
-        <p class="schedule__note">Sold Out This Week. Come back later for next week's schedule.</p>
-      <% } else { %>
-        <div class="schedule__week">
-          <% schedule.days.forEach(function(day) { %>
-            <% day.events.forEach(function(event) { %>
-              <% if (event.description) { %>
-                <details class="schedule-day">
-                  <summary class="schedule-day__summary">
-                    <span class="schedule-day__name"><%= day.dayName %></span>
+      <div class="schedule__listing">
+        <p class="schedule__range"><%= schedule.weekStart %> &ndash; <%= schedule.weekEnd %></p>
+
+        <% if (schedule.unavailable) { %>
+          <p class="schedule__note">Schedule temporarily unavailable &mdash; check back soon.</p>
+        <% } else if (schedule.days.length === 0) { %>
+          <p class="schedule__note">Sold Out This Week. Come back later for next week's schedule.</p>
+        <% } else { %>
+          <div class="schedule__week">
+            <% schedule.days.forEach(function(day) { %>
+              <% day.events.forEach(function(event) { %>
+                <% if (event.description || event.location) { %>
+                  <details class="schedule-day">
+                    <summary class="schedule-day__summary">
+                      <div class="schedule-day__header">
+                        <span class="schedule-day__name"><%= day.dayName %></span>
+                        <span class="schedule-day__toggle" aria-hidden="true"></span>
+                      </div>
+                      <div class="schedule-day__details">
+                        <span class="schedule-day__location"><%= event.name %></span>
+                        <% if (event.shortLocation) { %>
+                          <span class="schedule-day__location"><%= event.shortLocation %></span>
+                        <% } %>
+                        <% if (event.startTime) { %>
+                          <span class="schedule-day__time"><%= event.startTime %> &ndash; <%= event.endTime %></span>
+                        <% } %>
+                      </div>
+                    </summary>
+                    <div class="schedule-day__panel">
+                      <% if (event.location) { %>
+                        <p class="schedule-day__address">
+                          <a href="<%= event.mapsUrl %>" target="_blank" rel="noopener noreferrer"><%= event.location %></a>
+                        </p>
+                      <% } %>
+                      <% if (event.description) { %>
+                        <p class="schedule-day__description"><%= event.description %></p>
+                      <% } %>
+                    </div>
+                  </details>
+                <% } else { %>
+                  <div class="schedule-day">
+                    <div class="schedule-day__header">
+                      <span class="schedule-day__name"><%= day.dayName %></span>
+                    </div>
                     <div class="schedule-day__details">
                       <span class="schedule-day__location"><%= event.name %></span>
-                      <% if (event.location) { %>
-                        <span class="schedule-day__location"><%= event.location %></span>
-                      <% } %>
                       <% if (event.startTime) { %>
                         <span class="schedule-day__time"><%= event.startTime %> &ndash; <%= event.endTime %></span>
                       <% } %>
                     </div>
-                    <span class="schedule-day__toggle" aria-hidden="true"></span>
-                  </summary>
-                  <div class="schedule-day__panel">
-                    <p class="schedule-day__description"><%= event.description %></p>
                   </div>
-                </details>
-              <% } else { %>
-                <div class="schedule-day">
-                  <span class="schedule-day__name"><%= day.dayName %></span>
-                  <div class="schedule-day__details">
-                    <span class="schedule-day__location"><%= event.name %></span>
-                    <% if (event.location) { %>
-                      <span class="schedule-day__location"><%= event.location %></span>
-                    <% } %>
-                    <% if (event.startTime) { %>
-                      <span class="schedule-day__time"><%= event.startTime %> &ndash; <%= event.endTime %></span>
-                    <% } %>
-                  </div>
-                </div>
-              <% } %>
+                <% } %>
+              <% }); %>
             <% }); %>
-          <% }); %>
-        </div>
-      <% } %>
+          </div>
+        <% } %>
+      </div>
     </div>
   </section>
 

@@ -23,7 +23,13 @@ describe('POST /contact', () => {
     const res = await request(app)
       .post('/contact')
       .type('form')
-      .send({ name: 'Jane Doe', email: 'jane@example.com', phone: '555-1234', message: 'Do you cater?' });
+      .send({
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '555-1234',
+        message: 'Do you cater?',
+        category: 'private_event',
+      });
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('submitted=1');
@@ -44,7 +50,7 @@ describe('POST /contact', () => {
     const res = await request(app)
       .post('/contact')
       .type('form')
-      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
+      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category: 'general_inquiry' });
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('submitted=1');
@@ -105,13 +111,52 @@ describe('POST /contact', () => {
     expect(rows).toHaveLength(0);
   });
 
+  it('rejects a submission missing a category without saving', async () => {
+    const res = await request(app)
+      .post('/contact')
+      .type('form')
+      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
+
+    expect(res.status).toBe(400);
+
+    const { rows } = await pool.query('SELECT * FROM contact_messages');
+    expect(rows).toHaveLength(0);
+  });
+
+  it('rejects a submission with an invalid category without saving', async () => {
+    const res = await request(app)
+      .post('/contact')
+      .type('form')
+      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category: 'not-a-real-category' });
+
+    expect(res.status).toBe(400);
+
+    const { rows } = await pool.query('SELECT * FROM contact_messages');
+    expect(rows).toHaveLength(0);
+  });
+
+  it.each(['private_event', 'brewery_event', 'general_inquiry'])(
+    'accepts and saves the "%s" category',
+    async (category) => {
+      const res = await request(app)
+        .post('/contact')
+        .type('form')
+        .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
+
+      expect(res.status).toBe(302);
+
+      const { rows } = await pool.query('SELECT category FROM contact_messages');
+      expect(rows[0].category).toBe(category);
+    }
+  );
+
   it('does not leak a stack trace or internal error details on an unexpected failure', async () => {
     const spy = jest.spyOn(pool, 'query').mockRejectedValueOnce(new Error('simulated db failure'));
 
     const res = await request(app)
       .post('/contact')
       .type('form')
-      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
+      .send({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category: 'general_inquiry' });
 
     spy.mockRestore();
 

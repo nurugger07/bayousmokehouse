@@ -8,15 +8,16 @@ router.get('/contact', (req, res) => {
   res.render('pages/contact', {
     submitted: req.query.submitted === '1',
     error: null,
-    values: {},
+    values: { category: req.query.category },
   });
 });
 
 const FIELD_LIMITS = { name: 255, email: 255, phone: 50 };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry'];
 
 router.post('/contact', async (req, res, next) => {
-  const { name, email, phone, message, company } = req.body;
+  const { name, email, phone, message, category, company } = req.body;
 
   // Honeypot: real users never see or fill this field; bots that
   // auto-fill every input will. Pretend success so they don't retry.
@@ -28,7 +29,7 @@ router.post('/contact', async (req, res, next) => {
     return res.status(400).render('pages/contact', {
       submitted: false,
       error: 'Please fill in your name, email, and message.',
-      values: { name, email, phone, message },
+      values: { name, email, phone, message, category },
     });
   }
 
@@ -36,7 +37,15 @@ router.post('/contact', async (req, res, next) => {
     return res.status(400).render('pages/contact', {
       submitted: false,
       error: 'Please enter a valid email address.',
-      values: { name, email, phone, message },
+      values: { name, email, phone, message, category },
+    });
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return res.status(400).render('pages/contact', {
+      submitted: false,
+      error: 'Please choose what you need help with.',
+      values: { name, email, phone, message, category },
     });
   }
 
@@ -48,12 +57,12 @@ router.post('/contact', async (req, res, next) => {
     return res.status(400).render('pages/contact', {
       submitted: false,
       error: 'One of the fields is too long. Please shorten it and try again.',
-      values: { name, email, phone, message },
+      values: { name, email, phone, message, category },
     });
   }
 
   try {
-    const created = await createMessage({ name, email, phone, message });
+    const created = await createMessage({ name, email, phone, message, category });
 
     // Best-effort notification — a failed email must never fail the
     // visitor's submission, which is already safely saved above.

@@ -12,6 +12,7 @@
       <p><a href="/admin/messages">&larr; Back to messages</a></p>
       <h1><%= message.name %></h1>
       <p>
+        <strong>Category:</strong> <%= categoryLabels[message.category] %><br>
         <strong>Email:</strong> <%= message.email %><br>
         <% if (message.phone) { %>
           <strong>Phone:</strong> <%= message.phone %><br>

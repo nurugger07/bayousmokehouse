@@ -23,6 +23,25 @@
       <% } %>
 
       <form class="contact-form" method="POST" action="/contact">
+        <fieldset class="contact-form__categories">
+          <legend>What can we help with?</legend>
+
+          <label class="contact-form__radio">
+            <input type="radio" name="category" value="private_event" <%= values.category === 'private_event' ? 'checked' : '' %> required>
+            Private Event
+          </label>
+
+          <label class="contact-form__radio">
+            <input type="radio" name="category" value="brewery_event" <%= values.category === 'brewery_event' ? 'checked' : '' %> required>
+            Brewery Event
+          </label>
+
+          <label class="contact-form__radio">
+            <input type="radio" name="category" value="general_inquiry" <%= values.category === 'general_inquiry' ? 'checked' : '' %> required>
+            Comments / Questions
+          </label>
+        </fieldset>
+
         <label for="name">Name</label>
         <input type="text" id="name" name="name" value="<%= values.name || '' %>" maxlength="255" required>
 

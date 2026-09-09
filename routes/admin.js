@@ -15,6 +15,12 @@ const router = express.Router();
 router.use(requireAdminAuth);
 
 const VALID_STATUSES = ['unread', 'read', 'archived', 'deleted'];
+const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry'];
+const CATEGORY_LABELS = {
+  private_event: 'Private Event',
+  brewery_event: 'Brewery Event',
+  general_inquiry: 'Comments / Questions',
+};
 
 function backTo(req, res) {
   res.redirect(req.get('Referer') || '/admin/messages');
@@ -26,10 +32,11 @@ router.get('/', (req, res) => {
 
 router.get('/messages', async (req, res, next) => {
   const status = VALID_STATUSES.includes(req.query.status) ? req.query.status : 'unread';
+  const category = VALID_CATEGORIES.includes(req.query.category) ? req.query.category : undefined;
 
   try {
-    const messages = await listMessages({ status });
-    res.render('admin/messages', { messages, status });
+    const messages = await listMessages({ status, category });
+    res.render('admin/messages', { messages, status, category, categoryLabels: CATEGORY_LABELS });
   } catch (err) {
     next(err);
   }
@@ -44,7 +51,7 @@ router.get('/messages/:id', async (req, res, next) => {
     }
 
     const notes = await listNotesForMessage(message.id);
-    res.render('admin/message-detail', { message, notes });
+    res.render('admin/message-detail', { message, notes, categoryLabels: CATEGORY_LABELS });
   } catch (err) {
     next(err);
   }

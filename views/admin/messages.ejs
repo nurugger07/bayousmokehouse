@@ -11,6 +11,13 @@
     <div class="container">
       <h1>Messages &mdash; <%= status.charAt(0).toUpperCase() + status.slice(1) %></h1>
 
+      <nav class="admin-filters">
+        <a href="/admin/messages?status=<%= status %>" class="<%= !category ? 'admin-filters__active' : '' %>">All</a>
+        <% Object.keys(categoryLabels).forEach(function(key) { %>
+          <a href="/admin/messages?status=<%= status %>&amp;category=<%= key %>" class="<%= category === key ? 'admin-filters__active' : '' %>"><%= categoryLabels[key] %></a>
+        <% }); %>
+      </nav>
+
       <% if (messages.length === 0) { %>
         <p>No messages here.</p>
       <% } %>
@@ -22,6 +29,7 @@
               <span class="menu-item__name">
                 <a href="/admin/messages/<%= message.id %>"><%= message.name %></a>
                 &mdash; <%= message.email %>
+                <span class="badge"><%= categoryLabels[message.category] %></span>
               </span>
               <span class="menu-item__price"><%= new Date(message.submitted_at).toLocaleString() %></span>
             </div>

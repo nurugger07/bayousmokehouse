@@ -1,29 +1,50 @@
 const { pool } = require('../config/db');
 
-async function createMessage({ name, email, phone, message }) {
+async function createMessage({ name, email, phone, message, category }) {
+  // Column list is built from fixed, hardcoded names only (never from
+  // user input) — safe to interpolate; values stay fully parameterized.
+  const columns = ['name', 'email', 'phone', 'message'];
+  const values = [name, email, phone || null, message];
+
+  if (category) {
+    columns.push('category');
+    values.push(category);
+  }
+
+  const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+
   const result = await pool.query(
-    `INSERT INTO contact_messages (name, email, phone, message)
-     VALUES ($1, $2, $3, $4)
+    `INSERT INTO contact_messages (${columns.join(', ')})
+     VALUES (${placeholders})
      RETURNING *`,
-    [name, email, phone || null, message]
+    values
   );
 
   return result.rows[0];
 }
 
-async function listMessages({ status = 'unread' } = {}) {
+async function listMessages({ status = 'unread', category } = {}) {
+  const conditions = [];
+  const params = [];
+
   if (status === 'deleted') {
-    const result = await pool.query(
-      `SELECT * FROM contact_messages WHERE deleted_at IS NOT NULL ORDER BY submitted_at DESC`
-    );
-    return result.rows;
+    conditions.push('deleted_at IS NOT NULL');
+  } else {
+    conditions.push('deleted_at IS NULL');
+    params.push(status);
+    conditions.push(`status = $${params.length}`);
+  }
+
+  if (category) {
+    params.push(category);
+    conditions.push(`category = $${params.length}`);
   }
 
   const result = await pool.query(
     `SELECT * FROM contact_messages
-     WHERE deleted_at IS NULL AND status = $1
+     WHERE ${conditions.join(' AND ')}
      ORDER BY submitted_at DESC`,
-    [status]
+    params
   );
   return result.rows;
 }

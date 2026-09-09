@@ -1,3 +1,8 @@
+// Override the test-suite-wide relaxed limit (see .env.test) back down
+// to the real production value — this test exists specifically to
+// verify that production value actually blocks after 10 attempts.
+process.env.ADMIN_LOGIN_RATE_LIMIT_MAX = '10';
+
 const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');

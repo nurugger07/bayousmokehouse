@@ -495,6 +495,42 @@ main {
   min-height: 8rem;
 }
 
+.contact-form__categories {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contact-form__categories legend {
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-wood-dark);
+  padding: 0;
+  margin-bottom: var(--space-1);
+}
+
+.contact-form__radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.contact-form__radio input {
+  width: auto;
+  margin-top: 0;
+  accent-color: var(--color-ember);
+}
+
 .contact-form button {
   align-self: flex-start;
   margin-top: var(--space-2);
@@ -505,6 +541,25 @@ main {
   display: flex;
   gap: var(--space-3);
   padding-bottom: var(--space-4);
+}
+
+/* Admin category filter links */
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.admin-filters a {
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.admin-filters a:hover,
+.admin-filters__active {
+  color: var(--color-ember);
 }
 
 /* ===== 10. Header & Nav ===== */
@@ -751,6 +806,48 @@ main {
 
 .schedule h2 {
   color: var(--color-cream);
+  margin-top: 0;
+}
+
+/* Side-by-side on wide screens: intro/CTA on the left, the week's
+   listing on the right. Stacks on mobile. */
+.schedule__layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 1024px) {
+  .schedule__layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .schedule__intro {
+    flex: 0 0 260px;
+  }
+
+  .schedule__listing {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.schedule__intro-text {
+  color: var(--color-text-inverse-muted);
+  margin-top: var(--space-3);
+  max-width: 40ch;
+}
+
+.schedule__intro .btn {
+  margin-top: var(--space-5);
+}
+
+.schedule__range {
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  color: var(--color-cream);
+  margin-bottom: var(--space-4);
 }
 
 .schedule__note {
@@ -831,6 +928,18 @@ main {
 
 .schedule-day__panel {
   padding: 0 var(--space-5) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.schedule-day__address a {
+  color: var(--color-fire-gold);
+  font-weight: 700;
+}
+
+.schedule-day__address a:hover {
+  color: var(--color-ember);
 }
 
 .schedule-day__description {

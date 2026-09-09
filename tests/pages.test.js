@@ -34,6 +34,13 @@ describe('static pages', () => {
     expect(res.text).toContain('Sep 13');
   });
 
+  it('GET / has a "Book the Bayou" CTA linking to the contact page', async () => {
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('Book the Bayou');
+    expect(res.text).toMatch(/href="\/contact"[^>]*>\s*Book the Bayou/);
+  });
+
   it('GET / shows the sold-out fallback when the week has no events', async () => {
     const res = await request(app).get('/');
 
@@ -49,7 +56,7 @@ describe('static pages', () => {
     expect(res.text).not.toContain('Sold Out This Week');
   });
 
-  it('GET / renders each day that has events, with location and time', async () => {
+  it('GET / renders each day that has events, with short location and time', async () => {
     getWeekSchedule.mockResolvedValue({
       weekStart: 'Sep 7',
       weekEnd: 'Sep 13',
@@ -62,6 +69,8 @@ describe('static pages', () => {
             {
               name: 'Bayou Smokehouse @ Odd13 Brewing',
               location: '301 Link Ln, Fort Collins, CO',
+              shortLocation: 'Fort Collins, CO',
+              mapsUrl: 'https://www.google.com/maps/search/?api=1&query=301%20Link%20Ln',
               startTime: '11:00 AM',
               endTime: '2:00 PM',
               description: null,
@@ -75,7 +84,7 @@ describe('static pages', () => {
 
     expect(res.text).toContain('Friday');
     expect(res.text).toContain('Bayou Smokehouse @ Odd13 Brewing');
-    expect(res.text).toContain('301 Link Ln, Fort Collins, CO');
+    expect(res.text).toContain('Fort Collins, CO');
     expect(res.text).toContain('11:00 AM');
     expect(res.text).not.toContain('Sold Out This Week');
   });
@@ -92,7 +101,9 @@ describe('static pages', () => {
           events: [
             {
               name: 'Bayou Smokehouse @ Odd13 Brewing',
-              location: '301 Link Ln, Fort Collins, CO',
+              location: null,
+              shortLocation: null,
+              mapsUrl: null,
               startTime: '11:00 AM',
               endTime: '2:00 PM',
               description: 'Live music starting at noon, bring the family!',
@@ -108,7 +119,7 @@ describe('static pages', () => {
     expect(res.text).toContain('Live music starting at noon, bring the family!');
   });
 
-  it('GET / does not render an expand toggle for an event with no description', async () => {
+  it('GET / makes an event with a location expandable, showing the full address as a maps link', async () => {
     getWeekSchedule.mockResolvedValue({
       weekStart: 'Sep 7',
       weekEnd: 'Sep 13',
@@ -121,6 +132,41 @@ describe('static pages', () => {
             {
               name: 'Bayou Smokehouse @ Odd13 Brewing',
               location: '301 Link Ln, Fort Collins, CO',
+              shortLocation: 'Fort Collins, CO',
+              mapsUrl: 'https://www.google.com/maps/search/?api=1&query=301%20Link%20Ln',
+              startTime: '11:00 AM',
+              endTime: '2:00 PM',
+              description: null,
+            },
+          ],
+        },
+      ],
+    });
+
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('<details');
+    expect(res.text).toContain('301 Link Ln, Fort Collins, CO');
+    expect(res.text).toMatch(
+      /href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=301%20Link%20Ln"/
+    );
+  });
+
+  it('GET / does not render an expand toggle for an event with neither a description nor a location', async () => {
+    getWeekSchedule.mockResolvedValue({
+      weekStart: 'Sep 7',
+      weekEnd: 'Sep 13',
+      unavailable: false,
+      days: [
+        {
+          dayName: 'Friday',
+          date: '2026-09-11',
+          events: [
+            {
+              name: 'Bayou Smokehouse @ Odd13 Brewing',
+              location: null,
+              shortLocation: null,
+              mapsUrl: null,
               startTime: '11:00 AM',
               endTime: '2:00 PM',
               description: null,

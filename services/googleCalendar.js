@@ -34,6 +34,39 @@ function buildDaySkeleton(zonedWeekStart, zonedWeekEnd) {
   }));
 }
 
+// "123 Main St, Loveland, CO 80537, USA" -> "Loveland, CO". Falls back
+// to the full address whenever it doesn't match this shape (e.g. a
+// venue name typed in free-form, or address formats besides the
+// standard US "street, city, state zip[, country]" one Google's own
+// autocomplete produces).
+function getShortLocation(location) {
+  if (!location) {
+    return null;
+  }
+
+  const parts = location.split(',').map((part) => part.trim());
+  if (parts.length < 3) {
+    return location;
+  }
+
+  const city = parts[1];
+  const stateMatch = parts[2].match(/^([A-Z]{2})\b/);
+
+  if (!city || !stateMatch) {
+    return location;
+  }
+
+  return `${city}, ${stateMatch[1]}`;
+}
+
+function getMapsUrl(location) {
+  if (!location) {
+    return null;
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+}
+
 function getClient() {
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
   return new JWT({
@@ -79,6 +112,8 @@ function groupEventsByDay(events, zonedWeekStart, zonedWeekEnd) {
     day.events.push({
       name: event.summary || 'Untitled Event',
       location: event.location || null,
+      shortLocation: getShortLocation(event.location),
+      mapsUrl: getMapsUrl(event.location),
       description: event.description || null,
       startTime: isAllDay ? null : formatInTimeZone(new Date(event.start.dateTime), TIME_ZONE, 'h:mm a'),
       endTime: isAllDay ? null : formatInTimeZone(new Date(event.end.dateTime), TIME_ZONE, 'h:mm a'),

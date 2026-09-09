@@ -44,6 +44,22 @@ describe('createMessage', () => {
 
     expect(message.phone).toBeNull();
   });
+
+  it('stores the given category', async () => {
+    const message = await createMessage({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      message: 'Can you cater our office party?',
+      category: 'private_event',
+    });
+
+    expect(message.category).toBe('private_event');
+  });
+
+  it('defaults to general_inquiry when no category is given', async () => {
+    const message = await createMessage({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
+    expect(message.category).toBe('general_inquiry');
+  });
 });
 
 describe('listMessages', () => {
@@ -85,6 +101,26 @@ describe('listMessages', () => {
     const messages = await listMessages({ status: 'deleted' });
 
     expect(messages.map((m) => m.id)).toEqual([deleted.id]);
+  });
+
+  it('filters by category in addition to status', async () => {
+    const privateEvent = await createMessage({
+      name: 'A',
+      email: 'a@example.com',
+      message: 'party',
+      category: 'private_event',
+    });
+    const breweryEvent = await createMessage({
+      name: 'B',
+      email: 'b@example.com',
+      message: 'brewery gig',
+      category: 'brewery_event',
+    });
+
+    const filtered = await listMessages({ status: 'unread', category: 'private_event' });
+
+    expect(filtered.map((m) => m.id)).toEqual([privateEvent.id]);
+    expect(filtered.map((m) => m.id)).not.toContain(breweryEvent.id);
   });
 });
 

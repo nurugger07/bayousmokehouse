@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     email           VARCHAR(255) NOT NULL,
     phone           VARCHAR(50),
     message         TEXT NOT NULL,
+    category        VARCHAR(20) NOT NULL DEFAULT 'general_inquiry'
+                        CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry')),
     submitted_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     status          VARCHAR(20) NOT NULL DEFAULT 'unread'
                         CHECK (status IN ('unread', 'read', 'archived')),
@@ -12,7 +14,13 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Idempotent add for databases where contact_messages already existed
+-- before the category column was introduced.
+ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS category VARCHAR(20) NOT NULL DEFAULT 'general_inquiry'
+    CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry'));
+
 CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages (status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_contact_messages_category ON contact_messages (category) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_contact_messages_submitted_at ON contact_messages (submitted_at DESC);
 
 -- connect-pg-simple session store.

@@ -51,6 +51,10 @@ describe('getWeekSchedule', () => {
     expect(schedule.days[0].dayName).toBe('Tuesday');
     expect(schedule.days[0].events[0].name).toBe('Bayou Smokehouse @ Verboten Brewing');
     expect(schedule.days[0].events[0].location).toBe('425 Linden St, Loveland, CO');
+    expect(schedule.days[0].events[0].shortLocation).toBe('Loveland, CO');
+    expect(schedule.days[0].events[0].mapsUrl).toBe(
+      'https://www.google.com/maps/search/?api=1&query=425%20Linden%20St%2C%20Loveland%2C%20CO'
+    );
     expect(schedule.days[0].events[0].startTime).toBe('5:00 PM');
     expect(schedule.days[1].dayName).toBe('Friday');
     expect(schedule.weekStart).toBeDefined();
@@ -120,5 +124,46 @@ describe('getWeekSchedule', () => {
     expect(second.unavailable).toBe(false);
     expect(second.days).toEqual(first.days);
     expect(mockRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to the full address as shortLocation when it cannot be confidently parsed', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            summary: 'Bayou Smokehouse @ Somewhere',
+            location: 'Just a venue name, no real address structure',
+            start: { dateTime: '2026-09-11T17:00:00-06:00' },
+            end: { dateTime: '2026-09-11T21:00:00-06:00' },
+          },
+        ],
+      },
+    });
+
+    const schedule = await googleCalendar.getWeekSchedule();
+
+    expect(schedule.days[0].events[0].shortLocation).toBe('Just a venue name, no real address structure');
+  });
+
+  it('leaves shortLocation null when there is no location at all', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            summary: 'Bayou Smokehouse',
+            start: { dateTime: '2026-09-11T17:00:00-06:00' },
+            end: { dateTime: '2026-09-11T21:00:00-06:00' },
+          },
+        ],
+      },
+    });
+
+    const schedule = await googleCalendar.getWeekSchedule();
+
+    expect(schedule.days[0].events[0].location).toBeNull();
+    expect(schedule.days[0].events[0].shortLocation).toBeNull();
+    expect(schedule.days[0].events[0].mapsUrl).toBeNull();
   });
 });
