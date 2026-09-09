@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Message from ' + message.name }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <p><a href="/admin/messages">&larr; Back to messages</a></p>
+      <h1><%= message.name %></h1>
+      <p>
+        <strong>Email:</strong> <%= message.email %><br>
+        <% if (message.phone) { %>
+          <strong>Phone:</strong> <%= message.phone %><br>
+        <% } %>
+        <strong>Submitted:</strong> <%= new Date(message.submitted_at).toLocaleString() %><br>
+        <strong>Status:</strong> <%= message.status %>
+      </p>
+      <p><%= message.message %></p>
+
+      <div class="admin-actions">
+        <% if (message.status === 'unread') { %>
+          <form method="POST" action="/admin/messages/<%= message.id %>/read">
+            <button type="submit" class="btn btn--small btn--secondary">Mark Read</button>
+          </form>
+        <% } %>
+        <% if (message.status !== 'archived') { %>
+          <form method="POST" action="/admin/messages/<%= message.id %>/archive">
+            <button type="submit" class="btn btn--small btn--secondary">Archive</button>
+          </form>
+        <% } %>
+        <form method="POST" action="/admin/messages/<%= message.id %>/delete">
+          <button type="submit" class="btn btn--small btn--secondary">Delete</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Admin Login' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: false }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Admin Login</h1>
+      <% if (error) { %>
+        <p class="form-message form-message--error"><%= error %></p>
+      <% } %>
+      <form class="contact-form" method="POST" action="/admin/login">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autofocus>
+        <button type="submit" class="btn btn--primary">Log In</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

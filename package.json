@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "jest",
+    "test": "jest --runInBand",
     "prepare": "husky"
   },
   "repository": {
@@ -24,9 +24,13 @@
   },
   "homepage": "https://github.com/nurugger07/bayousmokehouse#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
     "pg": "^8.23.0"
   },
   "devDependencies": {

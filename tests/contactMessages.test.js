@@ -1,5 +1,13 @@
 const { pool } = require('../config/db');
-const { createMessage } = require('../models/contactMessages');
+const {
+  createMessage,
+  listMessages,
+  getMessageById,
+  markRead,
+  archiveMessage,
+  softDeleteMessage,
+  restoreMessage,
+} = require('../models/contactMessages');
 
 afterEach(async () => {
   await pool.query('TRUNCATE contact_messages RESTART IDENTITY');
@@ -35,5 +43,90 @@ describe('createMessage', () => {
     });
 
     expect(message.phone).toBeNull();
+  });
+});
+
+describe('listMessages', () => {
+  it('defaults to listing unread, non-deleted messages, newest first', async () => {
+    const first = await createMessage({ name: 'A', email: 'a@example.com', message: 'first' });
+    await new Promise((r) => setTimeout(r, 10));
+    const second = await createMessage({ name: 'B', email: 'b@example.com', message: 'second' });
+
+    const messages = await listMessages();
+
+    expect(messages.map((m) => m.id)).toEqual([second.id, first.id]);
+  });
+
+  it('filters by status', async () => {
+    const unread = await createMessage({ name: 'A', email: 'a@example.com', message: 'unread one' });
+    const toArchive = await createMessage({ name: 'B', email: 'b@example.com', message: 'will be archived' });
+    await archiveMessage(toArchive.id);
+
+    const archived = await listMessages({ status: 'archived' });
+
+    expect(archived.map((m) => m.id)).toEqual([toArchive.id]);
+    expect(archived.map((m) => m.id)).not.toContain(unread.id);
+  });
+
+  it('excludes soft-deleted messages by default', async () => {
+    const kept = await createMessage({ name: 'A', email: 'a@example.com', message: 'kept' });
+    const deleted = await createMessage({ name: 'B', email: 'b@example.com', message: 'deleted' });
+    await softDeleteMessage(deleted.id);
+
+    const messages = await listMessages({ status: 'unread' });
+
+    expect(messages.map((m) => m.id)).toEqual([kept.id]);
+  });
+
+  it('lists soft-deleted messages when status is "deleted"', async () => {
+    const deleted = await createMessage({ name: 'A', email: 'a@example.com', message: 'gone' });
+    await softDeleteMessage(deleted.id);
+
+    const messages = await listMessages({ status: 'deleted' });
+
+    expect(messages.map((m) => m.id)).toEqual([deleted.id]);
+  });
+});
+
+describe('getMessageById', () => {
+  it('returns the message', async () => {
+    const created = await createMessage({ name: 'A', email: 'a@example.com', message: 'hi' });
+    const found = await getMessageById(created.id);
+    expect(found.id).toBe(created.id);
+  });
+
+  it('returns undefined for a nonexistent id', async () => {
+    const found = await getMessageById(999999);
+    expect(found).toBeUndefined();
+  });
+});
+
+describe('status transitions', () => {
+  it('markRead sets status to read', async () => {
+    const created = await createMessage({ name: 'A', email: 'a@example.com', message: 'hi' });
+    const updated = await markRead(created.id);
+    expect(updated.status).toBe('read');
+  });
+
+  it('archiveMessage sets status to archived', async () => {
+    const created = await createMessage({ name: 'A', email: 'a@example.com', message: 'hi' });
+    const updated = await archiveMessage(created.id);
+    expect(updated.status).toBe('archived');
+  });
+
+  it('softDeleteMessage sets deleted_at without a hard delete', async () => {
+    const created = await createMessage({ name: 'A', email: 'a@example.com', message: 'hi' });
+    const updated = await softDeleteMessage(created.id);
+    expect(updated.deleted_at).not.toBeNull();
+
+    const { rows } = await pool.query('SELECT * FROM contact_messages WHERE id = $1', [created.id]);
+    expect(rows).toHaveLength(1);
+  });
+
+  it('restoreMessage clears deleted_at', async () => {
+    const created = await createMessage({ name: 'A', email: 'a@example.com', message: 'hi' });
+    await softDeleteMessage(created.id);
+    const restored = await restoreMessage(created.id);
+    expect(restored.deleted_at).toBeNull();
   });
 });

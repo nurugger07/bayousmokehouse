@@ -1,0 +1,16 @@
+<header class="site-header">
+  <div class="container site-header__inner">
+    <span class="site-logo">Bayou Smokehouse Admin</span>
+    <% if (loggedIn) { %>
+      <nav class="site-nav">
+        <a href="/admin/messages?status=unread">Unread</a>
+        <a href="/admin/messages?status=read">Read</a>
+        <a href="/admin/messages?status=archived">Archived</a>
+        <a href="/admin/messages?status=deleted">Deleted</a>
+        <form method="POST" action="/admin/logout" style="display:inline">
+          <button type="submit" class="btn btn--small btn--secondary">Log Out</button>
+        </form>
+      </nav>
+    <% } %>
+  </div>
+</header>

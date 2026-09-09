@@ -1,9 +1,18 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
+const { pool } = require('./config/db');
 const pagesRouter = require('./routes/pages');
 const contactRouter = require('./routes/contact');
+const adminAuthRouter = require('./routes/adminAuth');
+const adminRouter = require('./routes/admin');
 
 const app = express();
+
+// Required for secure cookies to work correctly behind Heroku's router,
+// which terminates TLS and forwards over plain HTTP internally.
+app.set('trust proxy', 1);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -11,6 +20,27 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(
+  session({
+    store: new pgSession({
+      pool,
+      tableName: 'session',
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1000 * 60 * 60 * 8,
+      sameSite: 'lax',
+    },
+  })
+);
+
+app.use('/admin', adminAuthRouter);
+app.use('/admin', adminRouter);
 app.use('/', contactRouter);
 app.use('/', pagesRouter);
 
