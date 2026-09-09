@@ -439,6 +439,24 @@ main {
 }
 
 /* ===== 9. Forms ===== */
+.form-message {
+  max-width: 42rem;
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+.form-message--success {
+  background-color: rgba(92, 122, 74, 0.15);
+  color: var(--color-swamp-green);
+}
+
+.form-message--error {
+  background-color: rgba(217, 72, 28, 0.1);
+  color: var(--color-ember-dark);
+}
+
 .contact-form {
   display: flex;
   flex-direction: column;

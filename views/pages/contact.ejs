@@ -15,18 +15,30 @@
 
   <section class="content">
     <div class="container">
+      <% if (submitted) { %>
+        <p class="form-message form-message--success">Thanks for reaching out! We'll get back to you soon.</p>
+      <% } %>
+      <% if (error) { %>
+        <p class="form-message form-message--error"><%= error %></p>
+      <% } %>
+
       <form class="contact-form" method="POST" action="/contact">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="name" value="<%= values.name || '' %>" maxlength="255" required>
 
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" required>
+        <input type="email" id="email" name="email" value="<%= values.email || '' %>" maxlength="255" required>
 
         <label for="phone">Phone (optional)</label>
-        <input type="tel" id="phone" name="phone">
+        <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>" maxlength="50">
 
         <label for="message">Message</label>
-        <textarea id="message" name="message" rows="6" required></textarea>
+        <textarea id="message" name="message" rows="6" required><%= values.message || '' %></textarea>
+
+        <div class="visually-hidden" aria-hidden="true">
+          <label for="company">Company</label>
+          <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+        </div>
 
         <button type="submit" class="btn btn--primary">Send Message</button>
       </form>

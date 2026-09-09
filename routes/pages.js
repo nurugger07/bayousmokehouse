@@ -19,8 +19,4 @@ router.get('/menu', (req, res) => {
   res.render('pages/menu', { menuSections });
 });
 
-router.get('/contact', (req, res) => {
-  res.render('pages/contact');
-});
-
 module.exports = router;
