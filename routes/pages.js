@@ -13,10 +13,6 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.get('/catering', (req, res) => {
-  res.render('pages/catering');
-});
-
 router.get('/about', (req, res) => {
   res.render('pages/about');
 });

@@ -20,6 +20,17 @@
         <strong>Submitted:</strong> <%= new Date(message.submitted_at).toLocaleString() %><br>
         <strong>Status:</strong> <%= message.status %>
       </p>
+
+      <% if (message.category === 'catering') { %>
+        <p>
+          <strong>Event Type:</strong> <%= eventTypeLabels[message.event_type] || message.event_type %><br>
+          <strong>Event Date:</strong> <%= new Date(message.event_date).toLocaleDateString('en-US', { timeZone: 'UTC' }) %><br>
+          <strong>Time:</strong> <%= message.start_time %><% if (message.end_time) { %> &ndash; <%= message.end_time %><% } %><br>
+          <strong>Location:</strong> <%= message.location %><br>
+          <strong>Guest Count:</strong> <%= message.guest_count %>
+        </p>
+      <% } %>
+
       <p><%= message.message %></p>
 
       <div class="admin-actions">
@@ -56,7 +67,7 @@
       </div>
 
       <form class="contact-form" method="POST" action="/admin/messages/<%= message.id %>/notes">
-        <label for="note">Add a Note</label>
+        <label for="note">Add a Note <span class="required-mark" aria-hidden="true">*</span></label>
         <textarea id="note" name="note" rows="3" required></textarea>
         <button type="submit" class="btn btn--small btn--primary">Add Note</button>
       </form>

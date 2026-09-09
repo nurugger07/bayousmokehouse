@@ -5,6 +5,7 @@ const pgSession = require('connect-pg-simple')(session);
 const { pool } = require('./config/db');
 const pagesRouter = require('./routes/pages');
 const contactRouter = require('./routes/contact');
+const cateringRouter = require('./routes/catering');
 const adminAuthRouter = require('./routes/adminAuth');
 const adminRouter = require('./routes/admin');
 
@@ -42,6 +43,7 @@ app.use(
 app.use('/admin', adminAuthRouter);
 app.use('/admin', adminRouter);
 app.use('/', contactRouter);
+app.use('/', cateringRouter);
 app.use('/', pagesRouter);
 
 app.use((req, res) => {

@@ -14,7 +14,7 @@
         <p class="form-message form-message--error"><%= error %></p>
       <% } %>
       <form class="contact-form" method="POST" action="/admin/login">
-        <label for="password">Password</label>
+        <label for="password">Password <span class="required-mark" aria-hidden="true">*</span></label>
         <input type="password" id="password" name="password" required autofocus>
         <button type="submit" class="btn btn--primary">Log In</button>
       </form>

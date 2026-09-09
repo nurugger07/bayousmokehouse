@@ -1,15 +1,39 @@
 const { pool } = require('../config/db');
 
-async function createMessage({ name, email, phone, message, category }) {
+async function createMessage({
+  name,
+  email,
+  phone,
+  message,
+  category,
+  eventType,
+  eventDate,
+  startTime,
+  endTime,
+  location,
+  guestCount,
+}) {
   // Column list is built from fixed, hardcoded names only (never from
   // user input) — safe to interpolate; values stay fully parameterized.
   const columns = ['name', 'email', 'phone', 'message'];
   const values = [name, email, phone || null, message];
 
-  if (category) {
-    columns.push('category');
-    values.push(category);
-  }
+  const optional = {
+    category,
+    event_type: eventType,
+    event_date: eventDate,
+    start_time: startTime,
+    end_time: endTime,
+    location,
+    guest_count: guestCount,
+  };
+
+  Object.entries(optional).forEach(([column, value]) => {
+    if (value !== undefined && value !== null) {
+      columns.push(column);
+      values.push(value);
+    }
+  });
 
   const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 

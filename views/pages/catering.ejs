@@ -7,18 +7,116 @@
 <%- include('../partials/nav') %>
 
 <main>
-  <section class="page-header">
+  <section class="hero hero--photo hero--catering">
     <div class="container">
-      <h1>Catering</h1>
+      <h1>Catering &amp; Events</h1>
     </div>
   </section>
 
   <section class="content">
     <div class="container">
-      <img src="/images/food/loaded-blue-bayou-chips.jpg" alt="Loaded Blue Bayou Chips, a Bayou Smokehouse catering favorite" class="content-image">
-      <p>Want Bayou Smokehouse at your next event? We bring the smoker, the sides, and the Southern hospitality straight to you &mdash; parties, breweries, weddings, and everything in between.</p>
-      <p>Reach out and tell us what you're planning. We'll help you put together something memorable.</p>
-      <a href="/contact" class="btn btn--primary">Ask About Catering</a>
+      <div class="lede">
+        <h2 class="text-center">Planning a Party or Special Event?</h2>
+        <p>Let Bayou Smokehouse handle the food so you can focus on celebrating. We serve up bold Cajun flavors and Southern comfort classics that are fast, satisfying, and perfect for feeding a crowd. From backyard graduations to corporate gatherings, we make catering simple, stress-free, and delicious.</p>
+      </div>
+
+      <h2 class="text-center">How It Works</h2>
+      <div class="steps">
+        <div class="steps__step">
+          <span class="steps__number">1</span>
+          <p>Fill out the catering inquiry form</p>
+        </div>
+        <div class="steps__step">
+          <span class="steps__number">2</span>
+          <p>We'll follow up within 24&ndash;48 hours with availability and pricing</p>
+        </div>
+        <div class="steps__step">
+          <span class="steps__number">3</span>
+          <p>Final details are confirmed before your event so everything runs smoothly</p>
+        </div>
+      </div>
+
+      <h2>Catering Request Form</h2>
+
+      <div class="form-columns">
+        <% if (submitted) { %>
+          <p class="form-message form-message--success">Thanks for the request! We'll follow up within 24&ndash;48 hours with availability and pricing.</p>
+        <% } %>
+        <% if (error) { %>
+          <p class="form-message form-message--error"><%= error %></p>
+        <% } %>
+
+        <form class="contact-form" method="POST" action="/catering">
+          <p class="form-required-note"><span class="required-mark" aria-hidden="true">*</span> Required field</p>
+
+          <div class="contact-form__row">
+            <div>
+              <label for="name">Name <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="text" id="name" name="name" value="<%= values.name || '' %>" maxlength="255" required>
+            </div>
+            <div>
+              <label for="email">Email <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="email" id="email" name="email" value="<%= values.email || '' %>" maxlength="255" required>
+            </div>
+          </div>
+
+          <div class="contact-form__row">
+            <div>
+              <label for="phone">Phone <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="tel" id="phone" name="phone" value="<%= values.phone || '' %>" maxlength="50" required>
+            </div>
+            <div>
+              <label for="guestCount">Estimated Guest Count <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="number" id="guestCount" name="guestCount" min="1" value="<%= values.guestCount || '' %>" required>
+            </div>
+          </div>
+
+          <div class="contact-form__row">
+            <div>
+              <label for="eventType">Event Type <span class="required-mark" aria-hidden="true">*</span></label>
+              <select id="eventType" name="eventType" required>
+                <option value="" disabled <%= !values.eventType ? 'selected' : '' %>>Choose one</option>
+                <% Object.keys(eventTypes).forEach(function(key) { %>
+                  <option value="<%= key %>" <%= values.eventType === key ? 'selected' : '' %>><%= eventTypes[key] %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div>
+              <label for="eventDate">Event Date <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="date" id="eventDate" name="eventDate" value="<%= values.eventDate || '' %>" required>
+            </div>
+          </div>
+
+          <div class="contact-form__row">
+            <div>
+              <label for="startTime">Start Time <span class="required-mark" aria-hidden="true">*</span></label>
+              <input type="time" id="startTime" name="startTime" value="<%= values.startTime || '' %>" required>
+            </div>
+            <div>
+              <label for="endTime">End Time (optional)</label>
+              <input type="time" id="endTime" name="endTime" value="<%= values.endTime || '' %>">
+            </div>
+          </div>
+
+          <label for="location">Event Location <span class="required-mark" aria-hidden="true">*</span></label>
+          <input type="text" id="location" name="location" value="<%= values.location || '' %>" placeholder="Address or venue name" required>
+
+          <label for="message">Tell Us About Your Event <span class="required-mark" aria-hidden="true">*</span></label>
+          <textarea id="message" name="message" rows="5" required><%= values.message || '' %></textarea>
+
+          <div class="visually-hidden" aria-hidden="true">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off">
+          </div>
+
+          <button type="submit" class="btn btn--primary">Send Request</button>
+        </form>
+
+        <aside class="form-columns__note">
+          <p><strong>Please note:</strong> this form doesn't guarantee a booking. We'll follow up within 24&ndash;48 hours to check availability and go over pricing.</p>
+          <p>Prefer to talk it through first? Reach out on <a href="/contact">our contact page</a> and we'll get back to you.</p>
+        </aside>
+      </div>
     </div>
   </section>
 </main>

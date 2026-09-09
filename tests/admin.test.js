@@ -163,6 +163,61 @@ describe('admin message management', () => {
   });
 });
 
+describe('admin catering request review', () => {
+  it('filters messages by the catering category', async () => {
+    await createMessage({
+      name: 'Jane',
+      email: 'jane@example.com',
+      message: 'Need catering for a wedding.',
+      category: 'catering',
+      eventType: 'wedding',
+      eventDate: '2026-08-01',
+      startTime: '17:00',
+      location: '456 Oak Ave, Loveland, CO',
+      guestCount: 120,
+    });
+    await createMessage({ name: 'Bob', email: 'bob@example.com', message: 'hi', category: 'general_inquiry' });
+    const agent = await loggedInAgent();
+
+    const cateringList = await agent.get('/admin/messages?category=catering');
+
+    expect(cateringList.text).toContain('jane@example.com');
+    expect(cateringList.text).not.toContain('bob@example.com');
+  });
+
+  it('shows the catering event details on the message detail page', async () => {
+    const message = await createMessage({
+      name: 'Jane',
+      email: 'jane@example.com',
+      message: 'Need catering for a wedding.',
+      category: 'catering',
+      eventType: 'wedding',
+      eventDate: '2026-08-01',
+      startTime: '17:00',
+      endTime: '21:00',
+      location: '456 Oak Ave, Loveland, CO',
+      guestCount: 120,
+    });
+    const agent = await loggedInAgent();
+
+    const res = await agent.get(`/admin/messages/${message.id}`);
+
+    expect(res.text).toContain('Catering Request');
+    expect(res.text).toContain('Wedding');
+    expect(res.text).toContain('456 Oak Ave, Loveland, CO');
+    expect(res.text).toContain('120');
+  });
+
+  it('does not show catering event details for a non-catering message', async () => {
+    const message = await createMessage({ name: 'Bob', email: 'bob@example.com', message: 'hi' });
+    const agent = await loggedInAgent();
+
+    const res = await agent.get(`/admin/messages/${message.id}`);
+
+    expect(res.text).not.toContain('Guest Count');
+  });
+});
+
 describe('message notes', () => {
   it('adds a note and shows it on the detail page', async () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });

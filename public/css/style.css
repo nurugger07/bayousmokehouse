@@ -25,9 +25,10 @@
      9. Forms
     10. Header & Nav
     11. Hero
-    12. Page Sections (page-header / content / intro)
-    13. Schedule
-    14. Footer
+    12. Event Marquee
+    13. Page Sections (page-header / content / intro)
+    14. Schedule
+    15. Footer
    ============================================================= */
 
 /* ===== 1. Color Palette ===== */
@@ -175,11 +176,15 @@ body {
   line-height: var(--line-height-base);
   color: var(--color-text);
   background-color: var(--color-bg);
+  background-image: url('/images/site/website-background-tile.jpg');
+  background-repeat: repeat;
+  background-blend-mode: multiply;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
+  font-weight: normal;
   line-height: var(--line-height-tight);
   color: var(--color-wood-dark);
   letter-spacing: 0.01em;
@@ -474,6 +479,7 @@ main {
 }
 
 .contact-form input,
+.contact-form select,
 .contact-form textarea {
   width: 100%;
   padding: var(--space-3);
@@ -482,10 +488,12 @@ main {
   border: 2px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: var(--fs-base);
+  font-family: inherit;
   transition: border-color var(--transition-fast);
 }
 
 .contact-form input:focus,
+.contact-form select:focus,
 .contact-form textarea:focus {
   border-color: var(--color-ember);
 }
@@ -493,6 +501,14 @@ main {
 .contact-form textarea {
   resize: vertical;
   min-height: 8rem;
+}
+
+/* Two (or three) fields sharing one row, e.g. event date + start/end
+   time — collapses to a single column on narrow screens. */
+.contact-form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-4);
 }
 
 .contact-form__categories {
@@ -534,6 +550,20 @@ main {
 .contact-form button {
   align-self: flex-start;
   margin-top: var(--space-2);
+}
+
+/* Required-field marker — used next to any label (or fieldset legend)
+   whose input has the `required` attribute. Kept consistent site-wide
+   rather than styled per-form. */
+.required-mark {
+  color: var(--color-ember);
+  margin-left: 0.2em;
+}
+
+.form-required-note {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-4);
 }
 
 /* Admin message list/detail action buttons */
@@ -707,26 +737,68 @@ main {
 }
 
 /* Full-bleed photo hero — one large image instead of a flat color
-   block, with a dark gradient overlay so text stays legible. */
+   block, with a dark gradient overlay so text stays legible.
+   --hero-image is overridden per page via a modifier class below;
+   it defaults to the main brand hero shot. Same height on every
+   page so the site reads as one consistent layout, not a home
+   page with bolted-on interior pages. */
 .hero--photo {
+  --hero-image: url('/images/site/hero-image-main.jpg');
+  --divider-color: var(--color-parchment);
+  position: relative;
   background-image:
     linear-gradient(180deg, rgba(30, 23, 18, 0.55), rgba(30, 23, 18, 0.75)),
-    url('/images/site/website-main.jpg');
+    var(--hero-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 60vh;
+  min-height: 46vh;
   display: flex;
   align-items: center;
 }
 
+/* Torn-paper seam where the hero photo meets the section below —
+   filled with whatever color that next section is, so the tear
+   reads as paper ripped away to reveal the page underneath. */
+.hero--photo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 34px;
+  background-color: var(--divider-color);
+  clip-path: polygon(
+    0% 100%, 0% 55%, 4% 20%, 8% 48%, 12% 10%, 16% 42%, 20% 15%, 24% 50%,
+    28% 8%, 32% 38%, 36% 18%, 40% 52%, 44% 5%, 48% 35%, 52% 55%, 56% 22%,
+    60% 48%, 64% 12%, 68% 40%, 72% 18%, 76% 50%, 80% 8%, 84% 45%, 88% 15%,
+    92% 55%, 96% 20%, 100% 45%, 100% 100%
+  );
+}
+
+.hero--home {
+  --divider-color: var(--color-charcoal);
+}
+
+.hero--menu {
+  --hero-image: url('/images/site/menu-image-main.jpg');
+}
+
+.hero--catering {
+  --hero-image: url('/images/site/catering-image-main.jpg');
+}
+
 .hero--photo .container {
+  position: relative;
+  z-index: 1;
   width: 100%;
 }
 
 .hero h1 {
   color: var(--color-cream);
-  font-size: var(--fs-2xl);
+  font-size: clamp(2.75rem, 7.5vw, 5.5rem);
+  line-height: 1.05;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .hero__subtitle {
@@ -736,13 +808,71 @@ main {
   color: var(--color-text-inverse-muted);
 }
 
-@media (min-width: 768px) {
-  .hero h1 {
-    font-size: var(--fs-3xl);
+/* ===== 12. Event Marquee ===== */
+/* Continuous scrolling banner of event types, home page only —
+   sits directly under the hero's torn edge. The track's content is
+   duplicated once in the markup and animated -50% for a seamless
+   loop; prefers-reduced-motion turns the scroll off entirely. */
+.marquee {
+  background-color: var(--color-ember);
+  overflow: hidden;
+  padding-block: var(--space-3);
+}
+
+.marquee__track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-scroll 32s linear infinite;
+}
+
+.marquee__group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.marquee__item {
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.03em;
+  color: var(--color-parchment);
+  text-decoration: none;
+}
+
+.marquee__item--link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.marquee__item--link:hover,
+.marquee__item--link:focus-visible {
+  color: var(--color-cream);
+}
+
+.marquee__sep {
+  font-size: var(--fs-sm);
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 
-/* ===== 12. Page Sections ===== */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track {
+    animation: none;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===== 13. Page Sections ===== */
 /* Shared wrapper used for interior pages (menu, about, catering,
    contact, 404) plus the home page's intro block. */
 .page-header {
@@ -764,6 +894,19 @@ main {
   margin-top: 0;
 }
 
+/* Larger, centered intro copy directly under a page's hero image. */
+.lede {
+  max-width: 42rem;
+  margin-inline: auto;
+  margin-block: var(--space-7);
+  text-align: center;
+  font-size: var(--fs-md);
+}
+
+.lede p {
+  margin-block: var(--space-4);
+}
+
 .content-image {
   width: 100%;
   max-width: 640px;
@@ -778,6 +921,9 @@ main {
 
 .intro {
   background-color: var(--color-bg-alt);
+  background-image: url('/images/site/website-background-tile.jpg');
+  background-repeat: repeat;
+  background-blend-mode: multiply;
   padding-block: var(--space-7);
   text-align: center;
 }
@@ -793,7 +939,71 @@ main {
   margin-top: 0;
 }
 
-/* ===== 13. Schedule ===== */
+/* Numbered step columns (e.g. catering's "How It Works") — stacks to
+   one column on narrow screens. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-6);
+  margin-block: var(--space-6);
+}
+
+.steps__step {
+  text-align: center;
+}
+
+.steps__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background-color: var(--color-ember);
+  color: var(--color-parchment);
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  margin-bottom: var(--space-3);
+}
+
+.steps__step p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Request form paired with a supporting note off to the side, in the
+   style of Kogi's catering request layout — stacks on narrow screens. */
+.form-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-7);
+  align-items: start;
+  margin-top: var(--space-5);
+}
+
+.form-columns .contact-form {
+  margin-top: 0;
+  max-width: none;
+}
+
+.form-columns__note {
+  background-color: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.form-columns__note p:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 767px) {
+  .form-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== 14. Schedule ===== */
 /* Weekly schedule — clean, scannable day rows in Bayou's rustic
    palette (layout inspired by simple day-by-day schedule lists,
    restyled entirely with our own textures/colors). */
@@ -876,10 +1086,8 @@ main {
 .schedule-day:not(details),
 .schedule-day__summary {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  flex-direction: column;
+  gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
 }
 
@@ -890,6 +1098,14 @@ main {
 
 .schedule-day__summary::-webkit-details-marker {
   display: none;
+}
+
+.schedule-day__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
 }
 
 .schedule-day__toggle {
@@ -991,7 +1207,7 @@ main {
   }
 }
 
-/* ===== 14. Footer ===== */
+/* ===== 15. Footer ===== */
 .site-footer {
   background-color: var(--color-wood-dark);
   color: var(--color-text-inverse-muted);

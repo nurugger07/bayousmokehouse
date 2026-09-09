@@ -15,11 +15,21 @@ const router = express.Router();
 router.use(requireAdminAuth);
 
 const VALID_STATUSES = ['unread', 'read', 'archived', 'deleted'];
-const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry'];
+const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'catering'];
 const CATEGORY_LABELS = {
   private_event: 'Private Event',
   brewery_event: 'Brewery Event',
   general_inquiry: 'Comments / Questions',
+  catering: 'Catering Request',
+};
+const EVENT_TYPE_LABELS = {
+  backyard_party: 'Backyard Party',
+  wedding: 'Wedding',
+  birthday: 'Birthday',
+  graduation: 'Graduation',
+  corporate_event: 'Corporate Event',
+  brewery_festival: 'Brewery / Festival',
+  other: 'Other',
 };
 
 function backTo(req, res) {
@@ -51,7 +61,12 @@ router.get('/messages/:id', async (req, res, next) => {
     }
 
     const notes = await listNotesForMessage(message.id);
-    res.render('admin/message-detail', { message, notes, categoryLabels: CATEGORY_LABELS });
+    res.render('admin/message-detail', {
+      message,
+      notes,
+      categoryLabels: CATEGORY_LABELS,
+      eventTypeLabels: EVENT_TYPE_LABELS,
+    });
   } catch (err) {
     next(err);
   }

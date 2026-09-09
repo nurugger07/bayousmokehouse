@@ -60,6 +60,57 @@ describe('createMessage', () => {
     const message = await createMessage({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
     expect(message.category).toBe('general_inquiry');
   });
+
+  it('stores catering-specific structured fields when given', async () => {
+    const message = await createMessage({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      phone: '555-123-4567',
+      message: 'Looking for pulled pork and sides for a graduation party.',
+      category: 'catering',
+      eventType: 'graduation',
+      eventDate: '2026-06-14',
+      startTime: '12:00',
+      endTime: '16:00',
+      location: '123 Main St, Fort Collins, CO',
+      guestCount: 75,
+    });
+
+    expect(message.category).toBe('catering');
+    expect(message.event_type).toBe('graduation');
+    expect(new Date(message.event_date).toISOString().slice(0, 10)).toBe('2026-06-14');
+    expect(message.start_time).toBe('12:00:00');
+    expect(message.end_time).toBe('16:00:00');
+    expect(message.location).toBe('123 Main St, Fort Collins, CO');
+    expect(message.guest_count).toBe(75);
+  });
+
+  it('leaves catering fields null for a non-catering message', async () => {
+    const message = await createMessage({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi' });
+
+    expect(message.event_type).toBeNull();
+    expect(message.event_date).toBeNull();
+    expect(message.start_time).toBeNull();
+    expect(message.end_time).toBeNull();
+    expect(message.location).toBeNull();
+    expect(message.guest_count).toBeNull();
+  });
+
+  it('allows end time to be omitted for a catering request', async () => {
+    const message = await createMessage({
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      message: 'Need a truck for a wedding.',
+      category: 'catering',
+      eventType: 'wedding',
+      eventDate: '2026-08-01',
+      startTime: '17:00',
+      location: '456 Oak Ave, Loveland, CO',
+      guestCount: 120,
+    });
+
+    expect(message.end_time).toBeNull();
+  });
 });
 
 describe('listMessages', () => {
