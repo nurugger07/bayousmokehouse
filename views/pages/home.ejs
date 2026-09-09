@@ -1,12 +1,68 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bayou Smokehouse</title>
+<%- include('../partials/head', { title: 'Home' }) %>
 </head>
 <body>
-  <h1>Bayou Smokehouse</h1>
-  <p>Southern Treats &amp; Cajun Eats — the new site is on its way.</p>
+<%- include('../partials/nav') %>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <h1>Southern Treats &amp; Cajun Eats</h1>
+      <p class="hero__subtitle">Bringing the food and culture of the South to Northern Colorado, one smoky, messy, delicious plate at a time.</p>
+      <a href="/menu" class="btn btn--primary">See the Menu</a>
+      <img src="/images/truck/truck-exterior-front.png" alt="The Bayou Smokehouse food truck" class="hero__image">
+    </div>
+  </section>
+
+  <section id="schedule" class="schedule">
+    <div class="container">
+      <h2>This Week's Schedule</h2>
+      <p class="schedule__note">Live schedule coming soon — check back here for where to find the truck this week.</p>
+      <div class="schedule__week">
+        <div class="schedule-day">
+          <span class="schedule-day__name">Monday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Tuesday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Wednesday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Thursday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Friday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Saturday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+        <div class="schedule-day">
+          <span class="schedule-day__name">Sunday</span>
+          <span class="schedule-day__status schedule-day__status--off">Smoker's cold today</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="intro">
+    <div class="container">
+      <h2>We're Southern.</h2>
+      <img src="/images/food/jambalaya-plate.jpg" alt="A plate of Bayou Smokehouse jambalaya" class="content-image">
+      <p>Bayou Smokehouse is a family-owned Northern Colorado food truck bringing the food, culture, and hospitality of the American South to Colorado. Low-Country seafood, smoked meats, Cajun-inspired comfort food &mdash; the kind of food where getting a little messy is part of the experience.</p>
+      <a href="/about" class="btn btn--secondary">Our Story</a>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
 </body>
 </html>

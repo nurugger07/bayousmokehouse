@@ -1,0 +1,861 @@
+/* =============================================================
+   BAYOU SMOKEHOUSE — FOUNDATIONAL STYLESHEET
+   Plain hand-written CSS. No preprocessor, no framework, no build
+   step. Written for a server-rendered Express/EJS site.
+
+   Brand: Southern Smokehouse meets Colorado. Weathered wood,
+   smoke, fire, cast iron, vintage Southern signage. Warm, rustic,
+   smoky, fun, handmade — never corporate or overly polished.
+
+   Fonts required in <head> (see views/partials/head.ejs):
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Bevan&family=Caveat:wght@400;600;700&family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+
+   Table of contents:
+     1. Color Palette
+     2. Typography Variables & Spacing/Sizing Scale
+     3. Reset
+     4. Base Typography
+     5. Layout & Container
+     6. Utilities
+     7. Buttons
+     8. Cards
+     9. Forms
+    10. Header & Nav
+    11. Hero
+    12. Page Sections (page-header / content / intro)
+    13. Schedule
+    14. Footer
+   ============================================================= */
+
+/* ===== 1. Color Palette ===== */
+:root {
+  /* --- Wood & neutrals --- */
+  --color-cream: #EDD69D;         /* brand cream/tan — signature color */
+  --color-parchment: #FBF3E3;     /* warm off-white, page background / text-on-dark */
+  --color-parchment-dim: #F1E4C8; /* slightly deeper parchment for alt sections/stripes */
+  --color-wood-light: #8B5E3C;    /* weathered lighter wood — borders, secondary accents */
+  --color-wood: #6B4423;          /* medium wood brown — secondary buttons, nav hover */
+  --color-wood-dark: #3E2517;     /* dark aged wood / espresso brown — deep backgrounds */
+  --color-charcoal: #1E1712;      /* near-black warm charcoal — header/footer/dark sections */
+  --color-charcoal-soft: #2B2119; /* lighter charcoal — cards/elevated panels on dark bg */
+
+  /* --- Fire & accent --- */
+  --color-ember: #D9481C;         /* ember orange-red — primary CTA / links / highlights */
+  --color-ember-dark: #A8360F;    /* deep ember — hover/active states */
+  --color-fire-gold: #E8A33D;     /* warm gold/mustard — secondary accent, badges */
+  --color-cast-iron: #4A4744;     /* muted cast-iron gray — dividers, muted text on light bg */
+
+  /* --- Status accents --- */
+  --color-swamp-green: #5C7A4A;   /* muted bayou green — "open/on" indicator */
+  --color-off: #8A8078;           /* warm muted gray — "off/closed" state */
+
+  /* --- Semantic text/background aliases --- */
+  --color-bg: var(--color-parchment);
+  --color-bg-alt: var(--color-cream);
+  --color-bg-dark: var(--color-charcoal);
+  --color-text: var(--color-charcoal);
+  --color-text-muted: var(--color-cast-iron);
+  --color-text-inverse: var(--color-parchment);
+  --color-text-inverse-muted: var(--color-cream);
+  --color-border: rgba(30, 23, 18, 0.15);
+  --color-border-dark: rgba(251, 243, 227, 0.15);
+  --color-focus-ring: var(--color-ember);
+}
+
+/* ===== 2. Typography Variables & Spacing/Sizing Scale ===== */
+:root {
+  /* Fonts — see <link> tags in file header comment */
+  --font-heading: 'Bevan', 'Georgia', serif;        /* bold slab-serif — signage feel */
+  --font-body: 'Lato', -apple-system, 'Helvetica Neue', Arial, sans-serif; /* readable workhorse */
+  --font-script: 'Caveat', cursive;                 /* handwritten accent — use sparingly */
+
+  /* Type scale */
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+  --line-height-base: 1.6;
+  --line-height-tight: 1.2;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Shape / effects */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 2px 6px rgba(30, 23, 18, 0.18);
+  --shadow-md: 0 6px 18px rgba(30, 23, 18, 0.28);
+  --shadow-inset: inset 0 1px 3px rgba(30, 23, 18, 0.25);
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+
+  /* Layout */
+  --container-width: 1200px;
+  --container-padding: var(--space-4);
+}
+
+/* Breakpoints used throughout this file (mobile-first, min-width).
+   CSS custom properties can't be referenced inside @media conditions,
+   so these values are written out at each usage site — keep them
+   consistent with the list below if you add new rules.
+     sm: 480px  — large phones
+     md: 768px  — tablets
+     lg: 1024px — small desktops
+     xl: 1280px — large desktops                                    */
+
+/* ===== 3. Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+p, figure, blockquote, dl, dd {
+  margin: 0;
+}
+
+ul[class], ol[class] {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img, picture, svg, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input, button, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* ===== 4. Base Typography ===== */
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: var(--line-height-tight);
+  color: var(--color-wood-dark);
+  letter-spacing: 0.01em;
+}
+
+h1 { font-size: var(--fs-3xl); }
+h2 { font-size: var(--fs-2xl); margin-top: var(--space-6); }
+h3 { font-size: var(--fs-xl); margin-top: var(--space-5); }
+h4 { font-size: var(--fs-lg); }
+
+h1 + p, h2 + p, h3 + p {
+  margin-top: var(--space-3);
+}
+
+p + p,
+p + h2,
+p + h3 {
+  margin-top: var(--space-4);
+}
+
+p {
+  max-width: 68ch;
+}
+
+strong { font-weight: 700; }
+
+a {
+  color: var(--color-ember);
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-ember-dark);
+}
+
+/* Consistent, visible focus state everywhere (accessibility) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* A little handmade flourish — use sparingly for notes/callouts */
+.text-script {
+  font-family: var(--font-script);
+  font-size: var(--fs-lg);
+  color: var(--color-ember-dark);
+}
+
+/* ===== 5. Layout & Container ===== */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
+}
+
+main {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --container-padding: var(--space-6);
+  }
+}
+
+/* ===== 6. Utilities ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-center { text-align: center; }
+
+.badge {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background-color: var(--color-fire-gold);
+  color: var(--color-charcoal);
+}
+
+.badge--ember {
+  background-color: var(--color-ember);
+  color: var(--color-parchment);
+}
+
+/* ===== 7. Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), background-color var(--transition-fast),
+    border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-inset);
+}
+
+.btn--primary {
+  background-color: var(--color-ember);
+  color: var(--color-parchment);
+  border-color: var(--color-ember-dark);
+}
+
+.btn--primary:hover {
+  background-color: var(--color-ember-dark);
+  color: var(--color-parchment);
+}
+
+.btn--secondary {
+  background-color: transparent;
+  color: var(--color-wood-dark);
+  border-color: var(--color-wood-dark);
+}
+
+.btn--secondary:hover {
+  background-color: var(--color-wood-dark);
+  color: var(--color-parchment);
+}
+
+.btn--large {
+  padding: var(--space-4) var(--space-7);
+  font-size: var(--fs-lg);
+}
+
+.btn--small {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+}
+
+/* ===== 8. Cards ===== */
+/* Generic reusable card — menu items, catering packages, etc. */
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-parchment);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.card__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background-color: var(--color-wood-light);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+}
+
+.card__title {
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-wood-dark);
+  margin: 0;
+}
+
+.card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.card__description {
+  color: var(--color-text-muted);
+  font-size: var(--fs-base);
+}
+
+.card__price {
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  color: var(--color-ember);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+/* Responsive grid wrapper for multiple cards (menu grid, etc.) */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+
+@media (min-width: 600px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== 9. Forms ===== */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 42rem;
+  margin-top: var(--space-5);
+}
+
+.contact-form label {
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-wood-dark);
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: var(--space-3);
+  margin-top: var(--space-1);
+  background-color: var(--color-parchment);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-base);
+  transition: border-color var(--transition-fast);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: var(--color-ember);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.contact-form button {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+}
+
+/* ===== 10. Header & Nav ===== */
+.site-header {
+  background-color: var(--color-charcoal);
+  background-image:
+    radial-gradient(ellipse at top, rgba(217, 72, 28, 0.12), transparent 60%),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 3px);
+  border-bottom: 4px solid var(--color-ember);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.site-logo {
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-cream);
+  letter-spacing: 0.02em;
+}
+
+.site-logo:hover {
+  color: var(--color-fire-gold);
+}
+
+.site-logo__image {
+  display: block;
+  height: 44px;
+  width: auto;
+}
+
+/* Nav — plain, wrapping row on mobile; no JS required.
+   If a hamburger toggle is added later, wire it to these hooks:
+     <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">
+       <span class="nav-toggle__bar"></span>
+       <span class="nav-toggle__bar"></span>
+       <span class="nav-toggle__bar"></span>
+     </button>
+   Toggling adds/removes `.site-nav--open` on the <nav>, and JS should
+   flip `.nav-toggle--active` + aria-expanded on the button. */
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+}
+
+.site-nav a {
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-parchment);
+  padding: var(--space-2) 0;
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--color-fire-gold);
+  border-bottom-color: var(--color-fire-gold);
+}
+
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 20px;
+  padding: 0;
+}
+
+.nav-toggle__bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-parchment);
+  border-radius: 2px;
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.nav-toggle--active .nav-toggle__bar:nth-child(1) {
+  transform: translateY(8.5px) rotate(45deg);
+}
+
+.nav-toggle--active .nav-toggle__bar:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle--active .nav-toggle__bar:nth-child(3) {
+  transform: translateY(-8.5px) rotate(-45deg);
+}
+
+@media (max-width: 767px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .site-nav {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0;
+    background-color: var(--color-charcoal-soft);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-4);
+    margin-top: var(--space-3);
+  }
+
+  .site-nav a {
+    width: 100%;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border-dark);
+  }
+
+  .site-nav a:last-child {
+    border-bottom: none;
+  }
+
+  .site-nav--open {
+    display: flex;
+  }
+}
+
+/* ===== 11. Hero ===== */
+.hero {
+  background-color: var(--color-wood-dark);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(232, 163, 61, 0.18), transparent 55%),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0px, rgba(0, 0, 0, 0.06) 1px, transparent 1px, transparent 4px);
+  color: var(--color-parchment);
+  padding-block: var(--space-8);
+  text-align: center;
+}
+
+.hero h1 {
+  color: var(--color-cream);
+  font-size: var(--fs-2xl);
+}
+
+.hero__subtitle {
+  max-width: 48ch;
+  margin: var(--space-4) auto var(--space-6);
+  font-size: var(--fs-md);
+  color: var(--color-text-inverse-muted);
+}
+
+.hero__image {
+  max-width: 480px;
+  width: 100%;
+  margin: var(--space-6) auto 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: var(--fs-3xl);
+  }
+}
+
+/* ===== 12. Page Sections ===== */
+/* Shared wrapper used for interior pages (menu, about, catering,
+   contact, 404) plus the home page's intro block. */
+.page-header {
+  background-color: var(--color-wood);
+  color: var(--color-parchment);
+  padding-block: var(--space-6);
+}
+
+.page-header h1 {
+  color: var(--color-cream);
+  margin: 0;
+}
+
+.content {
+  padding-block: var(--space-7);
+}
+
+.content h2:first-child {
+  margin-top: 0;
+}
+
+.content-image {
+  width: 100%;
+  max-width: 640px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-block: var(--space-5);
+}
+
+.content-image--menu {
+  max-width: 800px;
+}
+
+.intro {
+  background-color: var(--color-bg-alt);
+  padding-block: var(--space-7);
+  text-align: center;
+}
+
+.intro .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.intro h2 {
+  margin-top: 0;
+}
+
+/* ===== 13. Schedule ===== */
+/* Weekly schedule — clean, scannable day rows in Bayou's rustic
+   palette (layout inspired by simple day-by-day schedule lists,
+   restyled entirely with our own textures/colors). */
+.schedule {
+  background-color: var(--color-charcoal);
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 3px);
+  color: var(--color-parchment);
+  padding-block: var(--space-7);
+}
+
+.schedule h2 {
+  color: var(--color-cream);
+}
+
+.schedule__note {
+  color: var(--color-text-inverse-muted);
+  margin-top: var(--space-2);
+  max-width: 60ch;
+}
+
+.schedule__week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+/* One day, one row. */
+.schedule-day {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  background-color: var(--color-charcoal-soft);
+  border-left: 4px solid var(--color-ember);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.schedule-day__name {
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  color: var(--color-cream);
+  min-width: 8ch;
+}
+
+.schedule-day__date {
+  font-size: var(--fs-sm);
+  color: var(--color-text-inverse-muted);
+}
+
+/* Wraps location/time details when present. */
+.schedule-day__details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  color: var(--color-parchment);
+}
+
+.schedule-day__location {
+  font-weight: 700;
+}
+
+.schedule-day__time {
+  color: var(--color-text-inverse-muted);
+  font-size: var(--fs-sm);
+}
+
+.schedule-day__status {
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-swamp-green);
+}
+
+/* "Off" / no-event state — dims the row and mutes the border/status
+   so it reads at a glance as closed without disappearing entirely. */
+.schedule-day__status--off {
+  color: var(--color-off);
+  font-family: var(--font-body);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.schedule-day:has(.schedule-day__status--off) {
+  border-left-color: var(--color-off);
+  opacity: 0.7;
+}
+
+/* Fallback modifier for browsers without :has(), or to force the
+   state from a server-rendered class instead of a child selector. */
+.schedule-day--off {
+  border-left-color: var(--color-off);
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .schedule-day {
+    padding: var(--space-4) var(--space-6);
+  }
+
+  .schedule-day__name {
+    min-width: 10ch;
+  }
+}
+
+/* ===== 14. Footer ===== */
+.site-footer {
+  background-color: var(--color-wood-dark);
+  color: var(--color-text-inverse-muted);
+  padding-block: var(--space-6);
+  text-align: center;
+  border-top: 4px solid var(--color-ember);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.site-footer p {
+  font-size: var(--fs-sm);
+  margin: 0;
+}
+
+.site-footer p:first-child {
+  font-family: var(--font-heading);
+  font-size: var(--fs-base);
+  color: var(--color-cream);
+}
+
+/* Optional footer nav/social hooks, ready if added later. */
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.footer-nav a:hover {
+  color: var(--color-fire-gold);
+}
+
+.footer-social {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.footer-social__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: var(--color-charcoal-soft);
+  color: var(--color-parchment);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.footer-social__link:hover {
+  background-color: var(--color-ember);
+  color: var(--color-parchment);
+}
