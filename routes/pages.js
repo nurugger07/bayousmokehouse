@@ -1,4 +1,5 @@
 const express = require('express');
+const menuSections = require('../data/menu');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get('/about', (req, res) => {
 });
 
 router.get('/menu', (req, res) => {
-  res.render('pages/menu');
+  res.render('pages/menu', { menuSections });
 });
 
 router.get('/contact', (req, res) => {

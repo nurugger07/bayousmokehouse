@@ -613,7 +613,7 @@ main {
 .hero--photo {
   background-image:
     linear-gradient(180deg, rgba(30, 23, 18, 0.55), rgba(30, 23, 18, 0.75)),
-    url('/images/site/website-main.png');
+    url('/images/site/website-main.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

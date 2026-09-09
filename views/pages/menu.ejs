@@ -15,8 +15,25 @@
 
   <section class="content">
     <div class="container">
-      <img src="/images/promotional/summer-menu.jpg" alt="Bayou Smokehouse summer menu" class="content-image content-image--menu">
-      <p>Our full interactive menu is on its way to this page. In the meantime, here's what's smoking.</p>
+      <% menuSections.forEach(function(section) { %>
+        <h2><%= section.title %></h2>
+        <div class="card-grid">
+          <% section.items.forEach(function(item) { %>
+            <div class="card">
+              <% if (item.image) { %>
+                <img src="<%= item.image %>" alt="<%= item.name %>" class="card__image">
+              <% } %>
+              <div class="card__body">
+                <h3 class="card__title"><%= item.name %></h3>
+                <p class="card__description"><%= item.description %></p>
+                <% if (item.price) { %>
+                  <p class="card__price"><%= item.price %></p>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% }); %>
     </div>
   </section>
 </main>
