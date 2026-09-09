@@ -14,6 +14,12 @@ describe('static pages', () => {
     expect(res.text).toContain('#schedule');
   });
 
+  it('GET / shows the sold-out fallback when there is no schedule data yet', async () => {
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('Sold Out This Week');
+  });
+
   it('GET /catering responds with 200 and renders the catering page', async () => {
     const res = await request(app).get('/catering');
 
