@@ -1,7 +1,20 @@
+jest.mock('../services/googleCalendar');
+
 const request = require('supertest');
 const app = require('../app');
+const { getWeekSchedule } = require('../services/googleCalendar');
+
+const EMPTY_WEEK = { weekStart: 'Sep 7', weekEnd: 'Sep 13', days: [], unavailable: false };
 
 describe('static pages', () => {
+  beforeEach(() => {
+    getWeekSchedule.mockResolvedValue(EMPTY_WEEK);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('GET / responds with 200 and renders the home page with nav', async () => {
     const res = await request(app).get('/');
 
@@ -14,10 +27,57 @@ describe('static pages', () => {
     expect(res.text).toContain('#schedule');
   });
 
-  it('GET / shows the sold-out fallback when there is no schedule data yet', async () => {
+  it('GET / shows the week date range in the schedule heading', async () => {
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('Sep 7');
+    expect(res.text).toContain('Sep 13');
+  });
+
+  it('GET / shows the sold-out fallback when the week has no events', async () => {
     const res = await request(app).get('/');
 
     expect(res.text).toContain('Sold Out This Week');
+  });
+
+  it('GET / shows an unavailable message when the calendar fetch failed with no cache', async () => {
+    getWeekSchedule.mockResolvedValue({ weekStart: 'Sep 7', weekEnd: 'Sep 13', days: [], unavailable: true });
+
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('temporarily unavailable');
+    expect(res.text).not.toContain('Sold Out This Week');
+  });
+
+  it('GET / renders each day that has events, with location and time', async () => {
+    getWeekSchedule.mockResolvedValue({
+      weekStart: 'Sep 7',
+      weekEnd: 'Sep 13',
+      unavailable: false,
+      days: [
+        {
+          dayName: 'Friday',
+          date: '2026-09-11',
+          events: [
+            {
+              name: 'Bayou Smokehouse @ Odd13 Brewing',
+              location: '301 Link Ln, Fort Collins, CO',
+              startTime: '11:00 AM',
+              endTime: '2:00 PM',
+              description: null,
+            },
+          ],
+        },
+      ],
+    });
+
+    const res = await request(app).get('/');
+
+    expect(res.text).toContain('Friday');
+    expect(res.text).toContain('Bayou Smokehouse @ Odd13 Brewing');
+    expect(res.text).toContain('301 Link Ln, Fort Collins, CO');
+    expect(res.text).toContain('11:00 AM');
+    expect(res.text).not.toContain('Sold Out This Week');
   });
 
   it('GET /catering responds with 200 and renders the catering page', async () => {

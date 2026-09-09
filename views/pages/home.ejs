@@ -17,14 +17,32 @@
 
   <section id="schedule" class="schedule">
     <div class="container">
-      <h2>This Week's Schedule</h2>
-      <%
-        // Placeholder until chunk 6 wires up the live Google Calendar feed.
-        // Final version: hide days with no event, show the week's date range
-        // in the heading, and fall back to this message when the whole week
-        // is empty.
-      %>
-      <p class="schedule__note">Sold Out This Week. Come back later for next week's schedule.</p>
+      <h2>This Week's Schedule: <%= schedule.weekStart %> &ndash; <%= schedule.weekEnd %></h2>
+
+      <% if (schedule.unavailable) { %>
+        <p class="schedule__note">Schedule temporarily unavailable &mdash; check back soon.</p>
+      <% } else if (schedule.days.length === 0) { %>
+        <p class="schedule__note">Sold Out This Week. Come back later for next week's schedule.</p>
+      <% } else { %>
+        <div class="schedule__week">
+          <% schedule.days.forEach(function(day) { %>
+            <% day.events.forEach(function(event) { %>
+              <div class="schedule-day">
+                <span class="schedule-day__name"><%= day.dayName %></span>
+                <div class="schedule-day__details">
+                  <span class="schedule-day__location"><%= event.name %></span>
+                  <% if (event.location) { %>
+                    <span class="schedule-day__location"><%= event.location %></span>
+                  <% } %>
+                  <% if (event.startTime) { %>
+                    <span class="schedule-day__time"><%= event.startTime %> &ndash; <%= event.endTime %></span>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          <% }); %>
+        </div>
+      <% } %>
     </div>
   </section>
 

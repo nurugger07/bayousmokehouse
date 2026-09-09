@@ -1,10 +1,16 @@
 const express = require('express');
 const menuSections = require('../data/menu');
+const { getWeekSchedule } = require('../services/googleCalendar');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.render('pages/home');
+router.get('/', async (req, res, next) => {
+  try {
+    const schedule = await getWeekSchedule();
+    res.render('pages/home', { schedule });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/catering', (req, res) => {
