@@ -13,6 +13,7 @@ router.get('/contact', (req, res) => {
 });
 
 const FIELD_LIMITS = { name: 255, email: 255, phone: 50 };
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 router.post('/contact', async (req, res, next) => {
   const { name, email, phone, message, company } = req.body;
@@ -27,6 +28,14 @@ router.post('/contact', async (req, res, next) => {
     return res.status(400).render('pages/contact', {
       submitted: false,
       error: 'Please fill in your name, email, and message.',
+      values: { name, email, phone, message },
+    });
+  }
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return res.status(400).render('pages/contact', {
+      submitted: false,
+      error: 'Please enter a valid email address.',
       values: { name, email, phone, message },
     });
   }

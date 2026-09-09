@@ -66,6 +66,19 @@ describe('POST /contact', () => {
     expect(sendContactNotification).not.toHaveBeenCalled();
   });
 
+  it('rejects a malformed email address without saving', async () => {
+    const res = await request(app)
+      .post('/contact')
+      .type('form')
+      .send({ name: 'Jane Doe', email: 'not-an-email', message: 'hi' });
+
+    expect(res.status).toBe(400);
+
+    const { rows } = await pool.query('SELECT * FROM contact_messages');
+    expect(rows).toHaveLength(0);
+    expect(sendContactNotification).not.toHaveBeenCalled();
+  });
+
   it('silently discards honeypot-triggered spam submissions', async () => {
     const res = await request(app)
       .post('/contact')
