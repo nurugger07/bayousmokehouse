@@ -24,6 +24,9 @@ afterEach(() => {
 
 describe('getWeekSchedule', () => {
   it('returns only days that have at least one event, in Monday-Sunday order', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
+    jest.setSystemTime(new Date('2026-09-09T15:00:00Z'));
+
     const { googleCalendar, mockRequest } = loadService();
     mockRequest.mockResolvedValueOnce({
       data: {
@@ -127,6 +130,9 @@ describe('getWeekSchedule', () => {
   });
 
   it('falls back to the full address as shortLocation when it cannot be confidently parsed', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
+    jest.setSystemTime(new Date('2026-09-09T15:00:00Z'));
+
     const { googleCalendar, mockRequest } = loadService();
     mockRequest.mockResolvedValueOnce({
       data: {
@@ -147,6 +153,9 @@ describe('getWeekSchedule', () => {
   });
 
   it('leaves shortLocation null when there is no location at all', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick'] });
+    jest.setSystemTime(new Date('2026-09-09T15:00:00Z'));
+
     const { googleCalendar, mockRequest } = loadService();
     mockRequest.mockResolvedValueOnce({
       data: {
