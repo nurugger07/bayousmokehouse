@@ -667,6 +667,14 @@ main {
   border-bottom-color: var(--color-fire-gold);
 }
 
+.site-header__actions {
+  grid-area: actions;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -711,6 +719,10 @@ main {
   }
 
   .site-logo {
+    justify-self: center;
+  }
+
+  .site-header__actions {
     justify-self: center;
   }
 
@@ -826,6 +838,26 @@ main {
   margin: var(--space-4) auto var(--space-6);
   font-size: var(--fs-md);
   color: var(--color-text-inverse-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+/* Outlined so it reads against the dark hero photo — the standard
+   .btn--secondary (wood-dark on transparent) is unreadable there. */
+.hero .btn--secondary {
+  color: var(--color-cream);
+  border-color: var(--color-cream);
+}
+
+.hero .btn--secondary:hover {
+  background-color: var(--color-cream);
+  color: var(--color-wood-dark);
 }
 
 /* ===== 12. Event Marquee ===== */
