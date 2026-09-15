@@ -176,3 +176,83 @@ describe('getWeekSchedule', () => {
     expect(schedule.days[0].events[0].mapsUrl).toBeNull();
   });
 });
+
+describe('getEventsForDateRange', () => {
+  it('returns a flat list of events with real Date objects, not the day-grouped/formatted getWeekSchedule shape', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            summary: 'Bayou Smokehouse @ Berthoud Brewery',
+            location: '321 Mountain Ave, Berthoud, CO',
+            start: { dateTime: '2026-08-14T16:00:00-06:00' },
+            end: { dateTime: '2026-08-14T21:00:00-06:00' },
+          },
+        ],
+      },
+    });
+
+    const events = await googleCalendar.getEventsForDateRange(
+      new Date('2026-08-01T00:00:00Z'),
+      new Date('2026-08-31T23:59:59Z')
+    );
+
+    expect(events).toHaveLength(1);
+    expect(events[0].date).toBe('2026-08-14');
+    expect(events[0].summary).toBe('Bayou Smokehouse @ Berthoud Brewery');
+    expect(events[0].location).toBe('321 Mountain Ave, Berthoud, CO');
+    expect(events[0].startTime).toBeInstanceOf(Date);
+    expect(events[0].startTime.toISOString()).toBe('2026-08-14T22:00:00.000Z');
+    expect(events[0].endTime.toISOString()).toBe('2026-08-15T03:00:00.000Z');
+  });
+
+  it('never caches — always makes a fresh request even when called twice in a row', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValue({ data: { items: [] } });
+
+    await googleCalendar.getEventsForDateRange(new Date('2026-08-01'), new Date('2026-08-02'));
+    await googleCalendar.getEventsForDateRange(new Date('2026-08-01'), new Date('2026-08-02'));
+
+    expect(mockRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('handles all-day events using the date field instead of dateTime', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            summary: 'Bayou Smokehouse @ Timnath Festival',
+            start: { date: '2026-08-20' },
+            end: { date: '2026-08-21' },
+          },
+        ],
+      },
+    });
+
+    const events = await googleCalendar.getEventsForDateRange(new Date('2026-08-01'), new Date('2026-08-31'));
+
+    expect(events[0].date).toBe('2026-08-20');
+    expect(events[0].startTime).toBeNull();
+    expect(events[0].endTime).toBeNull();
+  });
+
+  it('defaults a missing summary to "Untitled Event", same as getWeekSchedule', async () => {
+    const { googleCalendar, mockRequest } = loadService();
+    mockRequest.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            start: { dateTime: '2026-08-14T16:00:00-06:00' },
+            end: { dateTime: '2026-08-14T21:00:00-06:00' },
+          },
+        ],
+      },
+    });
+
+    const events = await googleCalendar.getEventsForDateRange(new Date('2026-08-01'), new Date('2026-08-31'));
+
+    expect(events[0].summary).toBe('Untitled Event');
+  });
+});

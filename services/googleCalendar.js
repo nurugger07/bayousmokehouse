@@ -123,6 +123,30 @@ function groupEventsByDay(events, zonedWeekStart, zonedWeekEnd) {
   return days.filter((day) => day.events.length > 0);
 }
 
+// Raw events (not grouped into the day-skeleton getWeekSchedule uses)
+// for an arbitrary date range — a single day for the nightly sales
+// sync, or months for a historical backfill. Always hits the Calendar
+// API fresh; the 15-minute cache above is tuned for the public site's
+// repeated page loads and doesn't apply here.
+async function getEventsForDateRange(startDate, endDate) {
+  const events = await fetchEvents(startDate, endDate);
+
+  return events.map((event) => {
+    const isAllDay = Boolean(event.start.date);
+    const dateKey = isAllDay
+      ? event.start.date
+      : formatInTimeZone(new Date(event.start.dateTime), TIME_ZONE, 'yyyy-MM-dd');
+
+    return {
+      date: dateKey,
+      summary: event.summary || 'Untitled Event',
+      location: event.location || null,
+      startTime: isAllDay ? null : new Date(event.start.dateTime),
+      endTime: isAllDay ? null : new Date(event.end.dateTime),
+    };
+  });
+}
+
 async function getWeekSchedule() {
   const { zonedWeekStart, zonedWeekEnd, weekStart, weekEnd } = getWeekWindow();
   const weekLabels = {
@@ -155,4 +179,4 @@ async function getWeekSchedule() {
   }
 }
 
-module.exports = { getWeekSchedule };
+module.exports = { getWeekSchedule, getEventsForDateRange };
