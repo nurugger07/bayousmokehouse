@@ -12,7 +12,14 @@
       <h1>Messages: <%= status.charAt(0).toUpperCase() + status.slice(1) %></h1>
 
       <nav class="admin-filters">
-        <a href="/admin/messages?status=<%= status %>" class="<%= !category ? 'admin-filters__active' : '' %>">All</a>
+        <a href="/admin/messages?status=unread" class="<%= status === 'unread' ? 'admin-filters__active' : '' %>">Unread</a>
+        <a href="/admin/messages?status=read" class="<%= status === 'read' ? 'admin-filters__active' : '' %>">Read</a>
+        <a href="/admin/messages?status=archived" class="<%= status === 'archived' ? 'admin-filters__active' : '' %>">Archived</a>
+        <a href="/admin/messages?status=deleted" class="<%= status === 'deleted' ? 'admin-filters__active' : '' %>">Deleted</a>
+      </nav>
+
+      <nav class="admin-filters">
+        <a href="/admin/messages?status=<%= status %>" class="<%= !category ? 'admin-filters__active' : '' %>">All Categories</a>
         <% Object.keys(categoryLabels).forEach(function(key) { %>
           <a href="/admin/messages?status=<%= status %>&amp;category=<%= key %>" class="<%= category === key ? 'admin-filters__active' : '' %>"><%= categoryLabels[key] %></a>
         <% }); %>
