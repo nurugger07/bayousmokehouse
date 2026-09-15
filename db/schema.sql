@@ -78,3 +78,64 @@ CREATE TABLE IF NOT EXISTS contact_message_notes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_contact_message_notes_message_id ON contact_message_notes (contact_message_id);
+
+-- Square sales reporting. Square's own Location object is static (one ID
+-- for the whole truck) and has no concept of which physical spot we were
+-- parked at on a given day, so that comes from the Google Calendar events
+-- that already drive the live schedule instead — see services/googleCalendar.js
+-- and services/salesSync.js.
+
+-- Canonical physical locations, matched against calendar event summaries.
+CREATE TABLE IF NOT EXISTS sales_locations (
+    id          SERIAL PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL UNIQUE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- One row per calendar event ("visit") on a date. location_id is NULL
+-- until matched/assigned; location_source records how it got set, and
+-- 'manual' rows are never touched again by the sync job.
+CREATE TABLE IF NOT EXISTS sales_days (
+    id                      SERIAL PRIMARY KEY,
+    sale_date               DATE NOT NULL,
+    location_id             INTEGER REFERENCES sales_locations(id),
+    location_source         VARCHAR(20) NOT NULL DEFAULT 'unmatched'
+                                CHECK (location_source IN ('calendar', 'manual', 'unmatched')),
+    calendar_event_summary  TEXT,
+    event_start_time        TIMESTAMPTZ,
+    event_end_time          TIMESTAMPTZ,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (sale_date, calendar_event_summary)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sales_days_date ON sales_days (sale_date);
+CREATE INDEX IF NOT EXISTS idx_sales_days_location ON sales_days (location_id);
+
+-- One row per Square order, synced nightly (or via one-time backfill).
+-- Money is stored in integer cents throughout, matching how Square
+-- itself represents amounts, to avoid float rounding issues.
+CREATE TABLE IF NOT EXISTS square_orders (
+    id                    SERIAL PRIMARY KEY,
+    square_order_id       VARCHAR(255) NOT NULL UNIQUE,
+    sales_day_id          INTEGER NOT NULL REFERENCES sales_days(id),
+    ordered_at            TIMESTAMPTZ NOT NULL,
+    subtotal_money_cents  INTEGER NOT NULL DEFAULT 0,
+    tax_money_cents       INTEGER NOT NULL DEFAULT 0,
+    tip_money_cents       INTEGER NOT NULL DEFAULT 0,
+    total_money_cents     INTEGER NOT NULL DEFAULT 0,
+    synced_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_square_orders_sales_day ON square_orders (sales_day_id);
+CREATE INDEX IF NOT EXISTS idx_square_orders_ordered_at ON square_orders (ordered_at);
+
+CREATE TABLE IF NOT EXISTS square_order_line_items (
+    id                  SERIAL PRIMARY KEY,
+    square_order_id     INTEGER NOT NULL REFERENCES square_orders(id) ON DELETE CASCADE,
+    name                VARCHAR(255) NOT NULL,
+    quantity            INTEGER NOT NULL,
+    total_money_cents   INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_square_order_line_items_order ON square_order_line_items (square_order_id);
