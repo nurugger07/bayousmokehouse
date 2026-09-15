@@ -48,13 +48,13 @@ describe('syncDateRange', () => {
     searchOrders.mockResolvedValueOnce([
       {
         id: 'sq_order_1',
-        created_at: '2026-08-14T23:00:00Z',
-        total_money: { amount: 2500 },
-        total_tax_money: { amount: 200 },
-        line_items: [{ name: 'Pork Belly Sliders', quantity: '2', total_money: { amount: 2500 } }],
+        createdAt: '2026-08-14T23:00:00Z',
+        totalMoney: { amount: 2500 },
+        totalTaxMoney: { amount: 200 },
+        lineItems: [{ name: 'Pork Belly Sliders', quantity: '2', totalMoney: { amount: 2500 } }],
       },
     ]);
-    listPayments.mockResolvedValueOnce([{ order_id: 'sq_order_1', tip_money: { amount: 300 } }]);
+    listPayments.mockResolvedValueOnce([{ orderId: 'sq_order_1', tipMoney: { amount: 300 } }]);
 
     const result = await syncDateRange(denverDayRange('2026-08-14'));
 
@@ -83,10 +83,10 @@ describe('syncDateRange', () => {
     searchOrders.mockResolvedValueOnce([
       {
         id: 'sq_order_2',
-        created_at: '2026-08-15T20:00:00Z',
-        total_money: { amount: 1000 },
-        total_tax_money: { amount: 80 },
-        line_items: [],
+        createdAt: '2026-08-15T20:00:00Z',
+        totalMoney: { amount: 1000 },
+        totalTaxMoney: { amount: 80 },
+        lineItems: [],
       },
     ]);
     listPayments.mockResolvedValueOnce([]);
@@ -103,6 +103,57 @@ describe('syncDateRange', () => {
 
     const orders = await pool.query('SELECT * FROM square_orders WHERE sales_day_id = $1', [days.rows[0].id]);
     expect(orders.rows).toHaveLength(1);
+  });
+
+  it('skips refund/return orders instead of recording them as bogus $0 sales', async () => {
+    getEventsForDateRange.mockResolvedValueOnce([]);
+    searchOrders.mockResolvedValueOnce([
+      {
+        id: 'sq_real_sale',
+        createdAt: '2026-08-17T20:00:00Z',
+        totalMoney: { amount: 1000 },
+        totalTaxMoney: { amount: 80 },
+        lineItems: [{ name: 'Jambalaya', quantity: '1', totalMoney: { amount: 1000 } }],
+      },
+      {
+        // Shape Square actually returns for a refund: no lineItems or
+        // totalMoney at all — returns[]/netAmounts instead.
+        id: 'sq_return_order',
+        createdAt: '2026-08-17T21:00:00Z',
+        state: 'COMPLETED',
+        returns: [{ returnLineItems: [{ name: 'Jambalaya', quantity: '1' }] }],
+        netAmounts: { totalMoney: { amount: -1000 } },
+      },
+    ]);
+    listPayments.mockResolvedValueOnce([]);
+
+    const result = await syncDateRange(denverDayRange('2026-08-17'));
+
+    expect(result.syncedOrderCount).toBe(1);
+
+    const orders = await pool.query('SELECT * FROM square_orders');
+    expect(orders.rows.map((o) => o.square_order_id)).toEqual(['sq_real_sale']);
+  });
+
+  it('handles Money amounts as bigint, which is what the real Square SDK returns', async () => {
+    getEventsForDateRange.mockResolvedValueOnce([]);
+    searchOrders.mockResolvedValueOnce([
+      {
+        id: 'sq_bigint_order',
+        createdAt: '2026-08-22T20:00:00Z',
+        totalMoney: { amount: 2500n },
+        totalTaxMoney: { amount: 200n },
+        lineItems: [{ name: 'Jambalaya', quantity: '1', totalMoney: { amount: 2500n } }],
+      },
+    ]);
+    listPayments.mockResolvedValueOnce([{ orderId: 'sq_bigint_order', tipMoney: { amount: 300n } }]);
+
+    await syncDateRange(denverDayRange('2026-08-22'));
+
+    const orders = await pool.query('SELECT * FROM square_orders');
+    expect(orders.rows[0].total_money_cents).toBe(2500);
+    expect(orders.rows[0].tax_money_cents).toBe(200);
+    expect(orders.rows[0].tip_money_cents).toBe(300);
   });
 
   it('attributes orders on a multi-event day to the event whose time window they fall inside', async () => {
@@ -123,17 +174,17 @@ describe('syncDateRange', () => {
     searchOrders.mockResolvedValueOnce([
       {
         id: 'sq_lunch_order',
-        created_at: '2026-08-16T18:00:00Z',
-        total_money: { amount: 1200 },
-        total_tax_money: { amount: 100 },
-        line_items: [],
+        createdAt: '2026-08-16T18:00:00Z',
+        totalMoney: { amount: 1200 },
+        totalTaxMoney: { amount: 100 },
+        lineItems: [],
       },
       {
         id: 'sq_dinner_order',
-        created_at: '2026-08-17T00:00:00Z',
-        total_money: { amount: 1500 },
-        total_tax_money: { amount: 120 },
-        line_items: [],
+        createdAt: '2026-08-17T00:00:00Z',
+        totalMoney: { amount: 1500 },
+        totalTaxMoney: { amount: 120 },
+        lineItems: [],
       },
     ]);
     listPayments.mockResolvedValueOnce([]);
@@ -194,10 +245,10 @@ describe('syncDateRange', () => {
     searchOrders.mockResolvedValue([
       {
         id: 'sq_repeat_order',
-        created_at: '2026-08-19T23:00:00Z',
-        total_money: { amount: 999 },
-        total_tax_money: { amount: 80 },
-        line_items: [{ name: 'Jambalaya', quantity: '1', total_money: { amount: 999 } }],
+        createdAt: '2026-08-19T23:00:00Z',
+        totalMoney: { amount: 999 },
+        totalTaxMoney: { amount: 80 },
+        lineItems: [{ name: 'Jambalaya', quantity: '1', totalMoney: { amount: 999 } }],
       },
     ]);
     listPayments.mockResolvedValue([]);

@@ -1,106 +1,96 @@
+jest.mock('square', () => {
+  const mockSearch = jest.fn();
+  const mockList = jest.fn();
+  return {
+    SquareClient: jest.fn().mockImplementation((options) => ({
+      __options: options,
+      orders: { search: mockSearch },
+      payments: { list: mockList },
+    })),
+    SquareEnvironment: { Production: 'production' },
+    __mockSearch: mockSearch,
+    __mockList: mockList,
+  };
+});
+
 function loadService() {
   jest.resetModules();
-  return require('../services/square');
-}
-
-function jsonResponse(body, ok = true, status = 200) {
-  return {
-    ok,
-    status,
-    json: async () => body,
-    text: async () => JSON.stringify(body),
-  };
+  const { SquareClient, __mockSearch, __mockList } = require('square');
+  const square = require('../services/square');
+  return { square, SquareClient, mockSearch: __mockSearch, mockList: __mockList };
 }
 
 beforeEach(() => {
   process.env.SQUARE_ACCESS_TOKEN = 'test-token';
   process.env.SQUARE_LOCATION_ID = 'LOCATION123';
-  global.fetch = jest.fn();
-});
-
-afterEach(() => {
-  delete global.fetch;
 });
 
 describe('searchOrders', () => {
-  it('sends a bearer-authenticated POST with the location, date range, and completed-state filter', async () => {
-    const square = loadService();
-    global.fetch.mockResolvedValueOnce(jsonResponse({ orders: [{ id: 'order_1' }] }));
+  it('authenticates with the access token and filters by location, date range, and completed state', async () => {
+    const { square, SquareClient, mockSearch } = loadService();
+    mockSearch.mockResolvedValueOnce({ orders: [{ id: 'order_1' }] });
 
     const orders = await square.searchOrders({ startDate: '2026-09-01T00:00:00Z', endDate: '2026-09-01T23:59:59Z' });
 
     expect(orders).toEqual([{ id: 'order_1' }]);
-    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(SquareClient).toHaveBeenCalledWith({ token: 'test-token', environment: 'production' });
 
-    const [url, options] = global.fetch.mock.calls[0];
-    expect(url.toString()).toBe('https://connect.squareup.com/v2/orders/search');
-    expect(options.method).toBe('POST');
-    expect(options.headers.Authorization).toBe('Bearer test-token');
-
-    const body = JSON.parse(options.body);
-    expect(body.location_ids).toEqual(['LOCATION123']);
-    expect(body.query.filter.date_time_filter.created_at).toEqual({
-      start_at: '2026-09-01T00:00:00Z',
-      end_at: '2026-09-01T23:59:59Z',
+    const request = mockSearch.mock.calls[0][0];
+    expect(request.locationIds).toEqual(['LOCATION123']);
+    expect(request.query.filter.dateTimeFilter.createdAt).toEqual({
+      startAt: '2026-09-01T00:00:00Z',
+      endAt: '2026-09-01T23:59:59Z',
     });
-    expect(body.query.filter.state_filter.states).toEqual(['COMPLETED']);
-    expect(body.query.sort.sort_field).toBe('CREATED_AT');
+    expect(request.query.filter.stateFilter.states).toEqual(['COMPLETED']);
+    expect(request.query.sort.sortField).toBe('CREATED_AT');
   });
 
   it('follows the cursor across multiple pages and returns all orders combined', async () => {
-    const square = loadService();
-    global.fetch
-      .mockResolvedValueOnce(jsonResponse({ orders: [{ id: 'order_1' }], cursor: 'next-page' }))
-      .mockResolvedValueOnce(jsonResponse({ orders: [{ id: 'order_2' }] }));
+    const { square, mockSearch } = loadService();
+    mockSearch
+      .mockResolvedValueOnce({ orders: [{ id: 'order_1' }], cursor: 'next-page' })
+      .mockResolvedValueOnce({ orders: [{ id: 'order_2' }] });
 
     const orders = await square.searchOrders({ startDate: 'a', endDate: 'b' });
 
     expect(orders).toEqual([{ id: 'order_1' }, { id: 'order_2' }]);
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-
-    const secondCallBody = JSON.parse(global.fetch.mock.calls[1][1].body);
-    expect(secondCallBody.cursor).toBe('next-page');
+    expect(mockSearch).toHaveBeenCalledTimes(2);
+    expect(mockSearch.mock.calls[1][0].cursor).toBe('next-page');
   });
 
-  it('throws a descriptive error when Square returns a non-OK response', async () => {
-    const square = loadService();
-    global.fetch.mockResolvedValueOnce(jsonResponse({ errors: [{ detail: 'bad request' }] }, false, 400));
+  it('propagates errors from the SDK rather than swallowing them', async () => {
+    const { square, mockSearch } = loadService();
+    mockSearch.mockRejectedValueOnce(new Error('Square API request failed (401)'));
 
-    await expect(square.searchOrders({ startDate: 'a', endDate: 'b' })).rejects.toThrow(
-      /Square API request failed \(400\)/
-    );
+    await expect(square.searchOrders({ startDate: 'a', endDate: 'b' })).rejects.toThrow(/401/);
   });
 });
 
 describe('listPayments', () => {
-  it('sends a bearer-authenticated GET with location and time-range query params', async () => {
-    const square = loadService();
-    global.fetch.mockResolvedValueOnce(jsonResponse({ payments: [{ id: 'payment_1' }] }));
+  it('lists payments for the location and time range', async () => {
+    const { square, mockList } = loadService();
+    mockList.mockResolvedValueOnce([{ id: 'payment_1' }]);
 
     const payments = await square.listPayments({ startDate: '2026-09-01T00:00:00Z', endDate: '2026-09-01T23:59:59Z' });
 
     expect(payments).toEqual([{ id: 'payment_1' }]);
-
-    const [url, options] = global.fetch.mock.calls[0];
-    expect(url.toString()).toBe(
-      'https://connect.squareup.com/v2/payments?location_id=LOCATION123&begin_time=2026-09-01T00%3A00%3A00Z&end_time=2026-09-01T23%3A59%3A59Z&limit=100'
-    );
-    expect(options.method).toBe('GET');
-    expect(options.headers.Authorization).toBe('Bearer test-token');
+    expect(mockList).toHaveBeenCalledWith({
+      locationId: 'LOCATION123',
+      beginTime: '2026-09-01T00:00:00Z',
+      endTime: '2026-09-01T23:59:59Z',
+      sortField: 'CREATED_AT',
+    });
   });
 
-  it('follows the cursor across multiple pages and returns all payments combined', async () => {
-    const square = loadService();
-    global.fetch
-      .mockResolvedValueOnce(jsonResponse({ payments: [{ id: 'payment_1' }], cursor: 'next-page' }))
-      .mockResolvedValueOnce(jsonResponse({ payments: [{ id: 'payment_2' }] }));
+  it('iterates a multi-page response and returns all payments combined', async () => {
+    const { square, mockList } = loadService();
+    // The real SDK returns an auto-paginating Page; a plain array is
+    // async-iterable the same way (for await..of awaits each item),
+    // so it stands in fine for this test.
+    mockList.mockResolvedValueOnce([{ id: 'payment_1' }, { id: 'payment_2' }]);
 
     const payments = await square.listPayments({ startDate: 'a', endDate: 'b' });
 
     expect(payments).toEqual([{ id: 'payment_1' }, { id: 'payment_2' }]);
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-
-    const secondUrl = global.fetch.mock.calls[1][0].toString();
-    expect(secondUrl).toContain('cursor=next-page');
   });
 });

@@ -1,91 +1,56 @@
-const API_BASE = 'https://connect.squareup.com/v2';
-const SQUARE_VERSION = '2026-07-15';
+const { SquareClient, SquareEnvironment } = require('square');
 
-async function squareRequest(path, { method = 'GET', body, searchParams } = {}) {
-  const url = new URL(`${API_BASE}${path}`);
-
-  if (searchParams) {
-    Object.entries(searchParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        url.searchParams.set(key, value);
-      }
-    });
-  }
-
-  const res = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-      'Square-Version': SQUARE_VERSION,
-    },
-    body: body ? JSON.stringify(body) : undefined,
+function getClient() {
+  return new SquareClient({
+    token: process.env.SQUARE_ACCESS_TOKEN,
+    environment: SquareEnvironment.Production,
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Square API request failed (${res.status}): ${text.slice(0, 500)}`);
-  }
-
-  return res.json();
 }
 
-// Completed orders only — canceled/open orders aren't sales. Square
-// requires sort_field to match the date_time_filter field used.
+// Completed orders only — canceled/open orders aren't sales. orders.search
+// isn't one of the SDK's auto-paginating (Page) endpoints, so the cursor is
+// followed by hand.
 async function searchOrders({ startDate, endDate }) {
-  const locationId = process.env.SQUARE_LOCATION_ID;
+  const client = getClient();
   const orders = [];
   let cursor;
 
   do {
-    const data = await squareRequest('/orders/search', {
-      method: 'POST',
-      body: {
-        location_ids: [locationId],
-        query: {
-          filter: {
-            date_time_filter: {
-              created_at: { start_at: startDate, end_at: endDate },
-            },
-            state_filter: { states: ['COMPLETED'] },
-          },
-          sort: { sort_field: 'CREATED_AT', sort_order: 'ASC' },
+    const response = await client.orders.search({
+      locationIds: [process.env.SQUARE_LOCATION_ID],
+      query: {
+        filter: {
+          dateTimeFilter: { createdAt: { startAt: startDate, endAt: endDate } },
+          stateFilter: { states: ['COMPLETED'] },
         },
-        limit: 100,
-        cursor,
+        sort: { sortField: 'CREATED_AT', sortOrder: 'ASC' },
       },
+      limit: 100,
+      cursor,
     });
 
-    orders.push(...(data.orders || []));
-    cursor = data.cursor;
+    orders.push(...(response.orders || []));
+    cursor = response.cursor;
   } while (cursor);
 
   return orders;
 }
 
-// Tips live on the Payment object (tip_money), not on Order — Order's
-// total_tip_money isn't reliably populated for every tip flow, so tips
-// are sourced from here and joined back to orders by order_id.
+// Tips live on Payment.tipMoney, not reliably on Order.totalTipMoney — see
+// callers. payments.list is one of the SDK's auto-paginating endpoints.
 async function listPayments({ startDate, endDate }) {
-  const locationId = process.env.SQUARE_LOCATION_ID;
+  const client = getClient();
+  const page = await client.payments.list({
+    locationId: process.env.SQUARE_LOCATION_ID,
+    beginTime: startDate,
+    endTime: endDate,
+    sortField: 'CREATED_AT',
+  });
+
   const payments = [];
-  let cursor;
-
-  do {
-    const data = await squareRequest('/payments', {
-      searchParams: {
-        location_id: locationId,
-        begin_time: startDate,
-        end_time: endDate,
-        limit: 100,
-        cursor,
-      },
-    });
-
-    payments.push(...(data.payments || []));
-    cursor = data.cursor;
-  } while (cursor);
-
+  for await (const payment of page) {
+    payments.push(payment);
+  }
   return payments;
 }
 

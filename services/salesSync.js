@@ -106,16 +106,23 @@ async function ensureSalesDaysExist(startDate, endDate) {
   return dates;
 }
 
-// Tips live on Payment.tip_money, not reliably on Order — see
-// services/square.js. Summed per order_id in case of split tenders.
+// Square's SDK types Money.amount as bigint | null (it's rendered as a
+// plain JSON number over the wire, but the SDK's serializer upconverts
+// it). Postgres integer columns and normal arithmetic want a Number.
+function moneyAmount(money) {
+  return money && money.amount != null ? Number(money.amount) : 0;
+}
+
+// Tips live on Payment.tipMoney, not reliably on Order.totalTipMoney —
+// see services/square.js. Summed per orderId in case of split tenders.
 function sumTipsByOrderId(payments) {
   const tipsByOrderId = new Map();
   payments.forEach((payment) => {
-    if (!payment.order_id) {
+    if (!payment.orderId) {
       return;
     }
-    const tipCents = (payment.tip_money && payment.tip_money.amount) || 0;
-    tipsByOrderId.set(payment.order_id, (tipsByOrderId.get(payment.order_id) || 0) + tipCents);
+    const tipCents = moneyAmount(payment.tipMoney);
+    tipsByOrderId.set(payment.orderId, (tipsByOrderId.get(payment.orderId) || 0) + tipCents);
   });
   return tipsByOrderId;
 }
@@ -135,7 +142,17 @@ async function syncDateRange({ startDate, endDate }) {
   let syncedOrderCount = 0;
 
   for (const order of orders) {
-    const orderedAt = new Date(order.created_at);
+    // A refund/return shows up as its own Order (state COMPLETED, same
+    // as a sale) with a completely different shape: returns[]/netAmounts
+    // instead of lineItems/totalMoney, and no lineItems key at all.
+    // Recording one of these as a sale would silently create a bogus $0
+    // order. Not netting the refund amount against anything yet either —
+    // that's a real reporting decision to make deliberately, not guess at.
+    if (!Array.isArray(order.lineItems)) {
+      continue;
+    }
+
+    const orderedAt = new Date(order.createdAt);
     const dateKey = formatInTimeZone(orderedAt, TIME_ZONE, 'yyyy-MM-dd');
     const candidateDays = daysByDate.get(dateKey) || [];
     const salesDay = pickSalesDay(candidateDays, orderedAt);
@@ -144,9 +161,9 @@ async function syncDateRange({ startDate, endDate }) {
       continue;
     }
 
-    const totalCents = (order.total_money && order.total_money.amount) || 0;
-    const taxCents = (order.total_tax_money && order.total_tax_money.amount) || 0;
-    const tipCents = tipsByOrderId.get(order.id) || (order.total_tip_money && order.total_tip_money.amount) || 0;
+    const totalCents = moneyAmount(order.totalMoney);
+    const taxCents = moneyAmount(order.totalTaxMoney);
+    const tipCents = tipsByOrderId.get(order.id) || moneyAmount(order.totalTipMoney);
     // Square's Order doesn't expose a top-level subtotal field directly —
     // derive it, since total/tax/tip are all reliably present.
     const subtotalCents = totalCents - taxCents - tipCents;
@@ -161,10 +178,10 @@ async function syncDateRange({ startDate, endDate }) {
       totalMoneyCents: totalCents,
     });
 
-    const lineItems = (order.line_items || []).map((item) => ({
+    const lineItems = order.lineItems.map((item) => ({
       name: item.name || 'Item',
       quantity: parseInt(item.quantity, 10) || 1,
-      totalMoneyCents: (item.total_money && item.total_money.amount) || 0,
+      totalMoneyCents: moneyAmount(item.totalMoney),
     }));
     await squareOrders.replaceLineItems(savedOrder.id, lineItems);
 
