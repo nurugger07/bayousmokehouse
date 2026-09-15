@@ -31,7 +31,9 @@ function denverDayRange(dateStr) {
 
 afterEach(async () => {
   jest.clearAllMocks();
-  await pool.query('TRUNCATE square_order_line_items, square_orders, sales_days, sales_locations RESTART IDENTITY CASCADE');
+  await pool.query(
+    'TRUNCATE square_order_line_items, square_orders, square_returns, sales_days, sales_locations RESTART IDENTITY CASCADE'
+  );
 });
 
 afterAll(async () => {
@@ -109,7 +111,7 @@ describe('syncDateRange', () => {
     expect(orders.rows).toHaveLength(1);
   });
 
-  it('skips refund/return orders instead of recording them as bogus $0 sales', async () => {
+  it('records refund/return orders into square_returns instead of as bogus $0 sales', async () => {
     getEventsForDateRange.mockResolvedValueOnce([]);
     searchOrders.mockResolvedValueOnce([
       {
@@ -125,7 +127,7 @@ describe('syncDateRange', () => {
         id: 'sq_return_order',
         createdAt: '2026-08-17T21:00:00Z',
         state: 'COMPLETED',
-        returns: [{ returnLineItems: [{ name: 'Jambalaya', quantity: '1' }] }],
+        returns: [{ sourceOrderId: 'sq_original_sale_from_last_week', returnLineItems: [{ name: 'Jambalaya', quantity: '1' }] }],
         netAmounts: { totalMoney: { amount: -1000 } },
       },
     ]);
@@ -134,9 +136,36 @@ describe('syncDateRange', () => {
     const result = await syncDateRange(denverDayRange('2026-08-17'));
 
     expect(result.syncedOrderCount).toBe(1);
+    expect(result.syncedReturnCount).toBe(1);
 
     const orders = await pool.query('SELECT * FROM square_orders');
     expect(orders.rows.map((o) => o.square_order_id)).toEqual(['sq_real_sale']);
+
+    const returns = await pool.query('SELECT * FROM square_returns');
+    expect(returns.rows).toHaveLength(1);
+    expect(returns.rows[0].square_return_id).toBe('sq_return_order');
+    expect(returns.rows[0].source_order_id).toBe('sq_original_sale_from_last_week');
+    expect(returns.rows[0].return_money_cents).toBe(1000); // sign flipped — always a positive magnitude
+  });
+
+  it('is idempotent for returns too — re-syncing updates rather than duplicates', async () => {
+    const returnOrder = {
+      id: 'sq_repeat_return',
+      createdAt: '2026-08-23T21:00:00Z',
+      state: 'COMPLETED',
+      returns: [{ sourceOrderId: 'sq_whatever' }],
+      netAmounts: { totalMoney: { amount: -500 } },
+    };
+    getEventsForDateRange.mockResolvedValue([]);
+    searchOrders.mockResolvedValue([returnOrder]);
+    listPayments.mockResolvedValue([]);
+
+    const range = denverDayRange('2026-08-23');
+    await syncDateRange(range);
+    await syncDateRange(range);
+
+    const returns = await pool.query('SELECT * FROM square_returns');
+    expect(returns.rows).toHaveLength(1);
   });
 
   it('handles Money amounts as bigint, which is what the real Square SDK returns', async () => {

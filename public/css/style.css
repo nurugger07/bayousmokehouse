@@ -643,6 +643,25 @@ main {
   background-color: var(--color-cream);
 }
 
+/* Weekly Totals report — a month divider row and a per-month totals
+   row, both within the month's own tbody (a table may only have one
+   tfoot, so a running per-section total can't use it). */
+.admin-table tr.admin-table__section td {
+  background-color: var(--color-wood-dark);
+  color: var(--color-parchment);
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.admin-table tr.admin-table__totals td {
+  border-top: 2px solid var(--color-ember);
+  border-bottom: 2px solid var(--color-ember);
+  font-weight: 700;
+  color: var(--color-wood-dark);
+  background-color: var(--color-cream);
+}
+
 /* ===== 10. Header & Nav ===== */
 .site-header {
   background-color: var(--color-charcoal);

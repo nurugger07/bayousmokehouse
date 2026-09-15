@@ -1,3 +1,4 @@
+const { fromZonedTime } = require('date-fns-tz');
 const { pool } = require('../config/db');
 const {
   getSalesTotalsByLocation,
@@ -5,6 +6,8 @@ const {
   getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
+  getWeeklyTotals,
+  groupWeeklyTotalsByMonth,
 } = require('../models/salesReports');
 
 async function createLocation(name, cityState) {
@@ -238,5 +241,114 @@ describe('getTipTotalsByLocation', () => {
 
     expect(rows.find((r) => r.location_id === berthoud.id).tip_money_cents).toBe('450');
     expect(rows.find((r) => r.location_id === odd13.id).tip_money_cents).toBe('100');
+  });
+});
+
+describe('getWeeklyTotals / groupWeeklyTotalsByMonth', () => {
+  // Weekly totals ignores location entirely, but square_orders still
+  // requires a valid sales_day_id — this location/day is throwaway
+  // plumbing, not something the report cares about.
+  async function createThrowawayDay(saleDate) {
+    const loc = await pool.query('INSERT INTO sales_locations (name) VALUES ($1) RETURNING *', [
+      `Throwaway ${Math.random()}`,
+    ]);
+    const day = await pool.query(
+      `INSERT INTO sales_days (sale_date, location_id, location_source, calendar_event_summary)
+       VALUES ($1, $2, 'calendar', $3) RETURNING *`,
+      [saleDate, loc.rows[0].id, loc.rows[0].name]
+    );
+    return day.rows[0];
+  }
+
+  async function createFullOrder({ orderedAt, totalCents, taxCents, tipCents, discountCents }) {
+    const day = await createThrowawayDay(orderedAt.toISOString().slice(0, 10));
+    await pool.query(
+      `INSERT INTO square_orders
+          (square_order_id, sales_day_id, ordered_at, subtotal_money_cents, tax_money_cents, tip_money_cents,
+           discount_money_cents, service_charge_money_cents, total_money_cents)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 0, $8)`,
+      [
+        `sq_${Math.random().toString(36).slice(2)}`,
+        day.id,
+        orderedAt,
+        totalCents - taxCents - tipCents,
+        taxCents,
+        tipCents,
+        discountCents,
+        totalCents,
+      ]
+    );
+  }
+
+  async function createReturn({ returnedAt, returnCents }) {
+    await pool.query('INSERT INTO square_returns (square_return_id, returned_at, return_money_cents) VALUES ($1, $2, $3)', [
+      `sr_${Math.random().toString(36).slice(2)}`,
+      returnedAt,
+      returnCents,
+    ]);
+  }
+
+  function denverNoon(dateStr) {
+    return fromZonedTime(`${dateStr}T12:00:00`, 'America/Denver');
+  }
+
+  it('buckets by 7-day chunks of the month, computes gross/net sales, and rolls up a month totals row', async () => {
+    // Week 1 (8/1-8/7): two orders + one return.
+    await createFullOrder({ orderedAt: denverNoon('2026-08-03'), totalCents: 1000, taxCents: 80, tipCents: 0, discountCents: 0 });
+    await createFullOrder({ orderedAt: denverNoon('2026-08-03'), totalCents: 2000, taxCents: 160, tipCents: 200, discountCents: 100 });
+    await createReturn({ returnedAt: denverNoon('2026-08-05'), returnCents: 150 });
+
+    // Week 2 (8/8-8/14): one order.
+    await createFullOrder({ orderedAt: denverNoon('2026-08-10'), totalCents: 500, taxCents: 40, tipCents: 0, discountCents: 0 });
+
+    // Week 3 (8/15-8/21): a return with no orders at all that week.
+    await createReturn({ returnedAt: denverNoon('2026-08-17'), returnCents: 75 });
+
+    const rows = await getWeeklyTotals({ startDate: '2026-08-01', endDate: '2026-08-31' });
+    const months = groupWeeklyTotalsByMonth(rows);
+
+    expect(months).toHaveLength(1);
+    const august = months[0];
+    expect(august.monthLabel).toBe('August');
+    expect(august.weeks).toHaveLength(3);
+
+    const week1 = august.weeks.find((w) => w.label === '8/1-8/7');
+    expect(week1.orderCount).toBe(2);
+    expect(week1.grossSalesCents).toBe(2660); // (1000-0-80-0+0) + (2000-200-160-0+100)
+    expect(week1.discountCents).toBe(100);
+    expect(week1.returnCents).toBe(150);
+    expect(week1.netSalesCents).toBe(2410); // 2660 - 100 - 150
+    expect(week1.avgOrderAmtCents).toBe(1330); // round(2660/2)
+    expect(week1.taxCents).toBe(240);
+
+    const week2 = august.weeks.find((w) => w.label === '8/8-8/14');
+    expect(week2.orderCount).toBe(1);
+    expect(week2.grossSalesCents).toBe(460);
+    expect(week2.avgOrderAmtCents).toBe(460);
+
+    // A week with only a return and zero new orders — proves the
+    // FULL OUTER JOIN between orders and returns actually works.
+    const week3 = august.weeks.find((w) => w.label === '8/15-8/21');
+    expect(week3.orderCount).toBe(0);
+    expect(week3.grossSalesCents).toBe(0);
+    expect(week3.returnCents).toBe(75);
+    expect(week3.netSalesCents).toBe(-75);
+
+    // Month totals row: sums are straightforward, but avgOrderAmtCents
+    // matches Johnny's own spreadsheet convention — the average of the
+    // three weekly averages (1330, 460, 0), not grossTotal/orderCountTotal
+    // (which would be 3120/3 = 1040).
+    expect(august.totals.orderCount).toBe(3);
+    expect(august.totals.grossSalesCents).toBe(3120);
+    expect(august.totals.discountCents).toBe(100);
+    expect(august.totals.returnCents).toBe(225);
+    expect(august.totals.netSalesCents).toBe(2795); // 3120 - 100 - 225
+    expect(august.totals.avgOrderAmtCents).toBe(597); // round((1330 + 460 + 0) / 3)
+    expect(august.totals.taxCents).toBe(280);
+  });
+
+  it('returns an empty array when there is no data in range', async () => {
+    const rows = await getWeeklyTotals({ startDate: '2020-01-01', endDate: '2020-01-31' });
+    expect(groupWeeklyTotalsByMonth(rows)).toEqual([]);
   });
 });

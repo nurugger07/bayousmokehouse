@@ -1,0 +1,9 @@
+<% var isActive = function(key) { return key === active ? 'admin-filters__active' : ''; }; %>
+<nav class="admin-filters">
+  <a href="/admin/sales/totals" class="<%= isActive('totals') %>">Sales Totals</a>
+  <a href="/admin/sales/items" class="<%= isActive('items') %>">Item Sales</a>
+  <a href="/admin/sales/tax" class="<%= isActive('tax') %>">Tax Totals</a>
+  <a href="/admin/sales/tips" class="<%= isActive('tips') %>">Tip Totals</a>
+  <a href="/admin/sales/weekly" class="<%= isActive('weekly') %>">Weekly Totals</a>
+  <a href="/admin/sales/unmatched" class="<%= isActive('unmatched') %>">Unmatched Days</a>
+</nav>

@@ -1,3 +1,4 @@
+const { formatInTimeZone } = require('date-fns-tz');
 const { pool } = require('../config/db');
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -124,10 +125,130 @@ async function getTipTotalsByLocation({ startDate, endDate, locationId } = {}) {
   return withDayOfWeekLabel(result.rows);
 }
 
+// Weeks are simple 7-day chunks of the calendar month (days 1-7, 8-14,
+// ...), not aligned to any day-of-week — matching how Johnny's own
+// manual spreadsheet version of this report already buckets weeks.
+// Returns/orders are aggregated separately (a week can have returns
+// with zero new sales) then combined with a FULL OUTER JOIN.
+async function getWeeklyTotals({ startDate, endDate } = {}) {
+  const result = await pool.query(
+    `WITH orders_agg AS (
+        SELECT
+          date_trunc('month', (o.ordered_at AT TIME ZONE 'America/Denver'))::date AS month_start,
+          ((EXTRACT(DAY FROM (o.ordered_at AT TIME ZONE 'America/Denver'))::int - 1) / 7) AS week_index,
+          COUNT(*)::int AS order_count,
+          COALESCE(SUM(o.total_money_cents - o.tip_money_cents - o.tax_money_cents
+                       - o.service_charge_money_cents + o.discount_money_cents), 0)::bigint AS gross_sales_cents,
+          COALESCE(SUM(o.discount_money_cents), 0)::bigint AS discount_cents,
+          COALESCE(SUM(o.tax_money_cents), 0)::bigint AS tax_cents
+        FROM square_orders o
+        WHERE (o.ordered_at AT TIME ZONE 'America/Denver')::date BETWEEN $1 AND $2
+        GROUP BY 1, 2
+     ),
+     returns_agg AS (
+        SELECT
+          date_trunc('month', (r.returned_at AT TIME ZONE 'America/Denver'))::date AS month_start,
+          ((EXTRACT(DAY FROM (r.returned_at AT TIME ZONE 'America/Denver'))::int - 1) / 7) AS week_index,
+          COALESCE(SUM(r.return_money_cents), 0)::bigint AS return_cents
+        FROM square_returns r
+        WHERE (r.returned_at AT TIME ZONE 'America/Denver')::date BETWEEN $1 AND $2
+        GROUP BY 1, 2
+     )
+     SELECT
+        COALESCE(o.month_start, r.month_start) AS month_start,
+        COALESCE(o.week_index, r.week_index) AS week_index,
+        COALESCE(o.order_count, 0) AS order_count,
+        COALESCE(o.gross_sales_cents, 0) AS gross_sales_cents,
+        COALESCE(o.discount_cents, 0) AS discount_cents,
+        COALESCE(r.return_cents, 0) AS return_cents,
+        COALESCE(o.tax_cents, 0) AS tax_cents
+     FROM orders_agg o
+     FULL OUTER JOIN returns_agg r ON r.month_start = o.month_start AND r.week_index = o.week_index
+     ORDER BY 1, 2`,
+    [startDate, endDate]
+  );
+  return result.rows;
+}
+
+// Number of days in the UTC-midnight month a pg DATE column deserializes
+// to — explicit UTC getters, not date-fns's local-time ones, since a
+// server whose local TZ isn't UTC would otherwise read the wrong month
+// for a date near midnight (the same "fake-UTC" trap services/googleCalendar.js
+// documents).
+function daysInMonthUTC(monthStart) {
+  return new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0)).getUTCDate();
+}
+
+function weekLabel(monthStart, weekIndex) {
+  const startDay = weekIndex * 7 + 1;
+  const endDay = Math.min(startDay + 6, daysInMonthUTC(monthStart));
+  const month = monthStart.getUTCMonth() + 1;
+  return `${month}/${startDay}-${month}/${endDay}`;
+}
+
+// Shapes the flat getWeeklyTotals() rows into month sections with a
+// totals row per month. Split out from the query itself so the
+// month/week grouping and rollup math can be unit tested without a DB.
+function groupWeeklyTotalsByMonth(rows) {
+  const monthsByKey = new Map();
+
+  rows.forEach((row) => {
+    const key = row.month_start.toISOString();
+    if (!monthsByKey.has(key)) {
+      monthsByKey.set(key, { monthStart: row.month_start, weeks: [] });
+    }
+
+    const grossSalesCents = Number(row.gross_sales_cents);
+    const discountCents = Number(row.discount_cents);
+    const returnCents = Number(row.return_cents);
+    const orderCount = Number(row.order_count);
+
+    monthsByKey.get(key).weeks.push({
+      weekIndex: row.week_index,
+      label: weekLabel(row.month_start, row.week_index),
+      orderCount,
+      grossSalesCents,
+      discountCents,
+      returnCents,
+      netSalesCents: grossSalesCents - discountCents - returnCents,
+      avgOrderAmtCents: orderCount > 0 ? Math.round(grossSalesCents / orderCount) : 0,
+      taxCents: Number(row.tax_cents),
+    });
+  });
+
+  return Array.from(monthsByKey.values())
+    .sort((a, b) => a.monthStart - b.monthStart)
+    .map((month) => {
+      const weeks = month.weeks.sort((a, b) => a.weekIndex - b.weekIndex);
+      const sum = (field) => weeks.reduce((total, week) => total + week[field], 0);
+      const totalGrossSalesCents = sum('grossSalesCents');
+      const totalDiscountCents = sum('discountCents');
+      const totalReturnCents = sum('returnCents');
+
+      return {
+        monthLabel: formatInTimeZone(month.monthStart, 'UTC', 'MMMM'),
+        weeks,
+        totals: {
+          orderCount: sum('orderCount'),
+          grossSalesCents: totalGrossSalesCents,
+          // Matches Johnny's own spreadsheet: the monthly row's average is
+          // the average of the weekly averages, not gross/orders.
+          avgOrderAmtCents: weeks.length > 0 ? Math.round(sum('avgOrderAmtCents') / weeks.length) : 0,
+          discountCents: totalDiscountCents,
+          returnCents: totalReturnCents,
+          netSalesCents: totalGrossSalesCents - totalDiscountCents - totalReturnCents,
+          taxCents: sum('taxCents'),
+        },
+      };
+    });
+}
+
 module.exports = {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
   getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
+  getWeeklyTotals,
+  groupWeeklyTotalsByMonth,
 };

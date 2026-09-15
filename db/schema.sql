@@ -127,15 +127,22 @@ CREATE INDEX IF NOT EXISTS idx_sales_days_location ON sales_days (location_id);
 -- itself represents amounts, to avoid float rounding issues.
 CREATE TABLE IF NOT EXISTS square_orders (
     id                    SERIAL PRIMARY KEY,
-    square_order_id       VARCHAR(255) NOT NULL UNIQUE,
-    sales_day_id          INTEGER NOT NULL REFERENCES sales_days(id),
-    ordered_at            TIMESTAMPTZ NOT NULL,
-    subtotal_money_cents  INTEGER NOT NULL DEFAULT 0,
-    tax_money_cents       INTEGER NOT NULL DEFAULT 0,
-    tip_money_cents       INTEGER NOT NULL DEFAULT 0,
-    total_money_cents     INTEGER NOT NULL DEFAULT 0,
-    synced_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+    square_order_id            VARCHAR(255) NOT NULL UNIQUE,
+    sales_day_id               INTEGER NOT NULL REFERENCES sales_days(id),
+    ordered_at                 TIMESTAMPTZ NOT NULL,
+    subtotal_money_cents       INTEGER NOT NULL DEFAULT 0,
+    tax_money_cents            INTEGER NOT NULL DEFAULT 0,
+    tip_money_cents            INTEGER NOT NULL DEFAULT 0,
+    discount_money_cents       INTEGER NOT NULL DEFAULT 0,
+    service_charge_money_cents INTEGER NOT NULL DEFAULT 0,
+    total_money_cents          INTEGER NOT NULL DEFAULT 0,
+    synced_at                  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent adds for databases where square_orders already existed
+-- before the weekly-totals report needed discount/service-charge data.
+ALTER TABLE square_orders ADD COLUMN IF NOT EXISTS discount_money_cents INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE square_orders ADD COLUMN IF NOT EXISTS service_charge_money_cents INTEGER NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_square_orders_sales_day ON square_orders (sales_day_id);
 CREATE INDEX IF NOT EXISTS idx_square_orders_ordered_at ON square_orders (ordered_at);
@@ -149,3 +156,18 @@ CREATE TABLE IF NOT EXISTS square_order_line_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_square_order_line_items_order ON square_order_line_items (square_order_id);
+
+-- Refunds/returns. Square records these as their own Order (see
+-- services/salesSync.js for why they can't be treated as sales), and
+-- they aren't tied to a location/sales_day — the weekly totals report
+-- is purely time-based, matching how Johnny already tracks this by hand.
+CREATE TABLE IF NOT EXISTS square_returns (
+    id                  SERIAL PRIMARY KEY,
+    square_return_id    VARCHAR(255) NOT NULL UNIQUE,
+    source_order_id     VARCHAR(255),
+    returned_at         TIMESTAMPTZ NOT NULL,
+    return_money_cents  INTEGER NOT NULL,
+    synced_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_square_returns_returned_at ON square_returns (returned_at);

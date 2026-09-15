@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Weekly Totals' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Weekly Totals</h1>
+      <p>Gross/Net sales, discounts, returns, and taxes by week (grouped by month) — across all locations combined.</p>
+
+      <%- include('../partials/salesNav', { active: 'weekly' }) %>
+
+      <%- include('../partials/salesFilterForm', { action: '/admin/sales/weekly', filters }) %>
+
+      <% function money(cents) { return '$' + (cents / 100).toFixed(2); }
+         function moneyOrDash(cents) { return cents === 0 ? '—' : '(' + money(cents) + ')'; } %>
+
+      <% if (months.length === 0) { %>
+        <p>No sales in this range.</p>
+      <% } %>
+
+      <% if (months.length > 0) { %>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Orders</th>
+                <th>Gross Sales</th>
+                <th>Avg Order Amt</th>
+                <th>Discounts</th>
+                <th>Returns</th>
+                <th>Net Sales</th>
+                <th>Taxes</th>
+              </tr>
+            </thead>
+            <% months.forEach(function(month) { %>
+              <tbody>
+                <tr class="admin-table__section">
+                  <td colspan="8"><%= month.monthLabel %></td>
+                </tr>
+                <% month.weeks.forEach(function(week) { %>
+                  <tr>
+                    <td><%= week.label %></td>
+                    <td><%= week.orderCount %></td>
+                    <td><%= money(week.grossSalesCents) %></td>
+                    <td><%= money(week.avgOrderAmtCents) %></td>
+                    <td><%= moneyOrDash(week.discountCents) %></td>
+                    <td><%= moneyOrDash(week.returnCents) %></td>
+                    <td><%= money(week.netSalesCents) %></td>
+                    <td><%= money(week.taxCents) %></td>
+                  </tr>
+                <% }); %>
+                <tr class="admin-table__totals">
+                  <td><%= month.monthLabel %> Totals</td>
+                  <td><%= month.totals.orderCount %></td>
+                  <td><%= money(month.totals.grossSalesCents) %></td>
+                  <td><%= money(month.totals.avgOrderAmtCents) %></td>
+                  <td><%= moneyOrDash(month.totals.discountCents) %></td>
+                  <td><%= moneyOrDash(month.totals.returnCents) %></td>
+                  <td><%= money(month.totals.netSalesCents) %></td>
+                  <td><%= money(month.totals.taxCents) %></td>
+                </tr>
+              </tbody>
+            <% }); %>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

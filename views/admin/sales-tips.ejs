@@ -11,13 +11,7 @@
     <div class="container">
       <h1>Tip Totals by Location</h1>
 
-      <nav class="admin-filters">
-        <a href="/admin/sales/totals">Sales Totals</a>
-        <a href="/admin/sales/items">Item Sales</a>
-        <a href="/admin/sales/tax">Tax Totals</a>
-        <a href="/admin/sales/tips" class="admin-filters__active">Tip Totals</a>
-        <a href="/admin/sales/unmatched">Unmatched Days</a>
-      </nav>
+      <%- include('../partials/salesNav', { active: 'tips' }) %>
 
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/tips', locations, filters }) %>
 

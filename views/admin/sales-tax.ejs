@@ -12,13 +12,7 @@
       <h1>Tax Totals by City, State</h1>
       <p>Grouped by tax jurisdiction (city/state) rather than individual venue, since sales tax is collected at that level.</p>
 
-      <nav class="admin-filters">
-        <a href="/admin/sales/totals">Sales Totals</a>
-        <a href="/admin/sales/items">Item Sales</a>
-        <a href="/admin/sales/tax" class="admin-filters__active">Tax Totals</a>
-        <a href="/admin/sales/tips">Tip Totals</a>
-        <a href="/admin/sales/unmatched">Unmatched Days</a>
-      </nav>
+      <%- include('../partials/salesNav', { active: 'tax' }) %>
 
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/tax', locations, filters }) %>
 

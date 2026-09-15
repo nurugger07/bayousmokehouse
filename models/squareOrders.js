@@ -7,22 +7,37 @@ async function upsertOrder({
   subtotalMoneyCents,
   taxMoneyCents,
   tipMoneyCents,
+  discountMoneyCents,
+  serviceChargeMoneyCents,
   totalMoneyCents,
 }) {
   const result = await pool.query(
     `INSERT INTO square_orders
-        (square_order_id, sales_day_id, ordered_at, subtotal_money_cents, tax_money_cents, tip_money_cents, total_money_cents, synced_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, now())
+        (square_order_id, sales_day_id, ordered_at, subtotal_money_cents, tax_money_cents, tip_money_cents,
+         discount_money_cents, service_charge_money_cents, total_money_cents, synced_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
      ON CONFLICT (square_order_id) DO UPDATE SET
         sales_day_id = EXCLUDED.sales_day_id,
         ordered_at = EXCLUDED.ordered_at,
         subtotal_money_cents = EXCLUDED.subtotal_money_cents,
         tax_money_cents = EXCLUDED.tax_money_cents,
         tip_money_cents = EXCLUDED.tip_money_cents,
+        discount_money_cents = EXCLUDED.discount_money_cents,
+        service_charge_money_cents = EXCLUDED.service_charge_money_cents,
         total_money_cents = EXCLUDED.total_money_cents,
         synced_at = now()
      RETURNING *`,
-    [squareOrderId, salesDayId, orderedAt, subtotalMoneyCents, taxMoneyCents, tipMoneyCents, totalMoneyCents]
+    [
+      squareOrderId,
+      salesDayId,
+      orderedAt,
+      subtotalMoneyCents,
+      taxMoneyCents,
+      tipMoneyCents,
+      discountMoneyCents || 0,
+      serviceChargeMoneyCents || 0,
+      totalMoneyCents,
+    ]
   );
   return result.rows[0];
 }

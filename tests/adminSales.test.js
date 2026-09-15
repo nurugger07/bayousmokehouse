@@ -83,6 +83,25 @@ describe('admin sales reports', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('No sales in this range');
   });
+
+  it('shows the weekly totals report, grouped by month', async () => {
+    // Weekly totals filters on square_orders.ordered_at directly (it's
+    // not location-based), so this needs an explicit in-range timestamp
+    // rather than seedOneVisitWithAnOrder's now().
+    const { day } = await seedOneVisitWithAnOrder();
+    await pool.query(
+      `INSERT INTO square_orders (square_order_id, sales_day_id, ordered_at, subtotal_money_cents, tax_money_cents, tip_money_cents, total_money_cents)
+       VALUES ('sq_weekly_test_order', $1, '2026-08-03T18:00:00Z', 2000, 80, 0, 2080)`,
+      [day.id]
+    );
+    const agent = await loggedInAgent();
+
+    const res = await agent.get('/admin/sales/weekly?startDate=2026-08-01&endDate=2026-08-31');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('August');
+    expect(res.text).toContain('$20.00');
+  });
 });
 
 describe('admin sales unmatched-day cleanup', () => {

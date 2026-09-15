@@ -5,6 +5,7 @@ const { searchOrders, listPayments } = require('./square');
 const salesLocations = require('../models/salesLocations');
 const salesDays = require('../models/salesDays');
 const squareOrders = require('../models/squareOrders');
+const squareReturns = require('../models/squareReturns');
 
 const TIME_ZONE = 'America/Denver';
 
@@ -140,15 +141,28 @@ async function syncDateRange({ startDate, endDate }) {
   const tipsByOrderId = sumTipsByOrderId(payments);
 
   let syncedOrderCount = 0;
+  let syncedReturnCount = 0;
 
   for (const order of orders) {
     // A refund/return shows up as its own Order (state COMPLETED, same
     // as a sale) with a completely different shape: returns[]/netAmounts
-    // instead of lineItems/totalMoney, and no lineItems key at all.
-    // Recording one of these as a sale would silently create a bogus $0
-    // order. Not netting the refund amount against anything yet either —
-    // that's a real reporting decision to make deliberately, not guess at.
+    // instead of lineItems/totalMoney, and no lineItems key at all. It's
+    // not attributed to a location/sales_day — the weekly totals report
+    // that uses this is purely time-based, same as Johnny's own manual
+    // version of it.
     if (!Array.isArray(order.lineItems)) {
+      const returnedAt = new Date(order.createdAt);
+      const returnAmountCents = Math.abs(moneyAmount(order.netAmounts && order.netAmounts.totalMoney));
+
+      if (returnAmountCents > 0) {
+        await squareReturns.upsertReturn({
+          squareReturnId: order.id,
+          sourceOrderId: (order.returns && order.returns[0] && order.returns[0].sourceOrderId) || null,
+          returnedAt,
+          returnMoneyCents: returnAmountCents,
+        });
+        syncedReturnCount += 1;
+      }
       continue;
     }
 
@@ -164,9 +178,11 @@ async function syncDateRange({ startDate, endDate }) {
     const totalCents = moneyAmount(order.totalMoney);
     const taxCents = moneyAmount(order.totalTaxMoney);
     const tipCents = tipsByOrderId.get(order.id) || moneyAmount(order.totalTipMoney);
+    const discountCents = moneyAmount(order.totalDiscountMoney);
+    const serviceChargeCents = moneyAmount(order.totalServiceChargeMoney);
     // Square's Order doesn't expose a top-level subtotal field directly —
-    // derive it, since total/tax/tip are all reliably present.
-    const subtotalCents = totalCents - taxCents - tipCents;
+    // derive it (post-discount, pre-tax/tip/service-charge amount).
+    const subtotalCents = totalCents - taxCents - tipCents - serviceChargeCents;
 
     const savedOrder = await squareOrders.upsertOrder({
       squareOrderId: order.id,
@@ -175,6 +191,8 @@ async function syncDateRange({ startDate, endDate }) {
       subtotalMoneyCents: subtotalCents,
       taxMoneyCents: taxCents,
       tipMoneyCents: tipCents,
+      discountMoneyCents: discountCents,
+      serviceChargeMoneyCents: serviceChargeCents,
       totalMoneyCents: totalCents,
     });
 
@@ -193,6 +211,7 @@ async function syncDateRange({ startDate, endDate }) {
   return {
     daysProcessed: dates.length,
     syncedOrderCount,
+    syncedReturnCount,
     unmatchedDayCount,
   };
 }

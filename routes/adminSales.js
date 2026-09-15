@@ -1,5 +1,5 @@
 const express = require('express');
-const { startOfMonth, endOfMonth, format } = require('date-fns');
+const { startOfMonth, endOfMonth, startOfYear, format } = require('date-fns');
 const requireAdminAuth = require('../middleware/requireAdminAuth');
 const {
   getSalesTotalsByLocation,
@@ -7,6 +7,8 @@ const {
   getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
+  getWeeklyTotals,
+  groupWeeklyTotalsByMonth,
 } = require('../models/salesReports');
 const { listLocations } = require('../models/salesLocations');
 const { listUnmatched, setLocation } = require('../models/salesDays');
@@ -22,6 +24,16 @@ function resolveFilters(query) {
   const endDate = query.endDate || format(endOfMonth(now), 'yyyy-MM-dd');
   const locationId = query.locationId ? Number(query.locationId) : undefined;
   return { startDate, endDate, locationId };
+}
+
+// The weekly totals report is inherently a multi-month view (that's the
+// point of it), so it defaults to year-to-date rather than the current
+// month.
+function resolveWeeklyFilters(query) {
+  const now = new Date();
+  const startDate = query.startDate || format(startOfYear(now), 'yyyy-MM-dd');
+  const endDate = query.endDate || format(now, 'yyyy-MM-dd');
+  return { startDate, endDate };
 }
 
 router.get('/sales', (req, res) => {
@@ -67,6 +79,17 @@ router.get('/sales/tips', async (req, res, next) => {
     const filters = resolveFilters(req.query);
     const [rows, locations] = await Promise.all([getTipTotalsByLocation(filters), listLocations()]);
     res.render('admin/sales-tips', { rows, locations, filters });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/sales/weekly', async (req, res, next) => {
+  try {
+    const filters = resolveWeeklyFilters(req.query);
+    const rows = await getWeeklyTotals(filters);
+    const months = groupWeeklyTotalsByMonth(rows);
+    res.render('admin/sales-weekly', { months, filters });
   } catch (err) {
     next(err);
   }

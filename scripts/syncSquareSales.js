@@ -37,8 +37,8 @@ async function main() {
   console.log(`Syncing Square sales from ${startDate.toISOString()} to ${endDate.toISOString()}...`);
   const result = await syncDateRange({ startDate, endDate });
   console.log(
-    `Done. ${result.syncedOrderCount} order(s) synced across ${result.daysProcessed} day(s); ` +
-      `${result.unmatchedDayCount} day(s) still need a location assigned in the admin tool.`
+    `Done. ${result.syncedOrderCount} order(s) and ${result.syncedReturnCount} return(s) synced across ` +
+      `${result.daysProcessed} day(s); ${result.unmatchedDayCount} day(s) still need a location assigned in the admin tool.`
   );
 }
 
