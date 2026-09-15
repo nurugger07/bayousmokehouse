@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Unmatched Sales Days' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Unmatched Sales Days</h1>
+      <p>Square recorded sales on these dates, but no calendar event was found to tell us where we were. Assign a location to each one below.</p>
+
+      <nav class="admin-filters">
+        <a href="/admin/sales/totals">Sales Totals</a>
+        <a href="/admin/sales/items">Item Sales</a>
+        <a href="/admin/sales/tax">Tax Totals</a>
+        <a href="/admin/sales/tips">Tip Totals</a>
+        <a href="/admin/sales/unmatched" class="admin-filters__active">Unmatched Days</a>
+      </nav>
+
+      <% if (days.length === 0) { %>
+        <p>Nothing to clean up — every synced day has a location.</p>
+      <% } %>
+
+      <% if (days.length > 0) { %>
+        <div class="menu-list">
+          <% days.forEach(function(day) { %>
+            <div class="menu-item">
+              <div class="menu-item__summary" style="cursor: default;">
+                <span class="menu-item__name"><%= new Date(day.sale_date).toLocaleDateString('en-US', { timeZone: 'UTC' }) %></span>
+              </div>
+              <div class="menu-item__panel">
+                <form method="POST" action="/admin/sales/unmatched/<%= day.id %>/location" class="contact-form" style="margin-top: 0;">
+                  <div class="contact-form__row">
+                    <div>
+                      <label for="locationId-<%= day.id %>">Assign Location</label>
+                      <select id="locationId-<%= day.id %>" name="locationId" required>
+                        <option value="" disabled selected>Choose one</option>
+                        <% locations.forEach(function(location) { %>
+                          <option value="<%= location.id %>"><%= location.name %></option>
+                        <% }); %>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn--small btn--primary">Assign</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

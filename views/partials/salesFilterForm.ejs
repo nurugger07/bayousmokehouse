@@ -1,0 +1,22 @@
+<form class="contact-form" method="GET" action="<%= action %>">
+  <div class="contact-form__row">
+    <div>
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate" name="startDate" value="<%= filters.startDate %>">
+    </div>
+    <div>
+      <label for="endDate">End Date</label>
+      <input type="date" id="endDate" name="endDate" value="<%= filters.endDate %>">
+    </div>
+    <div>
+      <label for="locationId">Location</label>
+      <select id="locationId" name="locationId">
+        <option value="">All Locations</option>
+        <% locations.forEach(function(location) { %>
+          <option value="<%= location.id %>" <%= String(filters.locationId) === String(location.id) ? 'selected' : '' %>><%= location.name %></option>
+        <% }); %>
+      </select>
+    </div>
+  </div>
+  <button type="submit" class="btn btn--small btn--primary">Filter</button>
+</form>

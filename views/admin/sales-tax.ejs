@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Tax Totals' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Tax Totals by Location</h1>
+
+      <nav class="admin-filters">
+        <a href="/admin/sales/totals">Sales Totals</a>
+        <a href="/admin/sales/items">Item Sales</a>
+        <a href="/admin/sales/tax" class="admin-filters__active">Tax Totals</a>
+        <a href="/admin/sales/tips">Tip Totals</a>
+        <a href="/admin/sales/unmatched">Unmatched Days</a>
+      </nav>
+
+      <%- include('../partials/salesFilterForm', { action: '/admin/sales/tax', locations, filters }) %>
+
+      <% if (rows.length === 0) { %>
+        <p>No sales in this range.</p>
+      <% } %>
+
+      <% if (rows.length > 0) { %>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Visits</th>
+                <th>Orders</th>
+                <th>Tax Collected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(function(row) { %>
+                <tr>
+                  <td><%= row.location_name %></td>
+                  <td><%= row.visit_count %></td>
+                  <td><%= row.order_count %></td>
+                  <td>$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>
