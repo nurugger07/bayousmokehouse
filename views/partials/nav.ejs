@@ -3,7 +3,7 @@
     <a href="/" class="site-logo">
       <img src="/images/logo/bayou-smokehouse-logo.png" alt="Bayou Smokehouse" class="site-logo__image">
     </a>
-    <nav class="site-nav">
+    <nav class="site-nav" id="primary-nav">
       <a href="/#schedule">Schedule</a>
       <a href="/menu">Menu</a>
       <a href="/catering">Catering</a>
@@ -16,6 +16,11 @@
       <div class="header-social">
         <%- include('./socialLinks', { linkClass: 'header-social__link' }) %>
       </div>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="primary-nav" aria-label="Toggle menu">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
     </div>
   </div>
 </header>
