@@ -675,6 +675,28 @@ main {
   gap: var(--space-4);
 }
 
+.header-social {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header-social__link {
+  display: inline-flex;
+  color: var(--color-parchment);
+  transition: color var(--transition-fast);
+}
+
+.header-social__link:hover,
+.header-social__link:focus-visible {
+  color: var(--color-fire-gold);
+}
+
+.header-social__link svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -1421,7 +1443,13 @@ main {
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
-.footer-social__link:hover {
+.footer-social__link:hover,
+.footer-social__link:focus-visible {
   background-color: var(--color-ember);
   color: var(--color-parchment);
+}
+
+.footer-social__link svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }

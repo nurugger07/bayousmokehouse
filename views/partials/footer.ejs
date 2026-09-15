@@ -2,5 +2,8 @@
   <div class="container site-footer__inner">
     <p>&copy; <%= new Date().getFullYear() %> Bayou Smokehouse. Southern Treats &amp; Cajun Eats.</p>
     <p>Southern Roots. Northern Colorado Home.</p>
+    <div class="footer-social">
+      <%- include('./socialLinks', { linkClass: 'footer-social__link' }) %>
+    </div>
   </div>
 </footer>
