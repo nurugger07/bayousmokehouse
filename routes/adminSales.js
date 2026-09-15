@@ -4,6 +4,7 @@ const requireAdminAuth = require('../middleware/requireAdminAuth');
 const {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
+  getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
 } = require('../models/salesReports');
@@ -40,8 +41,12 @@ router.get('/sales/totals', async (req, res, next) => {
 router.get('/sales/items', async (req, res, next) => {
   try {
     const filters = resolveFilters(req.query);
-    const [rows, locations] = await Promise.all([getItemSalesByLocation(filters), listLocations()]);
-    res.render('admin/sales-items', { rows, locations, filters });
+    const [rows, topItems, locations] = await Promise.all([
+      getItemSalesByLocation(filters),
+      getTopItems({ ...filters, limit: 5 }),
+      listLocations(),
+    ]);
+    res.render('admin/sales-items', { rows, topItems, locations, filters });
   } catch (err) {
     next(err);
   }

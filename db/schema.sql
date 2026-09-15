@@ -86,11 +86,21 @@ CREATE INDEX IF NOT EXISTS idx_contact_message_notes_message_id ON contact_messa
 -- and services/salesSync.js.
 
 -- Canonical physical locations, matched against calendar event summaries.
+-- city_state is parsed from the calendar event's address the first time a
+-- location is created (same parser as the public site's live schedule —
+-- see getShortLocation in services/googleCalendar.js), e.g. "Berthoud, CO".
+-- Sales tax is a city/county-level concern, not a venue-level one, so this
+-- is what the tax report groups by.
 CREATE TABLE IF NOT EXISTS sales_locations (
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(255) NOT NULL UNIQUE,
+    city_state  VARCHAR(255),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent add for databases where sales_locations already existed
+-- before city_state was introduced.
+ALTER TABLE sales_locations ADD COLUMN IF NOT EXISTS city_state VARCHAR(255);
 
 -- One row per calendar event ("visit") on a date. location_id is NULL
 -- until matched/assigned; location_source records how it got set, and

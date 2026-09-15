@@ -25,12 +25,17 @@
         <p>No tips in this range.</p>
       <% } %>
 
-      <% if (rows.length > 0) { %>
+      <% if (rows.length > 0) {
+        var totalVisits = rows.reduce(function(sum, row) { return sum + Number(row.visit_count); }, 0);
+        var totalOrders = rows.reduce(function(sum, row) { return sum + Number(row.order_count); }, 0);
+        var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.tip_money_cents); }, 0);
+      %>
         <div class="table-scroll">
           <table class="admin-table">
             <thead>
               <tr>
                 <th>Location</th>
+                <th>City, State</th>
                 <th>Day</th>
                 <th>Visits</th>
                 <th>Orders</th>
@@ -41,6 +46,7 @@
               <% rows.forEach(function(row) { %>
                 <tr>
                   <td><%= row.location_name %></td>
+                  <td><%= row.city_state || '—' %></td>
                   <td><%= row.dayOfWeekLabel %></td>
                   <td><%= row.visit_count %></td>
                   <td><%= row.order_count %></td>
@@ -48,6 +54,14 @@
                 </tr>
               <% }); %>
             </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Total</td>
+                <td><%= totalVisits %></td>
+                <td><%= totalOrders %></td>
+                <td>$<%= (totalCents / 100).toFixed(2) %></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       <% } %>

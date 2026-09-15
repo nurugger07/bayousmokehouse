@@ -179,4 +179,4 @@ async function getWeekSchedule() {
   }
 }
 
-module.exports = { getWeekSchedule, getEventsForDateRange };
+module.exports = { getWeekSchedule, getEventsForDateRange, getShortLocation };

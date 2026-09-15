@@ -1,5 +1,9 @@
 jest.mock('../services/googleCalendar', () => ({
   getEventsForDateRange: jest.fn(),
+  // Not mocked — models/salesLocations.js uses the real parser to derive
+  // city_state from an event's address, and that's worth exercising for
+  // real rather than stubbing here.
+  getShortLocation: jest.requireActual('../services/googleCalendar').getShortLocation,
 }));
 jest.mock('../services/square', () => ({
   searchOrders: jest.fn(),

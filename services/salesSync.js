@@ -92,7 +92,7 @@ async function ensureSalesDaysExist(startDate, endDate) {
     }
 
     for (const event of dayEvents) {
-      const location = await salesLocations.findOrCreateByName(event.summary);
+      const location = await salesLocations.findOrCreateByName(event.summary, event.location);
       await salesDays.findOrCreateForEvent({
         saleDate: date,
         calendarEventSummary: event.summary,

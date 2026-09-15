@@ -21,16 +21,45 @@
 
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/items', locations, filters }) %>
 
+      <% if (topItems.length > 0) { %>
+        <h2>Top 5 Items</h2>
+        <div class="table-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty Sold</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topItems.forEach(function(item) { %>
+                <tr>
+                  <td><%= item.item_name %></td>
+                  <td><%= item.quantity_sold %></td>
+                  <td>$<%= (item.total_money_cents / 100).toFixed(2) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <h2>All Items</h2>
+      <% } %>
+
       <% if (rows.length === 0) { %>
         <p>No item sales in this range.</p>
       <% } %>
 
-      <% if (rows.length > 0) { %>
+      <% if (rows.length > 0) {
+        var totalQty = rows.reduce(function(sum, row) { return sum + Number(row.quantity_sold); }, 0);
+        var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.total_money_cents); }, 0);
+      %>
         <div class="table-scroll">
           <table class="admin-table">
             <thead>
               <tr>
                 <th>Location</th>
+                <th>City, State</th>
                 <th>Day</th>
                 <th>Item</th>
                 <th>Qty Sold</th>
@@ -41,6 +70,7 @@
               <% rows.forEach(function(row) { %>
                 <tr>
                   <td><%= row.location_name %></td>
+                  <td><%= row.city_state || '—' %></td>
                   <td><%= row.dayOfWeekLabel %></td>
                   <td><%= row.item_name %></td>
                   <td><%= row.quantity_sold %></td>
@@ -48,6 +78,13 @@
                 </tr>
               <% }); %>
             </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4">Total</td>
+                <td><%= totalQty %></td>
+                <td>$<%= (totalCents / 100).toFixed(2) %></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       <% } %>

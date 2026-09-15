@@ -9,7 +9,8 @@
 <main>
   <section class="content">
     <div class="container">
-      <h1>Tax Totals by Location</h1>
+      <h1>Tax Totals by City, State</h1>
+      <p>Grouped by tax jurisdiction (city/state) rather than individual venue, since sales tax is collected at that level.</p>
 
       <nav class="admin-filters">
         <a href="/admin/sales/totals">Sales Totals</a>
@@ -25,12 +26,16 @@
         <p>No sales in this range.</p>
       <% } %>
 
-      <% if (rows.length > 0) { %>
+      <% if (rows.length > 0) {
+        var totalVisits = rows.reduce(function(sum, row) { return sum + Number(row.visit_count); }, 0);
+        var totalOrders = rows.reduce(function(sum, row) { return sum + Number(row.order_count); }, 0);
+        var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.tax_money_cents); }, 0);
+      %>
         <div class="table-scroll">
           <table class="admin-table">
             <thead>
               <tr>
-                <th>Location</th>
+                <th>City, State</th>
                 <th>Visits</th>
                 <th>Orders</th>
                 <th>Tax Collected</th>
@@ -39,13 +44,21 @@
             <tbody>
               <% rows.forEach(function(row) { %>
                 <tr>
-                  <td><%= row.location_name %></td>
+                  <td><%= row.city_state %></td>
                   <td><%= row.visit_count %></td>
                   <td><%= row.order_count %></td>
                   <td>$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
             </tbody>
+            <tfoot>
+              <tr>
+                <td>Total</td>
+                <td><%= totalVisits %></td>
+                <td><%= totalOrders %></td>
+                <td>$<%= (totalCents / 100).toFixed(2) %></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       <% } %>

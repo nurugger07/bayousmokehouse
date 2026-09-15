@@ -596,28 +596,51 @@ main {
    scrolls horizontally on narrow screens instead of breaking layout. */
 .table-scroll {
   overflow-x: auto;
+  margin-top: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .admin-table {
   border-collapse: collapse;
   width: 100%;
-  margin-top: var(--space-4);
 }
 
 .admin-table th,
 .admin-table td {
   padding: var(--space-2) var(--space-3);
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
   font-size: var(--fs-sm);
   white-space: nowrap;
 }
 
-.admin-table th {
+.admin-table thead th {
+  background-color: var(--color-wood-dark);
+  color: var(--color-parchment);
   font-family: var(--font-heading);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  font-weight: normal;
+}
+
+.admin-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background-color: var(--color-bg-alt);
+}
+
+.admin-table tbody tr:hover {
+  background-color: rgba(217, 72, 28, 0.08);
+}
+
+.admin-table tfoot td {
+  border-top: 2px solid var(--color-ember);
+  font-weight: 700;
   color: var(--color-wood-dark);
+  background-color: var(--color-cream);
 }
 
 /* ===== 10. Header & Nav ===== */

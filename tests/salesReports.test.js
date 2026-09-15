@@ -2,12 +2,16 @@ const { pool } = require('../config/db');
 const {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
+  getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
 } = require('../models/salesReports');
 
-async function createLocation(name) {
-  const result = await pool.query('INSERT INTO sales_locations (name) VALUES ($1) RETURNING *', [name]);
+async function createLocation(name, cityState) {
+  const result = await pool.query('INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *', [
+    name,
+    cityState || null,
+  ]);
   return result.rows[0];
 }
 
@@ -46,8 +50,8 @@ async function createOrder({ salesDayId, totalCents, taxCents, tipCents, items =
 // (calendar-synced but no sales data) to exercise the LEFT JOIN.
 async function seedData() {
   const [berthoud, odd13] = await Promise.all([
-    createLocation('Bayou Smokehouse @ Berthoud Brewery'),
-    createLocation('Bayou Smokehouse @ Odd13 Brewing'),
+    createLocation('Bayou Smokehouse @ Berthoud Brewery', 'Berthoud, CO'),
+    createLocation('Bayou Smokehouse @ Odd13 Brewing', 'Fort Collins, CO'),
   ]);
 
   const [berthoudVisit1, berthoudVisit2, , odd13Visit] = await Promise.all([
@@ -163,14 +167,66 @@ describe('getItemSalesByLocation', () => {
 });
 
 describe('getTaxTotalsByLocation', () => {
-  it('totals tax by location without a day-of-week split', async () => {
-    const { berthoud, odd13 } = seeded;
-
+  it('totals tax by city/state (not individual venue) without a day-of-week split', async () => {
     const rows = await getTaxTotalsByLocation({ startDate: '2026-08-01', endDate: '2026-08-31' });
 
-    expect(rows.find((r) => r.location_id === berthoud.id)).not.toHaveProperty('day_of_week');
-    expect(rows.find((r) => r.location_id === berthoud.id).tax_money_cents).toBe('300');
-    expect(rows.find((r) => r.location_id === odd13.id).tax_money_cents).toBe('80');
+    expect(rows.find((r) => r.city_state === 'Berthoud, CO')).not.toHaveProperty('day_of_week');
+    expect(rows.find((r) => r.city_state === 'Berthoud, CO').tax_money_cents).toBe('300');
+    expect(rows.find((r) => r.city_state === 'Fort Collins, CO').tax_money_cents).toBe('80');
+  });
+
+  it('merges two venues that share a city/state into one row', async () => {
+    const [venueA, venueB] = await Promise.all([
+      createLocation('Bayou Smokehouse @ Venue A', 'Loveland, CO'),
+      createLocation('Bayou Smokehouse @ Venue B', 'Loveland, CO'),
+    ]);
+    const [dayA, dayB] = await Promise.all([
+      createSalesDay({ saleDate: '2026-08-24', locationId: venueA.id, summary: venueA.name }),
+      createSalesDay({ saleDate: '2026-08-25', locationId: venueB.id, summary: venueB.name }),
+    ]);
+    await Promise.all([
+      createOrder({ salesDayId: dayA.id, totalCents: 500, taxCents: 40, tipCents: 0, items: [] }),
+      createOrder({ salesDayId: dayB.id, totalCents: 700, taxCents: 60, tipCents: 0, items: [] }),
+    ]);
+
+    const rows = await getTaxTotalsByLocation({ startDate: '2026-08-24', endDate: '2026-08-25' });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].city_state).toBe('Loveland, CO');
+    expect(rows[0].visit_count).toBe('2');
+    expect(rows[0].tax_money_cents).toBe('100');
+  });
+
+  it('falls back to the venue name when city_state could not be parsed', async () => {
+    const noAddress = await createLocation('Bayou Smokehouse @ No Address Venue', null);
+    const day = await createSalesDay({ saleDate: '2026-08-26', locationId: noAddress.id, summary: noAddress.name });
+    await createOrder({ salesDayId: day.id, totalCents: 300, taxCents: 25, tipCents: 0, items: [] });
+
+    const rows = await getTaxTotalsByLocation({ startDate: '2026-08-26', endDate: '2026-08-26' });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].city_state).toBe('Bayou Smokehouse @ No Address Venue');
+  });
+});
+
+describe('getTopItems', () => {
+  it('returns the top N items by revenue across the date range, ignoring location grouping', async () => {
+    const topItems = await getTopItems({ startDate: '2026-08-01', endDate: '2026-08-31', limit: 5 });
+
+    expect(topItems[0].item_name).toBe('Pork Belly Sliders');
+    expect(topItems[0].quantity_sold).toBe(3);
+    expect(topItems[0].total_money_cents).toBe('4000');
+    expect(topItems[1].item_name).toBe('Jambalaya');
+    expect(topItems[1].quantity_sold).toBe(1);
+  });
+
+  it('respects the locationId filter', async () => {
+    const { odd13 } = seeded;
+
+    const topItems = await getTopItems({ startDate: '2026-08-01', endDate: '2026-08-31', locationId: odd13.id, limit: 5 });
+
+    expect(topItems).toHaveLength(1);
+    expect(topItems[0].item_name).toBe('Jambalaya');
   });
 });
 

@@ -14,6 +14,7 @@ async function getSalesTotalsByLocation({ startDate, endDate, locationId } = {})
     `SELECT
         l.id AS location_id,
         l.name AS location_name,
+        l.city_state AS city_state,
         EXTRACT(ISODOW FROM sd.sale_date)::int AS day_of_week,
         COUNT(DISTINCT sd.id) AS visit_count,
         COUNT(o.id) AS order_count,
@@ -23,7 +24,7 @@ async function getSalesTotalsByLocation({ startDate, endDate, locationId } = {})
      LEFT JOIN square_orders o ON o.sales_day_id = sd.id
      WHERE sd.sale_date BETWEEN $1 AND $2
        AND ($3::int IS NULL OR l.id = $3)
-     GROUP BY l.id, l.name, EXTRACT(ISODOW FROM sd.sale_date)
+     GROUP BY l.id, l.name, l.city_state, EXTRACT(ISODOW FROM sd.sale_date)
      ORDER BY l.name, day_of_week`,
     [startDate, endDate, locationId || null]
   );
@@ -38,6 +39,7 @@ async function getItemSalesByLocation({ startDate, endDate, locationId } = {}) {
     `SELECT
         l.id AS location_id,
         l.name AS location_name,
+        l.city_state AS city_state,
         EXTRACT(ISODOW FROM sd.sale_date)::int AS day_of_week,
         li.name AS item_name,
         SUM(li.quantity)::int AS quantity_sold,
@@ -48,19 +50,42 @@ async function getItemSalesByLocation({ startDate, endDate, locationId } = {}) {
      JOIN square_order_line_items li ON li.square_order_id = o.id
      WHERE sd.sale_date BETWEEN $1 AND $2
        AND ($3::int IS NULL OR l.id = $3)
-     GROUP BY l.id, l.name, EXTRACT(ISODOW FROM sd.sale_date), li.name
+     GROUP BY l.id, l.name, l.city_state, EXTRACT(ISODOW FROM sd.sale_date), li.name
      ORDER BY l.name, day_of_week, total_money_cents DESC`,
     [startDate, endDate, locationId || null]
   );
   return withDayOfWeekLabel(result.rows);
 }
 
-// Tax totals by location — no day-of-week split, per Johnny's report list.
+// Top N items by revenue across whatever the date range/location filter
+// selects — independent of the day-of-week/location breakdown above.
+async function getTopItems({ startDate, endDate, locationId, limit = 5 } = {}) {
+  const result = await pool.query(
+    `SELECT
+        li.name AS item_name,
+        SUM(li.quantity)::int AS quantity_sold,
+        COALESCE(SUM(li.total_money_cents), 0)::bigint AS total_money_cents
+     FROM sales_days sd
+     JOIN square_orders o ON o.sales_day_id = sd.id
+     JOIN square_order_line_items li ON li.square_order_id = o.id
+     WHERE sd.sale_date BETWEEN $1 AND $2
+       AND ($3::int IS NULL OR sd.location_id = $3)
+     GROUP BY li.name
+     ORDER BY total_money_cents DESC
+     LIMIT $4`,
+    [startDate, endDate, locationId || null, limit]
+  );
+  return result.rows;
+}
+
+// Tax totals grouped by city/state, not individual venue — sales tax is
+// a city/county-level jurisdiction concern, not a per-venue one, and
+// multiple venues can share a jurisdiction. Locations with no parseable
+// address fall back to grouping under their own name so nothing is lost.
 async function getTaxTotalsByLocation({ startDate, endDate, locationId } = {}) {
   const result = await pool.query(
     `SELECT
-        l.id AS location_id,
-        l.name AS location_name,
+        COALESCE(l.city_state, l.name) AS city_state,
         COUNT(DISTINCT sd.id) AS visit_count,
         COUNT(o.id) AS order_count,
         COALESCE(SUM(o.tax_money_cents), 0)::bigint AS tax_money_cents
@@ -69,8 +94,8 @@ async function getTaxTotalsByLocation({ startDate, endDate, locationId } = {}) {
      LEFT JOIN square_orders o ON o.sales_day_id = sd.id
      WHERE sd.sale_date BETWEEN $1 AND $2
        AND ($3::int IS NULL OR l.id = $3)
-     GROUP BY l.id, l.name
-     ORDER BY l.name`,
+     GROUP BY COALESCE(l.city_state, l.name)
+     ORDER BY COALESCE(l.city_state, l.name)`,
     [startDate, endDate, locationId || null]
   );
   return result.rows;
@@ -82,6 +107,7 @@ async function getTipTotalsByLocation({ startDate, endDate, locationId } = {}) {
     `SELECT
         l.id AS location_id,
         l.name AS location_name,
+        l.city_state AS city_state,
         EXTRACT(ISODOW FROM sd.sale_date)::int AS day_of_week,
         COUNT(DISTINCT sd.id) AS visit_count,
         COUNT(o.id) AS order_count,
@@ -91,7 +117,7 @@ async function getTipTotalsByLocation({ startDate, endDate, locationId } = {}) {
      LEFT JOIN square_orders o ON o.sales_day_id = sd.id
      WHERE sd.sale_date BETWEEN $1 AND $2
        AND ($3::int IS NULL OR l.id = $3)
-     GROUP BY l.id, l.name, EXTRACT(ISODOW FROM sd.sale_date)
+     GROUP BY l.id, l.name, l.city_state, EXTRACT(ISODOW FROM sd.sale_date)
      ORDER BY l.name, day_of_week`,
     [startDate, endDate, locationId || null]
   );
@@ -101,6 +127,7 @@ async function getTipTotalsByLocation({ startDate, endDate, locationId } = {}) {
 module.exports = {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
+  getTopItems,
   getTaxTotalsByLocation,
   getTipTotalsByLocation,
 };
