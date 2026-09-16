@@ -19,3 +19,36 @@
     }
   });
 })();
+
+// Admin nav dropdowns (e.g. "Sales") — independent of the mobile nav
+// toggle above, so it still runs on admin pages that don't have one.
+(function () {
+  var dropdowns = document.querySelectorAll('.dropdown');
+  if (!dropdowns.length) return;
+
+  dropdowns.forEach(function (dropdown) {
+    var toggle = dropdown.querySelector('.dropdown__toggle');
+    if (!toggle) return;
+
+    toggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      var isOpen = dropdown.classList.toggle('dropdown--open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+      dropdowns.forEach(function (other) {
+        if (other !== dropdown) {
+          other.classList.remove('dropdown--open');
+          var otherToggle = other.querySelector('.dropdown__toggle');
+          if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+  });
+
+  document.addEventListener('click', function () {
+    dropdowns.forEach(function (dropdown) {
+      dropdown.classList.remove('dropdown--open');
+      var toggle = dropdown.querySelector('.dropdown__toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();

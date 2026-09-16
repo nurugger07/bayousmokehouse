@@ -4,7 +4,18 @@
     <% if (loggedIn) { %>
       <nav class="site-nav">
         <a href="/admin/messages">Messages</a>
-        <a href="/admin/sales">Sales</a>
+        <div class="dropdown">
+          <button type="button" class="dropdown__toggle" aria-expanded="false" aria-controls="sales-dropdown-menu">Sales</button>
+          <div class="dropdown__menu" id="sales-dropdown-menu">
+            <a href="/admin/sales/totals">Sales Totals</a>
+            <a href="/admin/sales/items">Item Sales</a>
+            <a href="/admin/sales/tax">Tax Totals</a>
+            <a href="/admin/sales/tips">Tip Totals</a>
+            <a href="/admin/sales/weekly">Weekly Totals</a>
+            <a href="/admin/sales/locations">Manage Locations</a>
+            <a href="/admin/sales/unmatched">Unmatched Days</a>
+          </div>
+        </div>
         <form method="POST" action="/admin/logout" style="display:inline">
           <button type="submit" class="btn btn--small btn--secondary">Log Out</button>
         </form>

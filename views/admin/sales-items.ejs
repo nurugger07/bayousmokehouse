@@ -18,12 +18,12 @@
       <% if (topItems.length > 0) { %>
         <h2>Top 5 Items</h2>
         <div class="table-scroll">
-          <table class="admin-table">
+          <table class="admin-table" data-sortable>
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Qty Sold</th>
-                <th>Revenue</th>
+                <th data-sort-type="number">Qty Sold</th>
+                <th data-sort-type="number">Revenue</th>
               </tr>
             </thead>
             <tbody>
@@ -31,7 +31,7 @@
                 <tr>
                   <td><%= item.item_name %></td>
                   <td><%= item.quantity_sold %></td>
-                  <td>$<%= (item.total_money_cents / 100).toFixed(2) %></td>
+                  <td data-sort-value="<%= item.total_money_cents %>">$<%= (item.total_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
             </tbody>
@@ -49,15 +49,15 @@
         var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.total_money_cents); }, 0);
       %>
         <div class="table-scroll">
-          <table class="admin-table">
+          <table class="admin-table" data-sortable>
             <thead>
               <tr>
                 <th>Location</th>
                 <th>City, State</th>
-                <th>Day</th>
+                <th data-sort-type="number">Day</th>
                 <th>Item</th>
-                <th>Qty Sold</th>
-                <th>Revenue</th>
+                <th data-sort-type="number">Qty Sold</th>
+                <th data-sort-type="number">Revenue</th>
               </tr>
             </thead>
             <tbody>
@@ -65,10 +65,10 @@
                 <tr>
                   <td><%= row.location_name %></td>
                   <td><%= row.city_state || '—' %></td>
-                  <td><%= row.dayOfWeekLabel %></td>
+                  <td data-sort-value="<%= row.day_of_week %>"><%= row.dayOfWeekLabel %></td>
                   <td><%= row.item_name %></td>
                   <td><%= row.quantity_sold %></td>
-                  <td>$<%= (row.total_money_cents / 100).toFixed(2) %></td>
+                  <td data-sort-value="<%= row.total_money_cents %>">$<%= (row.total_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
             </tbody>

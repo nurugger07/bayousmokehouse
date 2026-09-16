@@ -25,15 +25,15 @@
         var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.total_money_cents); }, 0);
       %>
         <div class="table-scroll">
-          <table class="admin-table">
+          <table class="admin-table" data-sortable>
             <thead>
               <tr>
                 <th>Location</th>
                 <th>City, State</th>
-                <th>Day</th>
-                <th>Visits</th>
-                <th>Orders</th>
-                <th>Total Sales</th>
+                <th data-sort-type="number">Day</th>
+                <th data-sort-type="number">Visits</th>
+                <th data-sort-type="number">Orders</th>
+                <th data-sort-type="number">Total Sales</th>
               </tr>
             </thead>
             <tbody>
@@ -41,10 +41,10 @@
                 <tr>
                   <td><%= row.location_name %></td>
                   <td><%= row.city_state || '—' %></td>
-                  <td><%= row.dayOfWeekLabel %></td>
+                  <td data-sort-value="<%= row.day_of_week %>"><%= row.dayOfWeekLabel %></td>
                   <td><%= row.visit_count %></td>
                   <td><%= row.order_count %></td>
-                  <td>$<%= (row.total_money_cents / 100).toFixed(2) %></td>
+                  <td data-sort-value="<%= row.total_money_cents %>">$<%= (row.total_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
             </tbody>

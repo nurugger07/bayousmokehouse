@@ -624,6 +624,36 @@ main {
   font-weight: normal;
 }
 
+.admin-table thead th.is-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-table thead th.is-sortable:hover,
+.admin-table thead th.is-sortable:focus-visible {
+  background-color: var(--color-wood);
+}
+
+.admin-table thead th.is-sortable::after {
+  content: '⇅';
+  display: inline-block;
+  margin-left: var(--space-1);
+  opacity: 0.5;
+  font-size: 0.85em;
+}
+
+.admin-table thead th.sorted-asc::after {
+  content: '▲';
+  opacity: 1;
+  color: var(--color-fire-gold);
+}
+
+.admin-table thead th.sorted-desc::after {
+  content: '▼';
+  opacity: 1;
+  color: var(--color-fire-gold);
+}
+
 .admin-table tbody tr {
   border-bottom: 1px solid var(--color-border);
 }
@@ -735,6 +765,78 @@ main {
 .site-nav a:focus-visible {
   color: var(--color-fire-gold);
   border-bottom-color: var(--color-fire-gold);
+}
+
+/* Admin nav dropdown (e.g. "Sales") — toggled via a small script in
+   public/js/nav.js, closes on an outside click. */
+.dropdown {
+  position: relative;
+}
+
+.dropdown__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-parchment);
+  background: none;
+  border: none;
+  padding: var(--space-2) 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.dropdown__toggle::after {
+  content: '▾';
+  font-size: 0.7em;
+}
+
+.dropdown__toggle:hover,
+.dropdown__toggle:focus-visible,
+.dropdown--open .dropdown__toggle {
+  color: var(--color-fire-gold);
+  border-bottom-color: var(--color-fire-gold);
+}
+
+.dropdown__menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--space-2);
+  min-width: 12rem;
+  flex-direction: column;
+  background-color: var(--color-charcoal-soft);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2);
+  z-index: 10;
+}
+
+.dropdown--open .dropdown__menu {
+  display: flex;
+}
+
+.dropdown__menu a {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-parchment);
+  white-space: nowrap;
+}
+
+.dropdown__menu a:hover,
+.dropdown__menu a:focus-visible {
+  background-color: var(--color-charcoal);
+  color: var(--color-fire-gold);
 }
 
 .site-header__actions {

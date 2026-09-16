@@ -26,13 +26,13 @@
         var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.tax_money_cents); }, 0);
       %>
         <div class="table-scroll">
-          <table class="admin-table">
+          <table class="admin-table" data-sortable>
             <thead>
               <tr>
                 <th>City, State</th>
-                <th>Visits</th>
-                <th>Orders</th>
-                <th>Tax Collected</th>
+                <th data-sort-type="number">Visits</th>
+                <th data-sort-type="number">Orders</th>
+                <th data-sort-type="number">Tax Collected</th>
               </tr>
             </thead>
             <tbody>
@@ -41,7 +41,7 @@
                   <td><%= row.city_state %></td>
                   <td><%= row.visit_count %></td>
                   <td><%= row.order_count %></td>
-                  <td>$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
+                  <td data-sort-value="<%= row.tax_money_cents %>">$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
             </tbody>
