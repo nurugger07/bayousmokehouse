@@ -11,8 +11,6 @@
     <div class="container">
       <h1>Tip Totals by Location</h1>
 
-      <%- include('../partials/salesNav', { active: 'tips' }) %>
-
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/tips', locations, filters }) %>
 
       <% if (rows.length === 0) { %>

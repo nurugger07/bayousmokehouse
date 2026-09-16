@@ -11,8 +11,6 @@
     <div class="container">
       <h1>Item Sales by Location</h1>
 
-      <%- include('../partials/salesNav', { active: 'items' }) %>
-
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/items', locations, filters }) %>
 
       <% if (topItems.length > 0) { %>
