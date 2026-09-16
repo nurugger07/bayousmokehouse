@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Manage Locations' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Manage Locations</h1>
+      <p>
+        City/State is parsed from the calendar event's address the first time each location is created, and never
+        touched again automatically — so if an event's address was wrong or missing back then, fixing the calendar
+        event now won't retroactively fix it here. Correct it below instead: paste the full address (it'll be
+        re-parsed the same way the nightly sync does) or just type the city and state directly.
+      </p>
+
+      <%- include('../partials/salesNav', { active: 'locations' }) %>
+
+      <% if (locations.length === 0) { %>
+        <p>No locations yet.</p>
+      <% } %>
+
+      <% if (locations.length > 0) { %>
+        <div class="menu-list">
+          <% locations.forEach(function(location) { %>
+            <div class="menu-item">
+              <div class="menu-item__summary" style="cursor: default;">
+                <span class="menu-item__name"><%= location.name %></span>
+                <span class="menu-item__price"><%= location.city_state || 'No city/state set' %></span>
+              </div>
+              <div class="menu-item__panel">
+                <form method="POST" action="/admin/sales/locations/<%= location.id %>/city-state" class="contact-form" style="margin-top: 0;">
+                  <div class="contact-form__row">
+                    <div>
+                      <label for="cityState-<%= location.id %>">City, State (or paste a full address)</label>
+                      <input type="text" id="cityState-<%= location.id %>" name="cityState" value="<%= location.city_state || '' %>" placeholder="e.g. Loveland, CO">
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn--small btn--primary">Save</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

@@ -10,7 +10,8 @@ const {
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
 } = require('../models/salesReports');
-const { listLocations } = require('../models/salesLocations');
+const { listLocations, updateCityState } = require('../models/salesLocations');
+const { getShortLocation } = require('../services/googleCalendar');
 const { listUnmatched, setLocation } = require('../models/salesDays');
 
 const router = express.Router();
@@ -90,6 +91,29 @@ router.get('/sales/weekly', async (req, res, next) => {
     const rows = await getWeeklyTotals(filters);
     const months = groupWeeklyTotalsByMonth(rows);
     res.render('admin/sales-weekly', { months, filters });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/sales/locations', async (req, res, next) => {
+  try {
+    const locations = await listLocations();
+    res.render('admin/sales-locations', { locations });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id/city-state', async (req, res, next) => {
+  try {
+    // Accepts either a full address (re-parsed the same way the nightly
+    // sync does) or an already-clean "City, ST" — getShortLocation
+    // passes the latter through unchanged since it won't split into 3+
+    // comma-separated parts.
+    const cityState = getShortLocation((req.body.cityState || '').trim());
+    await updateCityState(req.params.id, cityState);
+    res.redirect('/admin/sales/locations');
   } catch (err) {
     next(err);
   }

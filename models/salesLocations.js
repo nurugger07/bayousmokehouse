@@ -31,4 +31,18 @@ async function listLocations() {
   return result.rows;
 }
 
-module.exports = { findOrCreateByName, listLocations };
+// Manual correction for a location's city_state — needed because it's
+// only ever parsed once, at creation (see findOrCreateByName above), so
+// fixing the calendar event's address later and re-syncing does NOT
+// retroactively fix an already-created location's city_state. This is
+// the durable fix for that: re-parse it here, or type in the right
+// value directly if the address still won't parse into "City, ST".
+async function updateCityState(id, cityState) {
+  const result = await pool.query(
+    'UPDATE sales_locations SET city_state = $2 WHERE id = $1 RETURNING *',
+    [id, cityState || null]
+  );
+  return result.rows[0];
+}
+
+module.exports = { findOrCreateByName, listLocations, updateCityState };

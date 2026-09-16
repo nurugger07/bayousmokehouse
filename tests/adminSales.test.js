@@ -53,6 +53,7 @@ describe('admin sales reports', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain(location.name);
     expect(res.text).toContain('$25.00');
+    expect(res.text).toContain('data-sortable'); // column sorting wired up
   });
 
   it('shows item sales, tax totals, and tip totals for the same visit', async () => {
@@ -101,6 +102,35 @@ describe('admin sales reports', () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('August');
     expect(res.text).toContain('$20.00');
+  });
+});
+
+describe('admin manage locations', () => {
+  it('re-parses a pasted full address into city/state', async () => {
+    const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Test Venue') RETURNING *");
+    const agent = await loggedInAgent();
+
+    await agent
+      .post(`/admin/sales/locations/${location.rows[0].id}/city-state`)
+      .type('form')
+      .send({ cityState: '123 Main St, Loveland, CO 80537, USA' });
+
+    const updated = await pool.query('SELECT city_state FROM sales_locations WHERE id = $1', [location.rows[0].id]);
+    expect(updated.rows[0].city_state).toBe('Loveland, CO');
+
+    const res = await agent.get('/admin/sales/locations');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Loveland, CO');
+  });
+
+  it('accepts an already-clean "City, ST" value directly, unchanged', async () => {
+    const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Another Venue') RETURNING *");
+    const agent = await loggedInAgent();
+
+    await agent.post(`/admin/sales/locations/${location.rows[0].id}/city-state`).type('form').send({ cityState: 'Berthoud, CO' });
+
+    const updated = await pool.query('SELECT city_state FROM sales_locations WHERE id = $1', [location.rows[0].id]);
+    expect(updated.rows[0].city_state).toBe('Berthoud, CO');
   });
 });
 
