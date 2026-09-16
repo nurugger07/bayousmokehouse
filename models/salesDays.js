@@ -74,10 +74,16 @@ async function setLocation(id, locationId) {
   return result.rows[0];
 }
 
+async function countForLocation(locationId) {
+  const result = await pool.query('SELECT count(*)::int AS count FROM sales_days WHERE location_id = $1', [locationId]);
+  return result.rows[0].count;
+}
+
 module.exports = {
   findOrCreateForEvent,
   findOrCreateUnmatched,
   listForDateRange,
   listUnmatched,
   setLocation,
+  countForLocation,
 };

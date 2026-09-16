@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Confirm Merge' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Confirm Merge</h1>
+
+      <p class="form-message form-message--error">
+        This cannot be undone. All <strong><%= visitCount %></strong> visit(s) currently recorded under
+        <strong><%= duplicate.name %></strong> will be moved to <strong><%= target.name %></strong>, and
+        <strong><%= duplicate.name %></strong> will be permanently deleted.
+      </p>
+
+      <p><%= target.name %>'s own name and city/state are not changed by this merge.</p>
+
+      <form method="POST" action="/admin/sales/locations/<%= duplicate.id %>/merge" class="admin-actions">
+        <input type="hidden" name="targetId" value="<%= target.id %>">
+        <button type="submit" class="btn btn--small btn--primary">Confirm Merge</button>
+        <a href="/admin/sales/locations" class="btn btn--small btn--secondary">Cancel</a>
+      </form>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

@@ -132,6 +132,64 @@ describe('admin manage locations', () => {
     const updated = await pool.query('SELECT city_state FROM sales_locations WHERE id = $1', [location.rows[0].id]);
     expect(updated.rows[0].city_state).toBe('Berthoud, CO');
   });
+
+  it('renames a location', async () => {
+    const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Old Name') RETURNING *");
+    const agent = await loggedInAgent();
+
+    await agent.post(`/admin/sales/locations/${location.rows[0].id}/rename`).type('form').send({ name: 'Bayou Smokehouse @ New Name' });
+
+    const updated = await pool.query('SELECT name FROM sales_locations WHERE id = $1', [location.rows[0].id]);
+    expect(updated.rows[0].name).toBe('Bayou Smokehouse @ New Name');
+  });
+
+  it('blocks a rename that collides with an existing location name, with an error surfaced on the list page', async () => {
+    const [locationA, locationB] = await Promise.all([
+      pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Venue A') RETURNING *"),
+      pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Venue B') RETURNING *"),
+    ]);
+    const agent = await loggedInAgent();
+
+    const res = await agent
+      .post(`/admin/sales/locations/${locationA.rows[0].id}/rename`)
+      .type('form')
+      .send({ name: 'Bayou Smokehouse @ Venue B' })
+      .redirects(1);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('use Merge instead');
+
+    const unchanged = await pool.query('SELECT name FROM sales_locations WHERE id = $1', [locationA.rows[0].id]);
+    expect(unchanged.rows[0].name).toBe('Bayou Smokehouse @ Venue A');
+  });
+
+  it('shows a merge confirmation with the visit count, then merges and deletes the duplicate on confirm', async () => {
+    const [duplicate, target] = await Promise.all([
+      pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Duplicate Spelling') RETURNING *"),
+      pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Canonical Venue') RETURNING *"),
+    ]);
+    const day = await pool.query(
+      "INSERT INTO sales_days (sale_date, location_id, location_source) VALUES ('2026-08-14', $1, 'calendar') RETURNING *",
+      [duplicate.rows[0].id]
+    );
+    const agent = await loggedInAgent();
+
+    const confirmPage = await agent.get(
+      `/admin/sales/locations/${duplicate.rows[0].id}/merge?targetId=${target.rows[0].id}`
+    );
+    expect(confirmPage.status).toBe(200);
+    expect(confirmPage.text).toContain('<strong>1</strong> visit(s)');
+    expect(confirmPage.text).toContain('Duplicate Spelling');
+    expect(confirmPage.text).toContain('Canonical Venue');
+
+    await agent.post(`/admin/sales/locations/${duplicate.rows[0].id}/merge`).type('form').send({ targetId: target.rows[0].id });
+
+    const remaining = await pool.query('SELECT id FROM sales_locations WHERE id = $1', [duplicate.rows[0].id]);
+    expect(remaining.rows).toHaveLength(0);
+
+    const reassignedDay = await pool.query('SELECT location_id FROM sales_days WHERE id = $1', [day.rows[0].id]);
+    expect(reassignedDay.rows[0].location_id).toBe(target.rows[0].id);
+  });
 });
 
 describe('admin sales unmatched-day cleanup', () => {

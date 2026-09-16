@@ -16,8 +16,16 @@
         event now won't retroactively fix it here. Correct it below instead: paste the full address (it'll be
         re-parsed the same way the nightly sync does) or just type the city and state directly.
       </p>
+      <p>
+        Renaming only changes what's displayed — it doesn't stop a future sync from recreating the old name if that's
+        still what's typed into the calendar event. If two locations are really the same venue (the calendar just
+        named it differently at different times), use <strong>Merge</strong> instead: it moves all of one location's
+        sales history onto another and removes the duplicate.
+      </p>
 
-      <%- include('../partials/salesNav', { active: 'locations' }) %>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <p class="form-message form-message--error"><%= error %></p>
+      <% } %>
 
       <% if (locations.length === 0) { %>
         <p>No locations yet.</p>
@@ -32,7 +40,17 @@
                 <span class="menu-item__price"><%= location.city_state || 'No city/state set' %></span>
               </div>
               <div class="menu-item__panel">
-                <form method="POST" action="/admin/sales/locations/<%= location.id %>/city-state" class="contact-form" style="margin-top: 0;">
+                <form method="POST" action="/admin/sales/locations/<%= location.id %>/rename" class="contact-form" style="margin-top: 0;">
+                  <div class="contact-form__row">
+                    <div>
+                      <label for="name-<%= location.id %>">Name</label>
+                      <input type="text" id="name-<%= location.id %>" name="name" value="<%= location.name %>" required>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn--small btn--secondary">Rename</button>
+                </form>
+
+                <form method="POST" action="/admin/sales/locations/<%= location.id %>/city-state" class="contact-form">
                   <div class="contact-form__row">
                     <div>
                       <label for="cityState-<%= location.id %>">City, State (or paste a full address)</label>
@@ -41,6 +59,24 @@
                   </div>
                   <button type="submit" class="btn btn--small btn--primary">Save</button>
                 </form>
+
+                <% var otherLocations = locations.filter(function(other) { return other.id !== location.id; }); %>
+                <% if (otherLocations.length > 0) { %>
+                  <form method="GET" action="/admin/sales/locations/<%= location.id %>/merge" class="contact-form">
+                    <div class="contact-form__row">
+                      <div>
+                        <label for="targetId-<%= location.id %>">Merge this location into&hellip;</label>
+                        <select id="targetId-<%= location.id %>" name="targetId" required>
+                          <option value="" disabled selected>Choose a location</option>
+                          <% otherLocations.forEach(function(other) { %>
+                            <option value="<%= other.id %>"><%= other.name %></option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn--small btn--secondary">Review Merge&hellip;</button>
+                  </form>
+                <% } %>
               </div>
             </div>
           <% }); %>

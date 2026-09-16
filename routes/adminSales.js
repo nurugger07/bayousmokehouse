@@ -10,9 +10,15 @@ const {
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
 } = require('../models/salesReports');
-const { listLocations, updateCityState } = require('../models/salesLocations');
+const {
+  listLocations,
+  updateCityState,
+  getLocationById,
+  renameLocation,
+  mergeLocations,
+} = require('../models/salesLocations');
 const { getShortLocation } = require('../services/googleCalendar');
-const { listUnmatched, setLocation } = require('../models/salesDays');
+const { listUnmatched, setLocation, countForLocation } = require('../models/salesDays');
 
 const router = express.Router();
 
@@ -99,7 +105,7 @@ router.get('/sales/weekly', async (req, res, next) => {
 router.get('/sales/locations', async (req, res, next) => {
   try {
     const locations = await listLocations();
-    res.render('admin/sales-locations', { locations });
+    res.render('admin/sales-locations', { locations, error: req.query.error });
   } catch (err) {
     next(err);
   }
@@ -113,6 +119,46 @@ router.post('/sales/locations/:id/city-state', async (req, res, next) => {
     // comma-separated parts.
     const cityState = getShortLocation((req.body.cityState || '').trim());
     await updateCityState(req.params.id, cityState);
+    res.redirect('/admin/sales/locations');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id/rename', async (req, res, next) => {
+  try {
+    await renameLocation(req.params.id, req.body.name || '');
+    res.redirect('/admin/sales/locations');
+  } catch (err) {
+    if (err.code === 'DUPLICATE_NAME') {
+      return res.redirect(`/admin/sales/locations?error=${encodeURIComponent(err.message)}`);
+    }
+    next(err);
+  }
+});
+
+router.get('/sales/locations/:id/merge', async (req, res, next) => {
+  try {
+    const targetId = Number(req.query.targetId);
+    const [duplicate, target, visitCount] = await Promise.all([
+      getLocationById(req.params.id),
+      getLocationById(targetId),
+      countForLocation(req.params.id),
+    ]);
+
+    if (!duplicate || !target) {
+      return res.status(404).render('errors/404');
+    }
+
+    res.render('admin/sales-locations-merge', { duplicate, target, visitCount });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id/merge', async (req, res, next) => {
+  try {
+    await mergeLocations(req.params.id, req.body.targetId);
     res.redirect('/admin/sales/locations');
   } catch (err) {
     next(err);

@@ -45,4 +45,65 @@ async function updateCityState(id, cityState) {
   return result.rows[0];
 }
 
-module.exports = { findOrCreateByName, listLocations, updateCityState };
+async function getLocationById(id) {
+  const result = await pool.query('SELECT * FROM sales_locations WHERE id = $1', [id]);
+  return result.rows[0];
+}
+
+// Renaming only changes what's displayed — it does NOT change how
+// future syncs match calendar events. If Johnny keeps typing the old
+// name in the calendar going forward, the next sync recreates it,
+// since findOrCreateByName matches on whatever text the event has.
+// Blocked (not silently merged) if another location already has that
+// name — merge is the deliberate operation for combining two, not a
+// side effect of a rename.
+async function renameLocation(id, newName) {
+  const trimmed = newName.trim();
+
+  const collision = await pool.query('SELECT id FROM sales_locations WHERE lower(name) = lower($1) AND id != $2', [
+    trimmed,
+    id,
+  ]);
+  if (collision.rows[0]) {
+    const err = new Error(`Another location is already named "${trimmed}" — use Merge instead of renaming.`);
+    err.code = 'DUPLICATE_NAME';
+    throw err;
+  }
+
+  const result = await pool.query('UPDATE sales_locations SET name = $2 WHERE id = $1 RETURNING *', [id, trimmed]);
+  return result.rows[0];
+}
+
+// Combines a duplicate location into a target: every sales_days row
+// pointing at the duplicate is reassigned to the target, then the
+// duplicate is deleted. Transactional — a merge is destructive and
+// hard to undo, so it must not partially apply. The target's own
+// name/city_state are left untouched; fix those separately if needed.
+async function mergeLocations(duplicateId, targetId) {
+  if (Number(duplicateId) === Number(targetId)) {
+    throw new Error('Cannot merge a location into itself.');
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('UPDATE sales_days SET location_id = $2 WHERE location_id = $1', [duplicateId, targetId]);
+    const deleted = await client.query('DELETE FROM sales_locations WHERE id = $1 RETURNING *', [duplicateId]);
+    await client.query('COMMIT');
+    return deleted.rows[0];
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = {
+  findOrCreateByName,
+  listLocations,
+  updateCityState,
+  getLocationById,
+  renameLocation,
+  mergeLocations,
+};
