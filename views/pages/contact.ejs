@@ -15,14 +15,22 @@
 
   <section class="content">
     <div class="container">
-      <% if (submitted) { %>
-        <p class="form-message form-message--success">Thanks for reaching out! We'll get back to you soon.</p>
-      <% } %>
-      <% if (error) { %>
-        <p class="form-message form-message--error"><%= error %></p>
-      <% } %>
+      <div class="centered-form">
+        <h2 class="centered-form__heading">Holler at Us</h2>
+        <p class="centered-form__intro">
+          Questions, catering requests, or just want to say hey? Give us a call at
+          <a href="tel:+19708254832">(970) 825-4832</a> or email
+          <a href="mailto:bayousmokehouseco@gmail.com">bayousmokehouseco@gmail.com</a>, or send a message below.
+        </p>
 
-      <form class="contact-form" method="POST" action="/contact">
+        <% if (submitted) { %>
+          <p class="form-message form-message--success">Thanks for reaching out! We'll get back to you soon.</p>
+        <% } %>
+        <% if (error) { %>
+          <p class="form-message form-message--error"><%= error %></p>
+        <% } %>
+
+        <form class="contact-form" method="POST" action="/contact">
         <p class="form-required-note"><span class="required-mark" aria-hidden="true">*</span> Required field</p>
 
         <fieldset class="contact-form__categories">
@@ -62,7 +70,8 @@
         </div>
 
         <button type="submit" class="btn btn--primary">Send Message</button>
-      </form>
+        </form>
+      </div>
     </div>
   </section>
 </main>

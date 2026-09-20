@@ -470,6 +470,29 @@ main {
   margin-top: var(--space-5);
 }
 
+/* Centers a form (or any narrow content block) within the wider
+   .container — used where a lone form would otherwise look lost
+   flush-left in the full container width, e.g. the Contact page. */
+.centered-form {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.centered-form__heading,
+.centered-form__intro {
+  text-align: center;
+}
+
+.centered-form__intro {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.centered-form__intro a {
+  color: var(--color-ember);
+  font-weight: 700;
+}
+
 .contact-form label {
   font-weight: 700;
   font-size: var(--fs-sm);
