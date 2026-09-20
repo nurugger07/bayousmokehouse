@@ -10,12 +10,12 @@
   <section class="content">
     <div class="container">
       <h1>Weekly Totals</h1>
-      <p>Gross/Net sales, discounts, returns, and taxes by week (grouped by month) — across all locations combined.</p>
+      <p>Gross/Net sales, discounts, returns, and taxes by week, grouped by month, across all locations combined.</p>
 
       <%- include('../partials/salesFilterForm', { action: '/admin/sales/weekly', filters }) %>
 
       <% function money(cents) { return '$' + (cents / 100).toFixed(2); }
-         function moneyOrDash(cents) { return cents === 0 ? '—' : '(' + money(cents) + ')'; } %>
+         function moneyOrDash(cents) { return cents === 0 ? '-' : '(' + money(cents) + ')'; } %>
 
       <% if (months.length === 0) { %>
         <p>No sales in this range.</p>

@@ -62,7 +62,7 @@
               <% rows.forEach(function(row) { %>
                 <tr>
                   <td><%= row.location_name %></td>
-                  <td><%= row.city_state || '—' %></td>
+                  <td><%= row.city_state || '-' %></td>
                   <td data-sort-value="<%= row.day_of_week %>"><%= row.dayOfWeekLabel %></td>
                   <td><%= row.item_name %></td>
                   <td><%= row.quantity_sold %></td>
