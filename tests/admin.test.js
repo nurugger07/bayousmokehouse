@@ -2,6 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');
 const { createMessage } = require('../models/contactMessages');
+const { getCsrfToken } = require('./helpers/csrf');
 
 const CORRECT_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
 
@@ -13,9 +14,14 @@ afterAll(async () => {
   await pool.end();
 });
 
+// The CSRF token is per-session (see app.js), so it's fetched once at
+// login and stashed on the agent — every later POST in a test reuses
+// agent.csrfToken rather than re-fetching it.
 async function loggedInAgent() {
   const agent = request.agent(app);
-  await agent.post('/admin/login').type('form').send({ password: CORRECT_PASSWORD });
+  const csrfToken = await getCsrfToken(agent, '/admin/login');
+  await agent.post('/admin/login').type('form').send({ password: CORRECT_PASSWORD, _csrf: csrfToken });
+  agent.csrfToken = csrfToken;
   return agent;
 }
 
@@ -34,7 +40,8 @@ describe('admin auth', () => {
 
   it('rejects an incorrect password without creating a session', async () => {
     const agent = request.agent(app);
-    const res = await agent.post('/admin/login').type('form').send({ password: 'wrong-password' });
+    const _csrf = await getCsrfToken(agent, '/admin/login');
+    const res = await agent.post('/admin/login').type('form').send({ password: 'wrong-password', _csrf });
 
     expect(res.status).toBe(401);
 
@@ -51,7 +58,7 @@ describe('admin auth', () => {
 
   it('logs out and revokes access', async () => {
     const agent = await loggedInAgent();
-    await agent.post('/admin/logout');
+    await agent.post('/admin/logout').type('form').send({ _csrf: agent.csrfToken });
 
     const res = await agent.get('/admin/messages');
     expect(res.status).toBe(302);
@@ -74,7 +81,7 @@ describe('admin message management', () => {
   it('filters messages by status', async () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
     const agent = await loggedInAgent();
-    await agent.post(`/admin/messages/${message.id}/archive`);
+    await agent.post(`/admin/messages/${message.id}/archive`).type('form').send({ _csrf: agent.csrfToken });
 
     const unreadList = await agent.get('/admin/messages?status=unread');
     const archivedList = await agent.get('/admin/messages?status=archived');
@@ -136,7 +143,7 @@ describe('admin message management', () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
     const agent = await loggedInAgent();
 
-    await agent.post(`/admin/messages/${message.id}/read`);
+    await agent.post(`/admin/messages/${message.id}/read`).type('form').send({ _csrf: agent.csrfToken });
 
     const { rows } = await pool.query('SELECT status FROM contact_messages WHERE id = $1', [message.id]);
     expect(rows[0].status).toBe('read');
@@ -146,18 +153,18 @@ describe('admin message management', () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
     const agent = await loggedInAgent();
 
-    await agent.post(`/admin/messages/${message.id}/archive`);
+    await agent.post(`/admin/messages/${message.id}/archive`).type('form').send({ _csrf: agent.csrfToken });
     let row = (await pool.query('SELECT * FROM contact_messages WHERE id = $1', [message.id])).rows[0];
     expect(row.status).toBe('archived');
 
-    await agent.post(`/admin/messages/${message.id}/delete`);
+    await agent.post(`/admin/messages/${message.id}/delete`).type('form').send({ _csrf: agent.csrfToken });
     row = (await pool.query('SELECT * FROM contact_messages WHERE id = $1', [message.id])).rows[0];
     expect(row.deleted_at).not.toBeNull();
 
     const deletedList = await agent.get('/admin/messages?status=deleted');
     expect(deletedList.text).toContain('jane@example.com');
 
-    await agent.post(`/admin/messages/${message.id}/restore`);
+    await agent.post(`/admin/messages/${message.id}/restore`).type('form').send({ _csrf: agent.csrfToken });
     row = (await pool.query('SELECT * FROM contact_messages WHERE id = $1', [message.id])).rows[0];
     expect(row.deleted_at).toBeNull();
   });
@@ -226,7 +233,7 @@ describe('message notes', () => {
     await agent
       .post(`/admin/messages/${message.id}/notes`)
       .type('form')
-      .send({ note: 'Called back, left a voicemail.' });
+      .send({ note: 'Called back, left a voicemail.', _csrf: agent.csrfToken });
 
     const detail = await agent.get(`/admin/messages/${message.id}`);
     expect(detail.text).toContain('Called back, left a voicemail.');
@@ -236,7 +243,7 @@ describe('message notes', () => {
     const message = await createMessage({ name: 'Jane', email: 'jane@example.com', message: 'hi' });
     const agent = await loggedInAgent();
 
-    await agent.post(`/admin/messages/${message.id}/notes`).type('form').send({ note: '   ' });
+    await agent.post(`/admin/messages/${message.id}/notes`).type('form').send({ note: '   ', _csrf: agent.csrfToken });
 
     const { rows } = await pool.query('SELECT * FROM contact_message_notes WHERE contact_message_id = $1', [
       message.id,

@@ -1,12 +1,15 @@
 const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');
+const { getCsrfToken } = require('./helpers/csrf');
 
 const CORRECT_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
 
 async function loggedInAgent() {
   const agent = request.agent(app);
-  await agent.post('/admin/login').type('form').send({ password: CORRECT_PASSWORD });
+  const csrfToken = await getCsrfToken(agent, '/admin/login');
+  await agent.post('/admin/login').type('form').send({ password: CORRECT_PASSWORD, _csrf: csrfToken });
+  agent.csrfToken = csrfToken;
   return agent;
 }
 
@@ -113,7 +116,7 @@ describe('admin manage locations', () => {
     await agent
       .post(`/admin/sales/locations/${location.rows[0].id}/city-state`)
       .type('form')
-      .send({ cityState: '123 Main St, Loveland, CO 80537, USA' });
+      .send({ cityState: '123 Main St, Loveland, CO 80537, USA', _csrf: agent.csrfToken });
 
     const updated = await pool.query('SELECT city_state FROM sales_locations WHERE id = $1', [location.rows[0].id]);
     expect(updated.rows[0].city_state).toBe('Loveland, CO');
@@ -127,7 +130,10 @@ describe('admin manage locations', () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Another Venue') RETURNING *");
     const agent = await loggedInAgent();
 
-    await agent.post(`/admin/sales/locations/${location.rows[0].id}/city-state`).type('form').send({ cityState: 'Berthoud, CO' });
+    await agent
+      .post(`/admin/sales/locations/${location.rows[0].id}/city-state`)
+      .type('form')
+      .send({ cityState: 'Berthoud, CO', _csrf: agent.csrfToken });
 
     const updated = await pool.query('SELECT city_state FROM sales_locations WHERE id = $1', [location.rows[0].id]);
     expect(updated.rows[0].city_state).toBe('Berthoud, CO');
@@ -137,7 +143,10 @@ describe('admin manage locations', () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Old Name') RETURNING *");
     const agent = await loggedInAgent();
 
-    await agent.post(`/admin/sales/locations/${location.rows[0].id}/rename`).type('form').send({ name: 'Bayou Smokehouse @ New Name' });
+    await agent
+      .post(`/admin/sales/locations/${location.rows[0].id}/rename`)
+      .type('form')
+      .send({ name: 'Bayou Smokehouse @ New Name', _csrf: agent.csrfToken });
 
     const updated = await pool.query('SELECT name FROM sales_locations WHERE id = $1', [location.rows[0].id]);
     expect(updated.rows[0].name).toBe('Bayou Smokehouse @ New Name');
@@ -153,7 +162,7 @@ describe('admin manage locations', () => {
     const res = await agent
       .post(`/admin/sales/locations/${locationA.rows[0].id}/rename`)
       .type('form')
-      .send({ name: 'Bayou Smokehouse @ Venue B' })
+      .send({ name: 'Bayou Smokehouse @ Venue B', _csrf: agent.csrfToken })
       .redirects(1);
 
     expect(res.status).toBe(200);
@@ -182,7 +191,10 @@ describe('admin manage locations', () => {
     expect(confirmPage.text).toContain('Duplicate Spelling');
     expect(confirmPage.text).toContain('Canonical Venue');
 
-    await agent.post(`/admin/sales/locations/${duplicate.rows[0].id}/merge`).type('form').send({ targetId: target.rows[0].id });
+    await agent
+      .post(`/admin/sales/locations/${duplicate.rows[0].id}/merge`)
+      .type('form')
+      .send({ targetId: target.rows[0].id, _csrf: agent.csrfToken });
 
     const remaining = await pool.query('SELECT id FROM sales_locations WHERE id = $1', [duplicate.rows[0].id]);
     expect(remaining.rows).toHaveLength(0);
@@ -206,7 +218,10 @@ describe('admin sales unmatched-day cleanup', () => {
     expect(before.status).toBe(200);
     expect(before.text).toContain('8/15/2026');
 
-    await agent.post(`/admin/sales/unmatched/${day.rows[0].id}/location`).type('form').send({ locationId: location.rows[0].id });
+    await agent
+      .post(`/admin/sales/unmatched/${day.rows[0].id}/location`)
+      .type('form')
+      .send({ locationId: location.rows[0].id, _csrf: agent.csrfToken });
 
     const after = await agent.get('/admin/sales/unmatched');
     expect(after.text).not.toContain('8/15/2026');

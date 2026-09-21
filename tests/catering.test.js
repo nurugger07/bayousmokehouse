@@ -4,6 +4,16 @@ const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');
 const { sendContactNotification } = require('../services/mailer');
+const { getCsrfToken } = require('./helpers/csrf');
+
+// A plain request(app) call has no session/cookie continuity, and the
+// CSRF token is per-session — so each submission needs its own agent
+// to first GET a token from, then POST with it.
+async function postCatering(data) {
+  const agent = request.agent(app);
+  const _csrf = await getCsrfToken(agent, '/catering');
+  return agent.post('/catering').type('form').send({ ...data, _csrf });
+}
 
 const VALID_SUBMISSION = {
   name: 'Jane Doe',
@@ -33,7 +43,7 @@ afterAll(async () => {
 
 describe('POST /catering', () => {
   it('saves a valid catering request under the catering category and redirects', async () => {
-    const res = await request(app).post('/catering').type('form').send(VALID_SUBMISSION);
+    const res = await postCatering(VALID_SUBMISSION);
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('submitted=1');
@@ -54,7 +64,7 @@ describe('POST /catering', () => {
   it('allows end time to be omitted', async () => {
     const { endTime, ...withoutEndTime } = VALID_SUBMISSION;
 
-    const res = await request(app).post('/catering').type('form').send(withoutEndTime);
+    const res = await postCatering(withoutEndTime);
 
     expect(res.status).toBe(302);
 
@@ -65,7 +75,7 @@ describe('POST /catering', () => {
   it('does not fail the submission if sending the email notification fails', async () => {
     sendContactNotification.mockRejectedValueOnce(new Error('smtp down'));
 
-    const res = await request(app).post('/catering').type('form').send(VALID_SUBMISSION);
+    const res = await postCatering(VALID_SUBMISSION);
 
     expect(res.status).toBe(302);
 
@@ -78,7 +88,7 @@ describe('POST /catering', () => {
     async (field) => {
       const { [field]: _omit, ...incomplete } = VALID_SUBMISSION;
 
-      const res = await request(app).post('/catering').type('form').send(incomplete);
+      const res = await postCatering(incomplete);
 
       expect(res.status).toBe(400);
 
@@ -89,10 +99,7 @@ describe('POST /catering', () => {
   );
 
   it('rejects a malformed email address without saving', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, email: 'not-an-email' });
+    const res = await postCatering({ ...VALID_SUBMISSION, email: 'not-an-email' });
 
     expect(res.status).toBe(400);
 
@@ -101,10 +108,7 @@ describe('POST /catering', () => {
   });
 
   it('rejects an invalid event type without saving', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, eventType: 'not-a-real-type' });
+    const res = await postCatering({ ...VALID_SUBMISSION, eventType: 'not-a-real-type' });
 
     expect(res.status).toBe(400);
 
@@ -113,10 +117,7 @@ describe('POST /catering', () => {
   });
 
   it('rejects a non-numeric guest count without saving', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, guestCount: 'a lot' });
+    const res = await postCatering({ ...VALID_SUBMISSION, guestCount: 'a lot' });
 
     expect(res.status).toBe(400);
 
@@ -125,10 +126,7 @@ describe('POST /catering', () => {
   });
 
   it('rejects a zero or negative guest count without saving', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, guestCount: '0' });
+    const res = await postCatering({ ...VALID_SUBMISSION, guestCount: '0' });
 
     expect(res.status).toBe(400);
 
@@ -137,10 +135,7 @@ describe('POST /catering', () => {
   });
 
   it('rejects an invalid event date without saving', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, eventDate: 'not-a-date' });
+    const res = await postCatering({ ...VALID_SUBMISSION, eventDate: 'not-a-date' });
 
     expect(res.status).toBe(400);
 
@@ -149,10 +144,7 @@ describe('POST /catering', () => {
   });
 
   it('silently discards honeypot-triggered spam submissions', async () => {
-    const res = await request(app)
-      .post('/catering')
-      .type('form')
-      .send({ ...VALID_SUBMISSION, company: 'I am a bot' });
+    const res = await postCatering({ ...VALID_SUBMISSION, company: 'I am a bot' });
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('submitted=1');
@@ -165,10 +157,7 @@ describe('POST /catering', () => {
   it.each(['backyard_party', 'wedding', 'birthday', 'graduation', 'corporate_event', 'brewery_festival', 'other'])(
     'accepts and saves the "%s" event type',
     async (eventType) => {
-      const res = await request(app)
-        .post('/catering')
-        .type('form')
-        .send({ ...VALID_SUBMISSION, eventType });
+      const res = await postCatering({ ...VALID_SUBMISSION, eventType });
 
       expect(res.status).toBe(302);
 

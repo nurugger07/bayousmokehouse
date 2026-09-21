@@ -2,9 +2,14 @@ jest.mock('../services/googleCalendar');
 
 const request = require('supertest');
 const app = require('../app');
+const { pool } = require('../config/db');
 const { getWeekSchedule } = require('../services/googleCalendar');
 
 const EMPTY_WEEK = { weekStart: 'Sep 7', weekEnd: 'Sep 13', days: [], unavailable: false };
+
+afterAll(async () => {
+  await pool.end();
+});
 
 describe('static pages', () => {
   beforeEach(() => {

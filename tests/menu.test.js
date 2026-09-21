@@ -1,5 +1,10 @@
 const request = require('supertest');
 const app = require('../app');
+const { pool } = require('../config/db');
+
+afterAll(async () => {
+  await pool.end();
+});
 
 describe('GET /menu', () => {
   let text;
