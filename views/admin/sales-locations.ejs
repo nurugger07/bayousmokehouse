@@ -41,6 +41,7 @@
               </div>
               <div class="menu-item__panel">
                 <form method="POST" action="/admin/sales/locations/<%= location.id %>/rename" class="contact-form" style="margin-top: 0;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <div class="contact-form__row">
                     <div>
                       <label for="name-<%= location.id %>">Name</label>
@@ -51,6 +52,7 @@
                 </form>
 
                 <form method="POST" action="/admin/sales/locations/<%= location.id %>/city-state" class="contact-form">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <div class="contact-form__row">
                     <div>
                       <label for="cityState-<%= location.id %>">City, State (or paste a full address)</label>

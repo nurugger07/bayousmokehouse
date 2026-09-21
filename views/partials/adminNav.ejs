@@ -20,6 +20,7 @@
       </nav>
       <div class="site-header__actions">
         <form method="POST" action="/admin/logout" style="display:inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="btn btn--small btn--secondary">Log Out</button>
         </form>
       </div>

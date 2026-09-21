@@ -25,6 +25,7 @@
               </div>
               <div class="menu-item__panel">
                 <form method="POST" action="/admin/sales/unmatched/<%= day.id %>/location" class="contact-form" style="margin-top: 0;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <div class="contact-form__row">
                     <div>
                       <label for="locationId-<%= day.id %>">Assign Location</label>

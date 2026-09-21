@@ -20,6 +20,7 @@
       <p><%= target.name %>'s own name and city/state are not changed by this merge.</p>
 
       <form method="POST" action="/admin/sales/locations/<%= duplicate.id %>/merge" class="admin-actions">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="targetId" value="<%= target.id %>">
         <button type="submit" class="btn btn--small btn--primary">Confirm Merge</button>
         <a href="/admin/sales/locations" class="btn btn--small btn--secondary">Cancel</a>

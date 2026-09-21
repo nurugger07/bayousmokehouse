@@ -46,20 +46,24 @@
             <div class="admin-actions">
               <% if (status === 'deleted') { %>
                 <form method="POST" action="/admin/messages/<%= message.id %>/restore">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="btn btn--small btn--secondary">Restore</button>
                 </form>
               <% } else { %>
                 <% if (message.status === 'unread') { %>
                   <form method="POST" action="/admin/messages/<%= message.id %>/read">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn--small btn--secondary">Mark Read</button>
                   </form>
                 <% } %>
                 <% if (status !== 'archived') { %>
                   <form method="POST" action="/admin/messages/<%= message.id %>/archive">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button type="submit" class="btn btn--small btn--secondary">Archive</button>
                   </form>
                 <% } %>
                 <form method="POST" action="/admin/messages/<%= message.id %>/delete">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="btn btn--small btn--secondary">Delete</button>
                 </form>
               <% } %>

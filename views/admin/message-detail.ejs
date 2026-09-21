@@ -36,15 +36,18 @@
       <div class="admin-actions">
         <% if (message.status === 'unread') { %>
           <form method="POST" action="/admin/messages/<%= message.id %>/read">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="btn btn--small btn--secondary">Mark Read</button>
           </form>
         <% } %>
         <% if (message.status !== 'archived') { %>
           <form method="POST" action="/admin/messages/<%= message.id %>/archive">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="btn btn--small btn--secondary">Archive</button>
           </form>
         <% } %>
         <form method="POST" action="/admin/messages/<%= message.id %>/delete">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="btn btn--small btn--secondary">Delete</button>
         </form>
       </div>
@@ -67,6 +70,7 @@
       </div>
 
       <form class="contact-form" method="POST" action="/admin/messages/<%= message.id %>/notes">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label for="note">Add a Note <span class="required-mark" aria-hidden="true">*</span></label>
         <textarea id="note" name="note" rows="3" required></textarea>
         <button type="submit" class="btn btn--small btn--primary">Add Note</button>

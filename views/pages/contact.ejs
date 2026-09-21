@@ -34,6 +34,7 @@
         <% } %>
 
         <form class="contact-form" method="POST" action="/contact">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <p class="form-required-note"><span class="required-mark" aria-hidden="true">*</span> Required field</p>
 
         <fieldset class="contact-form__categories">

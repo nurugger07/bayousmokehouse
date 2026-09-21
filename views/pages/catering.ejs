@@ -47,6 +47,7 @@
         <% } %>
 
         <form class="contact-form" method="POST" action="/catering">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <p class="form-required-note"><span class="required-mark" aria-hidden="true">*</span> Required field</p>
 
           <div class="contact-form__row">
