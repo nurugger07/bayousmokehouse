@@ -70,7 +70,8 @@ describe('admin sales reports', () => {
     expect(items.text).toContain('Pork Belly Sliders');
 
     const tax = await agent.get('/admin/sales/tax?startDate=2026-08-14&endDate=2026-08-14');
-    expect(tax.text).toContain('$2.00');
+    expect(tax.text).toContain('$20.00'); // gross sales
+    expect(tax.text).toContain('$2.00'); // tax collected
 
     const tips = await agent.get('/admin/sales/tips?startDate=2026-08-14&endDate=2026-08-14');
     expect(tips.text).toContain('$3.00');

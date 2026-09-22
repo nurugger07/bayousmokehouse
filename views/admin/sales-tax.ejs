@@ -21,6 +21,7 @@
       <% if (rows.length > 0) {
         var totalVisits = rows.reduce(function(sum, row) { return sum + Number(row.visit_count); }, 0);
         var totalOrders = rows.reduce(function(sum, row) { return sum + Number(row.order_count); }, 0);
+        var totalGrossCents = rows.reduce(function(sum, row) { return sum + Number(row.gross_sales_cents); }, 0);
         var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.tax_money_cents); }, 0);
       %>
         <div class="table-scroll">
@@ -30,6 +31,7 @@
                 <th>City, State</th>
                 <th data-sort-type="number">Visits</th>
                 <th data-sort-type="number">Orders</th>
+                <th data-sort-type="number">Gross Sales</th>
                 <th data-sort-type="number">Tax Collected</th>
               </tr>
             </thead>
@@ -39,6 +41,7 @@
                   <td><%= row.city_state %></td>
                   <td><%= row.visit_count %></td>
                   <td><%= row.order_count %></td>
+                  <td data-sort-value="<%= row.gross_sales_cents %>">$<%= (row.gross_sales_cents / 100).toFixed(2) %></td>
                   <td data-sort-value="<%= row.tax_money_cents %>">$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
                 </tr>
               <% }); %>
@@ -48,6 +51,7 @@
                 <td>Total</td>
                 <td><%= totalVisits %></td>
                 <td><%= totalOrders %></td>
+                <td>$<%= (totalGrossCents / 100).toFixed(2) %></td>
                 <td>$<%= (totalCents / 100).toFixed(2) %></td>
               </tr>
             </tfoot>

@@ -89,6 +89,8 @@ async function getTaxTotalsByLocation({ startDate, endDate, locationId } = {}) {
         COALESCE(l.city_state, l.name) AS city_state,
         COUNT(DISTINCT sd.id) AS visit_count,
         COUNT(o.id) AS order_count,
+        COALESCE(SUM(o.total_money_cents - o.tip_money_cents - o.tax_money_cents
+                     - o.service_charge_money_cents + o.discount_money_cents), 0)::bigint AS gross_sales_cents,
         COALESCE(SUM(o.tax_money_cents), 0)::bigint AS tax_money_cents
      FROM sales_days sd
      JOIN sales_locations l ON l.id = sd.location_id
