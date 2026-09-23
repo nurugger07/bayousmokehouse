@@ -17,6 +17,11 @@ const {
   renameLocation,
   mergeLocations,
 } = require('../models/salesLocations');
+const {
+  listJurisdictions,
+  listJurisdictionIdsByLocation,
+  setLocationJurisdictions,
+} = require('../models/taxJurisdictions');
 const { getShortLocation } = require('../services/googleCalendar');
 const { listUnmatched, setLocation, countForLocation } = require('../models/salesDays');
 
@@ -104,8 +109,27 @@ router.get('/sales/weekly', async (req, res, next) => {
 
 router.get('/sales/locations', async (req, res, next) => {
   try {
-    const locations = await listLocations();
-    res.render('admin/sales-locations', { locations, error: req.query.error });
+    const [locations, jurisdictions, jurisdictionIdsByLocation] = await Promise.all([
+      listLocations(),
+      listJurisdictions(),
+      listJurisdictionIdsByLocation(),
+    ]);
+    res.render('admin/sales-locations', {
+      locations,
+      jurisdictions,
+      jurisdictionIdsByLocation,
+      error: req.query.error,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id/tax-jurisdictions', async (req, res, next) => {
+  try {
+    const jurisdictionIds = [].concat(req.body.jurisdictionIds || []).map(Number);
+    await setLocationJurisdictions(req.params.id, jurisdictionIds);
+    res.redirect('/admin/sales/locations');
   } catch (err) {
     next(err);
   }

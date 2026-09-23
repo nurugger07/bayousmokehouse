@@ -10,6 +10,7 @@ const cateringRouter = require('./routes/catering');
 const adminAuthRouter = require('./routes/adminAuth');
 const adminRouter = require('./routes/admin');
 const adminSalesRouter = require('./routes/adminSales');
+const adminTaxRouter = require('./routes/adminTax');
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 app.use('/admin', adminAuthRouter);
 app.use('/admin', adminRouter);
 app.use('/admin', adminSalesRouter);
+app.use('/admin', adminTaxRouter);
 app.use('/', contactRouter);
 app.use('/', cateringRouter);
 app.use('/', pagesRouter);

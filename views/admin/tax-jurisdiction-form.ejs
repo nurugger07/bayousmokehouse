@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: jurisdiction ? 'Edit Jurisdiction' : 'Add Jurisdiction' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1><%= jurisdiction ? 'Edit Jurisdiction' : 'Add Jurisdiction' %></h1>
+
+      <form
+        class="contact-form"
+        method="POST"
+        action="<%= jurisdiction ? '/admin/tax/jurisdictions/' + jurisdiction.id : '/admin/tax/jurisdictions' %>"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="contact-form__row">
+          <div>
+            <label for="name">Name <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="text" id="name" name="name" value="<%= jurisdiction ? jurisdiction.name : '' %>" placeholder="e.g. Town of Berthoud" maxlength="255" required>
+          </div>
+          <div>
+            <label for="level">Level <span class="required-mark" aria-hidden="true">*</span></label>
+            <select id="level" name="level" required>
+              <option value="" disabled <%= !jurisdiction ? 'selected' : '' %>>Choose one</option>
+              <% ['state', 'county', 'municipality'].forEach(function(level) { %>
+                <option value="<%= level %>" <%= jurisdiction && jurisdiction.level === level ? 'selected' : '' %>><%= level %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="taxRatePercent">Tax Rate (%) <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="number" id="taxRatePercent" name="taxRatePercent" step="0.001" min="0" value="<%= jurisdiction ? jurisdiction.tax_rate_percent : '' %>" required>
+          </div>
+          <div>
+            <label for="schedule">Filing Schedule <span class="required-mark" aria-hidden="true">*</span></label>
+            <select id="schedule" name="schedule" required>
+              <option value="" disabled <%= !jurisdiction ? 'selected' : '' %>>Choose one</option>
+              <option value="monthly" <%= jurisdiction && jurisdiction.schedule === 'monthly' ? 'selected' : '' %>>Monthly</option>
+              <option value="quarterly" <%= jurisdiction && jurisdiction.schedule === 'quarterly' ? 'selected' : '' %>>Quarterly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="dayOfMonthDue">Day of Month Due <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="number" id="dayOfMonthDue" name="dayOfMonthDue" min="1" max="31" value="<%= jurisdiction ? jurisdiction.day_of_month_due : '' %>" required>
+          </div>
+          <div>
+            <label for="isHomeRule">Home Rule</label>
+            <p><input type="checkbox" id="isHomeRule" name="isHomeRule" <%= jurisdiction && jurisdiction.is_home_rule ? 'checked' : '' %>> This jurisdiction self-administers its sales tax</p>
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="licenseNumber">Sales Tax License Number</label>
+            <input type="text" id="licenseNumber" name="licenseNumber" value="<%= jurisdiction ? (jurisdiction.license_number || '') : '' %>" placeholder="e.g. 96921314-004-LIC">
+          </div>
+          <div>
+            <label for="paymentLink">Payment Link</label>
+            <input type="url" id="paymentLink" name="paymentLink" value="<%= jurisdiction ? (jurisdiction.payment_link || '') : '' %>" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="licenseDriveUrl">Sales Tax License (Google Drive link)</label>
+            <input type="url" id="licenseDriveUrl" name="licenseDriveUrl" value="<%= jurisdiction ? (jurisdiction.license_drive_url || '') : '' %>" placeholder="https://drive.google.com/...">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary"><%= jurisdiction ? 'Save Changes' : 'Add Jurisdiction' %></button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Tax Jurisdictions' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Tax Jurisdictions</h1>
+      <p>
+        Each jurisdiction (state, county, or municipality) has its own rate, filing schedule, and license. Assign a
+        location to the jurisdictions that apply to it from <a href="/admin/sales/locations">Manage Locations</a>.
+      </p>
+
+      <p><a href="/admin/tax/jurisdictions/new" class="btn btn--small btn--primary">Add Jurisdiction</a></p>
+
+      <% if (jurisdictions.length === 0) { %>
+        <p>No tax jurisdictions yet.</p>
+      <% } %>
+
+      <% if (jurisdictions.length > 0) { %>
+        <div class="table-scroll">
+          <table class="admin-table" data-sortable>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Level</th>
+                <th data-sort-type="number">Rate</th>
+                <th>Schedule</th>
+                <th data-sort-type="number">Due Day</th>
+                <th>Home Rule</th>
+                <th>License #</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% jurisdictions.forEach(function(j) { %>
+                <tr>
+                  <td><%= j.name %></td>
+                  <td><%= j.level %></td>
+                  <td data-sort-value="<%= j.tax_rate_percent %>"><%= Number(j.tax_rate_percent).toFixed(3) %>%</td>
+                  <td><%= j.schedule %></td>
+                  <td><%= j.day_of_month_due %></td>
+                  <td><%= j.is_home_rule ? 'Yes' : 'No' %></td>
+                  <td><%= j.license_number || '-' %></td>
+                  <td><a href="/admin/tax/jurisdictions/<%= j.id %>/edit">Edit</a></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>
