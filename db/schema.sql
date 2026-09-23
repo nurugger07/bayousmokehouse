@@ -171,3 +171,59 @@ CREATE TABLE IF NOT EXISTS square_returns (
 );
 
 CREATE INDEX IF NOT EXISTS idx_square_returns_returned_at ON square_returns (returned_at);
+
+-- Sales tax jurisdictions (state/county/municipality). A location can be
+-- subject to several at once (e.g. Colorado + Larimer County + Town of
+-- Berthoud all apply on the same sale) via location_tax_jurisdictions,
+-- so "which taxes apply today" falls out of whatever jurisdictions are
+-- linked to today's location — no separate "always on" flag needed,
+-- since every location is linked to Colorado.
+CREATE TABLE IF NOT EXISTS tax_jurisdictions (
+    id                  SERIAL PRIMARY KEY,
+    name                VARCHAR(255) NOT NULL UNIQUE,
+    level               VARCHAR(20) NOT NULL
+                            CHECK (level IN ('state', 'county', 'municipality')),
+    tax_rate_percent    NUMERIC(6,3) NOT NULL,
+    schedule            VARCHAR(20) NOT NULL
+                            CHECK (schedule IN ('monthly', 'quarterly')),
+    day_of_month_due    INTEGER NOT NULL CHECK (day_of_month_due BETWEEN 1 AND 31),
+    is_home_rule        BOOLEAN NOT NULL DEFAULT false,
+    payment_link        TEXT,
+    license_number      VARCHAR(255),
+    license_drive_url   TEXT,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Which jurisdictions apply to a given physical location.
+CREATE TABLE IF NOT EXISTS location_tax_jurisdictions (
+    location_id     INTEGER NOT NULL REFERENCES sales_locations(id) ON DELETE CASCADE,
+    jurisdiction_id INTEGER NOT NULL REFERENCES tax_jurisdictions(id) ON DELETE CASCADE,
+    PRIMARY KEY (location_id, jurisdiction_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_location_tax_jurisdictions_jurisdiction
+    ON location_tax_jurisdictions (jurisdiction_id);
+
+-- One row per filing period per jurisdiction. The monthly job upserts
+-- reported_revenue_cents/estimated_tax_cents; paid_date stays NULL until
+-- Johnny records the actual payment, which is the only "is this paid"
+-- signal (no separate status column to keep in sync).
+CREATE TABLE IF NOT EXISTS tax_payments (
+    id                      SERIAL PRIMARY KEY,
+    jurisdiction_id         INTEGER NOT NULL REFERENCES tax_jurisdictions(id),
+    period_start            DATE NOT NULL,
+    period_end              DATE NOT NULL,
+    reported_revenue_cents  INTEGER,
+    estimated_tax_cents     INTEGER,
+    amount_paid_cents       INTEGER,
+    paid_date               DATE,
+    receipt_drive_url       TEXT,
+    notes                   TEXT,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (jurisdiction_id, period_start, period_end)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tax_payments_jurisdiction ON tax_payments (jurisdiction_id);
+CREATE INDEX IF NOT EXISTS idx_tax_payments_period ON tax_payments (period_start, period_end);
