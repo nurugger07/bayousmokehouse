@@ -46,7 +46,7 @@
                   <td><%= j.day_of_month_due %></td>
                   <td><%= j.is_home_rule ? 'Yes' : 'No' %></td>
                   <td><%= j.license_number || '-' %></td>
-                  <td><a href="/admin/tax/jurisdictions/<%= j.id %>/edit">Edit</a></td>
+                  <td><a href="/admin/tax/jurisdictions/<%= j.id %>">View</a></td>
                 </tr>
               <% }); %>
             </tbody>

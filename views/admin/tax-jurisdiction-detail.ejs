@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: jurisdiction.name }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1><%= jurisdiction.name %></h1>
+      <p><a href="/admin/tax/jurisdictions">&larr; All Jurisdictions</a></p>
+
+      <ul>
+        <li>Level: <%= jurisdiction.level %></li>
+        <li>Tax Rate: <%= Number(jurisdiction.tax_rate_percent).toFixed(3) %>%</li>
+        <li>Filing Schedule: <%= jurisdiction.schedule %>, due on day <%= jurisdiction.day_of_month_due %> of the month</li>
+        <li>Home Rule: <%= jurisdiction.is_home_rule ? 'Yes' : 'No' %></li>
+        <li>License Number: <%= jurisdiction.license_number || 'Not set' %></li>
+        <li>
+          Sales Tax License:
+          <% if (jurisdiction.license_drive_url) { %>
+            <a href="<%= jurisdiction.license_drive_url %>" target="_blank" rel="noopener noreferrer">View in Drive</a>
+          <% } else { %>
+            Not on file
+          <% } %>
+        </li>
+        <li>
+          Payment Link:
+          <% if (jurisdiction.payment_link) { %>
+            <a href="<%= jurisdiction.payment_link %>" target="_blank" rel="noopener noreferrer">Pay Now</a>
+          <% } else { %>
+            Not set
+          <% } %>
+        </li>
+      </ul>
+
+      <p><a href="/admin/tax/jurisdictions/<%= jurisdiction.id %>/edit" class="btn btn--small btn--secondary">Edit Jurisdiction</a></p>
+
+      <h2>Payment History</h2>
+
+      <% if (payments.length === 0) { %>
+        <p>No payments recorded yet.</p>
+      <% } %>
+
+      <% if (payments.length > 0) { %>
+        <div class="table-scroll">
+          <table class="admin-table" data-sortable>
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th data-sort-type="number">Reported Revenue</th>
+                <th data-sort-type="number">Estimated Tax</th>
+                <th data-sort-type="number">Amount Paid</th>
+                <th>Paid Date</th>
+                <th>Receipt</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% payments.forEach(function(p) { %>
+                <tr>
+                  <td><%= p.period_start %> to <%= p.period_end %></td>
+                  <td data-sort-value="<%= p.reported_revenue_cents || 0 %>"><%= p.reported_revenue_cents != null ? '$' + (p.reported_revenue_cents / 100).toFixed(2) : '-' %></td>
+                  <td data-sort-value="<%= p.estimated_tax_cents || 0 %>"><%= p.estimated_tax_cents != null ? '$' + (p.estimated_tax_cents / 100).toFixed(2) : '-' %></td>
+                  <td data-sort-value="<%= p.amount_paid_cents || 0 %>"><%= p.amount_paid_cents != null ? '$' + (p.amount_paid_cents / 100).toFixed(2) : '-' %></td>
+                  <td><%= p.paid_date || 'Not yet paid' %></td>
+                  <td>
+                    <% if (p.receipt_drive_url) { %>
+                      <a href="<%= p.receipt_drive_url %>" target="_blank" rel="noopener noreferrer">View</a>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  </td>
+                  <td><%= p.notes || '-' %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+      <h2>Record a Payment</h2>
+
+      <form class="contact-form" method="POST" action="/admin/tax/jurisdictions/<%= jurisdiction.id %>/payments">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="contact-form__row">
+          <div>
+            <label for="periodStart">Period Start <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="date" id="periodStart" name="periodStart" required>
+          </div>
+          <div>
+            <label for="periodEnd">Period End <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="date" id="periodEnd" name="periodEnd" required>
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="reportedRevenue">Reported Revenue ($)</label>
+            <input type="number" id="reportedRevenue" name="reportedRevenue" step="0.01" min="0">
+          </div>
+          <div>
+            <label for="estimatedTax">Estimated Tax ($)</label>
+            <input type="number" id="estimatedTax" name="estimatedTax" step="0.01" min="0">
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="amountPaid">Amount Paid ($)</label>
+            <input type="number" id="amountPaid" name="amountPaid" step="0.01" min="0">
+          </div>
+          <div>
+            <label for="paidDate">Paid Date</label>
+            <input type="date" id="paidDate" name="paidDate">
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="receiptDriveUrl">Receipt (Google Drive link)</label>
+            <input type="url" id="receiptDriveUrl" name="receiptDriveUrl" placeholder="https://drive.google.com/...">
+          </div>
+        </div>
+
+        <div class="contact-form__row">
+          <div>
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary">Record Payment</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

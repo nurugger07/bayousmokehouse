@@ -94,6 +94,66 @@ describe('admin tax jurisdictions CRUD', () => {
   });
 });
 
+describe('admin tax payments', () => {
+  it('records a payment and shows it on the jurisdiction detail page', async () => {
+    const agent = await loggedInAgent();
+    const jurisdiction = await pool.query(
+      `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+       VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`
+    );
+
+    const res = await agent
+      .post(`/admin/tax/jurisdictions/${jurisdiction.rows[0].id}/payments`)
+      .type('form')
+      .send({
+        periodStart: '2026-08-01',
+        periodEnd: '2026-08-31',
+        reportedRevenue: '2000.00',
+        estimatedTax: '16.00',
+        amountPaid: '16.00',
+        paidDate: '2026-09-18',
+        receiptDriveUrl: 'https://drive.google.com/file/d/receipt',
+        notes: 'Paid on time',
+        _csrf: agent.csrfToken,
+      });
+
+    expect(res.status).toBe(302);
+
+    const stored = await pool.query('SELECT * FROM tax_payments WHERE jurisdiction_id = $1', [
+      jurisdiction.rows[0].id,
+    ]);
+    expect(stored.rows[0].reported_revenue_cents).toBe(200000);
+    expect(stored.rows[0].estimated_tax_cents).toBe(1600);
+    expect(stored.rows[0].amount_paid_cents).toBe(1600);
+
+    const detail = await agent.get(`/admin/tax/jurisdictions/${jurisdiction.rows[0].id}`);
+    expect(detail.status).toBe(200);
+    expect(detail.text).toContain('$2000.00');
+    expect(detail.text).toContain('$16.00');
+    expect(detail.text).toContain('Paid on time');
+  });
+
+  it('leaves unfilled money fields as null rather than zero', async () => {
+    const agent = await loggedInAgent();
+    const jurisdiction = await pool.query(
+      `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+       VALUES ('Town of Berthoud', 'municipality', 3.0, 'monthly', 20) RETURNING *`
+    );
+
+    await agent
+      .post(`/admin/tax/jurisdictions/${jurisdiction.rows[0].id}/payments`)
+      .type('form')
+      .send({ periodStart: '2026-08-01', periodEnd: '2026-08-31', _csrf: agent.csrfToken });
+
+    const stored = await pool.query('SELECT * FROM tax_payments WHERE jurisdiction_id = $1', [
+      jurisdiction.rows[0].id,
+    ]);
+    expect(stored.rows[0].reported_revenue_cents).toBeNull();
+    expect(stored.rows[0].amount_paid_cents).toBeNull();
+    expect(stored.rows[0].paid_date).toBeNull();
+  });
+});
+
 describe('assigning jurisdictions to a location', () => {
   it('saves the selected jurisdictions for a location', async () => {
     const agent = await loggedInAgent();
