@@ -44,4 +44,28 @@ async function sendContactNotification({ message, detailUrl }) {
   console.log(`Contact notification email sent to ${recipient} for message #${message.id}.`);
 }
 
-module.exports = { sendContactNotification };
+// Generic admin alert email, reused by the daily tax-toggle job (no
+// calendar match, or a dry-run summary) and the upcoming monthly
+// tax-payment-due reminder — anything that just needs a subject and a
+// plain-text body sent to the same admin inbox as contact notifications.
+async function sendAdminAlert({ subject, body }) {
+  const transporter = getTransporter();
+
+  if (!transporter) {
+    console.log('Email notifications not configured (GMAIL_USER/GMAIL_APP_PASSWORD missing) — skipping.');
+    return;
+  }
+
+  const recipient = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.GMAIL_USER;
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to: recipient,
+    subject,
+    text: body,
+  });
+
+  console.log(`Admin alert email sent to ${recipient}: ${subject}`);
+}
+
+module.exports = { sendContactNotification, sendAdminAlert };

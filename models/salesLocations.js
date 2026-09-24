@@ -26,6 +26,15 @@ async function findOrCreateByName(name, address) {
   return inserted.rows[0];
 }
 
+// Same case-insensitive match as findOrCreateByName, but never creates —
+// for callers (like the daily tax-toggle job) where an unrecognized name
+// should be treated as "don't know this location" rather than silently
+// adding a new one with no jurisdictions configured.
+async function findByName(name) {
+  const result = await pool.query('SELECT * FROM sales_locations WHERE lower(name) = lower($1)', [name.trim()]);
+  return result.rows[0];
+}
+
 async function listLocations() {
   const result = await pool.query('SELECT * FROM sales_locations ORDER BY name');
   return result.rows;
@@ -101,6 +110,7 @@ async function mergeLocations(duplicateId, targetId) {
 
 module.exports = {
   findOrCreateByName,
+  findByName,
   listLocations,
   updateCityState,
   getLocationById,
