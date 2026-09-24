@@ -14,8 +14,8 @@ async function createJurisdiction(fields) {
   const result = await pool.query(
     `INSERT INTO tax_jurisdictions
         (name, level, tax_rate_percent, schedule, day_of_month_due, is_home_rule,
-         payment_link, license_number, license_drive_url)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         payment_link, license_number, license_drive_url, square_catalog_tax_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
     [
       fields.name,
@@ -27,6 +27,7 @@ async function createJurisdiction(fields) {
       fields.paymentLink || null,
       fields.licenseNumber || null,
       fields.licenseDriveUrl || null,
+      fields.squareCatalogTaxId || null,
     ]
   );
   return result.rows[0];
@@ -44,6 +45,7 @@ async function updateJurisdiction(id, fields) {
         payment_link = $8,
         license_number = $9,
         license_drive_url = $10,
+        square_catalog_tax_id = $11,
         updated_at = now()
      WHERE id = $1
      RETURNING *`,
@@ -58,6 +60,7 @@ async function updateJurisdiction(id, fields) {
       fields.paymentLink || null,
       fields.licenseNumber || null,
       fields.licenseDriveUrl || null,
+      fields.squareCatalogTaxId || null,
     ]
   );
   return result.rows[0];

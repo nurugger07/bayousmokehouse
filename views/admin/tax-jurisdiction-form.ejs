@@ -78,6 +78,14 @@
           </div>
         </div>
 
+        <div class="contact-form__row">
+          <div>
+            <label for="squareCatalogTaxId">Square Catalog Tax ID</label>
+            <input type="text" id="squareCatalogTaxId" name="squareCatalogTaxId" value="<%= jurisdiction ? (jurisdiction.square_catalog_tax_id || '') : '' %>" placeholder="e.g. AQCEGCEBBQONINDOHRGZISEX">
+            <p>Find the right ID on the <a href="/admin/tax/square-catalog-taxes">Square Catalog Taxes</a> reference page.</p>
+          </div>
+        </div>
+
         <button type="submit" class="btn btn--primary"><%= jurisdiction ? 'Save Changes' : 'Add Jurisdiction' %></button>
       </form>
     </div>

@@ -191,9 +191,15 @@ CREATE TABLE IF NOT EXISTS tax_jurisdictions (
     payment_link        TEXT,
     license_number      VARCHAR(255),
     license_drive_url   TEXT,
+    square_catalog_tax_id VARCHAR(255),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Idempotent add for databases where tax_jurisdictions already existed
+-- before the daily Square tax-toggle job needed to know which
+-- CatalogTax object each jurisdiction corresponds to.
+ALTER TABLE tax_jurisdictions ADD COLUMN IF NOT EXISTS square_catalog_tax_id VARCHAR(255);
 
 -- Which jurisdictions apply to a given physical location.
 CREATE TABLE IF NOT EXISTS location_tax_jurisdictions (

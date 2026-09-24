@@ -1,7 +1,13 @@
+jest.mock('../services/square', () => ({
+  listCatalogTaxes: jest.fn(),
+  setCatalogTaxEnabled: jest.fn(),
+}));
+
 const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');
 const { getCsrfToken } = require('./helpers/csrf');
+const { listCatalogTaxes } = require('../services/square');
 
 const CORRECT_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
 
@@ -91,6 +97,36 @@ describe('admin tax jurisdictions CRUD', () => {
     const agent = await loggedInAgent();
     const res = await agent.get('/admin/tax/jurisdictions/999999/edit');
     expect(res.status).toBe(404);
+  });
+
+  it('saves and shows the Square catalog tax ID', async () => {
+    const agent = await loggedInAgent();
+
+    await agent
+      .post('/admin/tax/jurisdictions')
+      .type('form')
+      .send({ ...VALID_JURISDICTION, squareCatalogTaxId: 'AQCEGCEBBQONINDOHRGZISEX', _csrf: agent.csrfToken });
+
+    const created = await pool.query('SELECT * FROM tax_jurisdictions WHERE name = $1', ['Colorado']);
+    expect(created.rows[0].square_catalog_tax_id).toBe('AQCEGCEBBQONINDOHRGZISEX');
+
+    const detail = await agent.get(`/admin/tax/jurisdictions/${created.rows[0].id}`);
+    expect(detail.text).toContain('AQCEGCEBBQONINDOHRGZISEX');
+  });
+});
+
+describe('Square catalog taxes reference page', () => {
+  it('lists the current CatalogTax objects from Square', async () => {
+    listCatalogTaxes.mockResolvedValueOnce([
+      { id: 'tax_1', taxData: { name: 'Colorado', percentage: '2.9', enabled: true } },
+    ]);
+    const agent = await loggedInAgent();
+
+    const res = await agent.get('/admin/tax/square-catalog-taxes');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Colorado');
+    expect(res.text).toContain('tax_1');
   });
 });
 

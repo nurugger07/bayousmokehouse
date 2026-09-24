@@ -7,6 +7,7 @@ const {
   updateJurisdiction,
 } = require('../models/taxJurisdictions');
 const { listPaymentsForJurisdiction, createPayment } = require('../models/taxPayments');
+const { listCatalogTaxes } = require('../services/square');
 
 // Dollars (whatever a human typed into the form) to integer cents,
 // matching how money is stored everywhere else in this app. Blank
@@ -33,8 +34,21 @@ function jurisdictionFieldsFromBody(body) {
     paymentLink: (body.paymentLink || '').trim(),
     licenseNumber: (body.licenseNumber || '').trim(),
     licenseDriveUrl: (body.licenseDriveUrl || '').trim(),
+    squareCatalogTaxId: (body.squareCatalogTaxId || '').trim(),
   };
 }
+
+// Reference list of the actual CatalogTax objects in Square, with their
+// object IDs, so Johnny can copy the right one into a jurisdiction's
+// "Square Catalog Tax ID" field without hunting for it elsewhere.
+router.get('/tax/square-catalog-taxes', async (req, res, next) => {
+  try {
+    const taxes = await listCatalogTaxes();
+    res.render('admin/tax-square-catalog-taxes', { taxes });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.get('/tax/jurisdictions', async (req, res, next) => {
   try {

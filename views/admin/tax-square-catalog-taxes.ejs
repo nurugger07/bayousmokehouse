@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%- include('../partials/head', { title: 'Square Catalog Taxes' }) %>
+</head>
+<body>
+<%- include('../partials/adminNav', { loggedIn: true }) %>
+
+<main>
+  <section class="content">
+    <div class="container">
+      <h1>Square Catalog Taxes</h1>
+      <p>
+        These are the actual tax objects currently set up in Square. Copy an ID into a jurisdiction's
+        <a href="/admin/tax/jurisdictions">Square Catalog Tax ID</a> field so the daily job knows which one to
+        enable or disable for that jurisdiction.
+      </p>
+
+      <% if (taxes.length === 0) { %>
+        <p>No taxes found in Square.</p>
+      <% } %>
+
+      <% if (taxes.length > 0) { %>
+        <div class="table-scroll">
+          <table class="admin-table" data-sortable>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th data-sort-type="number">Rate</th>
+                <th>Currently Enabled</th>
+                <th>Catalog Object ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% taxes.forEach(function(tax) { %>
+                <tr>
+                  <td><%= tax.taxData && tax.taxData.name %></td>
+                  <td data-sort-value="<%= tax.taxData && tax.taxData.percentage %>"><%= tax.taxData && tax.taxData.percentage %>%</td>
+                  <td><%= tax.taxData && tax.taxData.enabled ? 'Yes' : 'No' %></td>
+                  <td><%= tax.id %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </section>
+</main>
+
+<%- include('../partials/footer') %>
+</body>
+</html>

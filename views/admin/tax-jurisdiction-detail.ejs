@@ -34,6 +34,7 @@
             Not set
           <% } %>
         </li>
+        <li>Square Catalog Tax ID: <%= jurisdiction.square_catalog_tax_id || 'Not set (daily job will skip this jurisdiction)' %></li>
       </ul>
 
       <p><a href="/admin/tax/jurisdictions/<%= jurisdiction.id %>/edit" class="btn btn--small btn--secondary">Edit Jurisdiction</a></p>
