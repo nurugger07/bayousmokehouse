@@ -89,6 +89,28 @@ describe('runDailyTaxToggle', () => {
     expect(sendAdminAlert.mock.calls[0][0].subject).toContain('needs your attention');
   });
 
+  it('explains a multiple-events day in the alert email', async () => {
+    getEventsForDateRange.mockResolvedValue([
+      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
+      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Odd13 Brewing' },
+    ]);
+
+    await runDailyTaxToggle({ dryRun: true, now: NOW });
+
+    expect(setCatalogTaxEnabled).not.toHaveBeenCalled();
+    expect(sendAdminAlert.mock.calls[0][0].body).toContain('2 calendar events');
+  });
+
+  it('explains an unrecognized location in the alert email', async () => {
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'A Brand New Spot' }]);
+    findByName.mockResolvedValue(undefined);
+
+    await runDailyTaxToggle({ dryRun: true, now: NOW });
+
+    expect(setCatalogTaxEnabled).not.toHaveBeenCalled();
+    expect(sendAdminAlert.mock.calls[0][0].body).toContain('"A Brand New Spot"');
+  });
+
   it('in dry-run mode, emails the plan without calling Square', async () => {
     getEventsForDateRange.mockResolvedValue([
       { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
@@ -150,5 +172,26 @@ describe('runDailyTaxToggle', () => {
     expect(subject).toContain('needs attention');
     expect(body).toContain('FAILED');
     expect(body).toContain('500');
+  });
+
+  it('reports a Square failure on the disable side too', async () => {
+    getEventsForDateRange.mockResolvedValue([
+      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
+    ]);
+    findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
+    listJurisdictionsForLocation.mockResolvedValue([COLORADO]);
+    setCatalogTaxEnabled.mockImplementation((id) => {
+      if (id === 'tax_boulder') {
+        return Promise.reject(new Error('Square API request failed (503)'));
+      }
+      return Promise.resolve({});
+    });
+
+    await runDailyTaxToggle({ dryRun: false, now: NOW });
+
+    const { subject, body } = sendAdminAlert.mock.calls[0][0];
+    expect(subject).toContain('needs attention');
+    expect(body).toContain('FAILED to disable');
+    expect(body).toContain('503');
   });
 });

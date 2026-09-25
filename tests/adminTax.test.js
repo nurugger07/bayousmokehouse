@@ -8,6 +8,7 @@ const app = require('../app');
 const { pool } = require('../config/db');
 const { getCsrfToken } = require('./helpers/csrf');
 const { listCatalogTaxes } = require('../services/square');
+const { listJurisdictionsForLocation } = require('../models/taxJurisdictions');
 
 const CORRECT_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
 
@@ -97,6 +98,27 @@ describe('admin tax jurisdictions CRUD', () => {
     const agent = await loggedInAgent();
     const res = await agent.get('/admin/tax/jurisdictions/999999/edit');
     expect(res.status).toBe(404);
+  });
+
+  it('shows a blank form for adding a new jurisdiction', async () => {
+    const agent = await loggedInAgent();
+    const res = await agent.get('/admin/tax/jurisdictions/new');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Add Jurisdiction');
+  });
+
+  it('shows a prefilled form for editing an existing jurisdiction', async () => {
+    const agent = await loggedInAgent();
+    const created = await pool.query(
+      `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+       VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`
+    );
+
+    const res = await agent.get(`/admin/tax/jurisdictions/${created.rows[0].id}/edit`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Edit Jurisdiction');
+    expect(res.text).toContain('Larimer County');
   });
 
   it('saves and shows the Square catalog tax ID', async () => {
@@ -248,5 +270,29 @@ describe('assigning jurisdictions to a location', () => {
       location.rows[0].id,
     ]);
     expect(links.rows.map((r) => r.jurisdiction_id)).toEqual([larimer.rows[0].id]);
+  });
+});
+
+// listJurisdictionsForLocation's only real caller (services/dailyTaxToggle.js)
+// mocks models/taxJurisdictions entirely in its own tests, so this is the
+// one place its actual SQL (the location_tax_jurisdictions join) runs
+// against a real database.
+describe('models/taxJurisdictions listJurisdictionsForLocation', () => {
+  it('returns only the jurisdictions linked to that location, ordered by level then name', async () => {
+    const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Odd13 Brewing') RETURNING *");
+    const otherLocation = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Some Other Venue') RETURNING *");
+    const [colorado, larimer, unrelated] = await Promise.all([
+      pool.query(`INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Colorado', 'state', 2.9, 'monthly', 20) RETURNING *`),
+      pool.query(`INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`),
+      pool.query(`INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Boulder County', 'county', 0.99, 'monthly', 20) RETURNING *`),
+    ]);
+    await pool.query(
+      'INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2), ($1, $3), ($4, $5)',
+      [location.rows[0].id, colorado.rows[0].id, larimer.rows[0].id, otherLocation.rows[0].id, unrelated.rows[0].id]
+    );
+
+    const result = await listJurisdictionsForLocation(location.rows[0].id);
+
+    expect(result.map((j) => j.name)).toEqual(['Larimer County', 'Colorado']);
   });
 });

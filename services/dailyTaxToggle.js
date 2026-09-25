@@ -167,4 +167,4 @@ async function runDailyTaxToggle({ dryRun = true, now = new Date() } = {}) {
   return { ...plan, results };
 }
 
-module.exports = { planTodaysTaxes, runDailyTaxToggle, getTodayRange };
+module.exports = { planTodaysTaxes, runDailyTaxToggle };
