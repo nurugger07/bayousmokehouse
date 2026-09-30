@@ -30,7 +30,27 @@ async function createPayment(jurisdictionId, fields) {
   return result.rows[0];
 }
 
+// Used by the monthly job to record/refresh a period's revenue and
+// estimated tax. On conflict (same jurisdiction + period already has a
+// row), only those two columns are touched — amount_paid_cents,
+// paid_date, receipt_drive_url, and notes are left exactly as Johnny
+// entered them, whether that happened before or after this runs.
+async function upsertRevenueEstimate(jurisdictionId, { periodStart, periodEnd, reportedRevenueCents, estimatedTaxCents }) {
+  const result = await pool.query(
+    `INSERT INTO tax_payments (jurisdiction_id, period_start, period_end, reported_revenue_cents, estimated_tax_cents)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (jurisdiction_id, period_start, period_end) DO UPDATE SET
+        reported_revenue_cents = EXCLUDED.reported_revenue_cents,
+        estimated_tax_cents = EXCLUDED.estimated_tax_cents,
+        updated_at = now()
+     RETURNING *`,
+    [jurisdictionId, periodStart, periodEnd, reportedRevenueCents, estimatedTaxCents]
+  );
+  return result.rows[0];
+}
+
 module.exports = {
   listPaymentsForJurisdiction,
   createPayment,
+  upsertRevenueEstimate,
 };

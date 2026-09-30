@@ -245,6 +245,35 @@ function groupWeeklyTotalsByMonth(rows) {
     });
 }
 
+// Gross sales per tax jurisdiction for a date range, via each
+// jurisdiction's assigned locations (location_tax_jurisdictions) — the
+// same gross-sales formula as the weekly totals report. All LEFT JOINs
+// from tax_jurisdictions so every jurisdiction appears even with zero
+// matching activity (reported as $0, not omitted), and the date filter
+// lives in the sales_days JOIN condition rather than a WHERE clause so
+// it doesn't turn those LEFT JOINs into de facto INNER JOINs.
+async function getRevenueByJurisdiction({ startDate, endDate }) {
+  const result = await pool.query(
+    `SELECT
+        j.id AS jurisdiction_id,
+        j.name AS jurisdiction_name,
+        j.level AS level,
+        j.schedule AS schedule,
+        j.tax_rate_percent AS tax_rate_percent,
+        j.day_of_month_due AS day_of_month_due,
+        COALESCE(SUM(o.total_money_cents - o.tip_money_cents - o.tax_money_cents
+                     - o.service_charge_money_cents + o.discount_money_cents), 0)::bigint AS gross_sales_cents
+     FROM tax_jurisdictions j
+     LEFT JOIN location_tax_jurisdictions ltj ON ltj.jurisdiction_id = j.id
+     LEFT JOIN sales_days sd ON sd.location_id = ltj.location_id AND sd.sale_date BETWEEN $1 AND $2
+     LEFT JOIN square_orders o ON o.sales_day_id = sd.id
+     GROUP BY j.id, j.name, j.level, j.schedule, j.tax_rate_percent, j.day_of_month_due
+     ORDER BY j.name`,
+    [startDate, endDate]
+  );
+  return result.rows;
+}
+
 module.exports = {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
@@ -253,4 +282,5 @@ module.exports = {
   getTipTotalsByLocation,
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
+  getRevenueByJurisdiction,
 };

@@ -35,6 +35,22 @@ beforeEach(() => {
 });
 
 describe('planTodaysTaxes', () => {
+  it('asks for the correct America/Denver day boundary, independent of the local machine timezone', async () => {
+    // Regression test: toZonedTime()'s output must be read with UTC
+    // getters, not plain date-fns local-getter functions (startOfDay,
+    // subMonths, etc.) — that mix only produces the right answer by
+    // coincidence on a UTC-local machine. NOW is 2026-09-23T15:00:00Z,
+    // which is 2026-09-23 09:00 MDT, so "today" in Denver is the 23rd
+    // regardless of what timezone this test happens to run in.
+    getEventsForDateRange.mockResolvedValue([]);
+
+    await planTodaysTaxes(NOW);
+
+    const [startDate, endDate] = getEventsForDateRange.mock.calls[0];
+    expect(startDate.toISOString()).toBe('2026-09-23T06:00:00.000Z'); // midnight MDT
+    expect(endDate.toISOString()).toBe('2026-09-24T05:59:59.999Z'); // 11:59:59.999pm MDT
+  });
+
   it('flags no_event when there is no calendar event today', async () => {
     getEventsForDateRange.mockResolvedValue([]);
 
