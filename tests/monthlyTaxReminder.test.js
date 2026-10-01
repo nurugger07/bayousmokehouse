@@ -4,7 +4,7 @@ jest.mock('../services/mailer', () => ({
 
 const { pool } = require('../config/db');
 const { sendAdminAlert } = require('../services/mailer');
-const { runMonthlyTaxReminder } = require('../services/monthlyTaxReminder');
+const { runMonthlyTaxReminder, isReminderDay } = require('../services/monthlyTaxReminder');
 
 // pg reads DATE columns back as local-midnight Date objects, not UTC
 // midnight, so comparing against `new Date('2026-11-01')` (which parses
@@ -142,5 +142,26 @@ describe('runMonthlyTaxReminder', () => {
     const { dueRows } = await runMonthlyTaxReminder(new Date('2026-12-01T18:00:00Z'));
     expect(dueRows).toHaveLength(0);
     expect(sendAdminAlert).not.toHaveBeenCalled();
+  });
+});
+
+describe('isReminderDay', () => {
+  it("matches the target day in America/Denver, not the server's local timezone", () => {
+    // 2026-12-01T05:00:00Z is still Nov 30 in Denver (MST, UTC-7) but
+    // already Dec 1 in UTC -- this only passes if the check uses
+    // America/Denver's calendar date, not the raw UTC date.
+    const lateUtcButStillPriorDayInDenver = new Date('2026-12-01T05:00:00Z');
+    expect(isReminderDay(30, lateUtcButStillPriorDayInDenver)).toBe(true);
+    expect(isReminderDay(1, lateUtcButStillPriorDayInDenver)).toBe(false);
+  });
+
+  it('matches day 1 on the 1st of the month in Denver', () => {
+    const firstOfMonthInDenver = new Date('2026-12-01T15:00:00Z'); // 8am MST
+    expect(isReminderDay(1, firstOfMonthInDenver)).toBe(true);
+  });
+
+  it('does not match any other day', () => {
+    const fifteenthInDenver = new Date('2026-12-15T15:00:00Z');
+    expect(isReminderDay(1, fifteenthInDenver)).toBe(false);
   });
 });
