@@ -4,10 +4,11 @@ const {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
   getTopItems,
-  getTaxTotalsByLocation,
   getTipTotalsByLocation,
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
+  getRevenueByJurisdiction,
+  estimateTaxCents,
 } = require('../models/salesReports');
 
 async function createLocation(name, cityState) {
@@ -102,7 +103,14 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await pool.query('TRUNCATE square_order_line_items, square_orders, sales_days, sales_locations RESTART IDENTITY CASCADE');
+  // square_returns wasn't included here before -- the getWeeklyTotals
+  // describe block below creates rows in it directly (not through
+  // seedData/beforeAll), and leftover rows from one test run silently
+  // accumulated across repeated isolated `npm test -- salesReports`
+  // invocations until a rerun's assertions doubled up on stale data.
+  await pool.query(
+    'TRUNCATE location_tax_jurisdictions, tax_jurisdictions, square_order_line_items, square_orders, square_returns, sales_days, sales_locations RESTART IDENTITY CASCADE'
+  );
   await pool.end();
 });
 
@@ -169,46 +177,77 @@ describe('getItemSalesByLocation', () => {
   });
 });
 
-describe('getTaxTotalsByLocation', () => {
-  it('totals tax by city/state (not individual venue) without a day-of-week split', async () => {
-    const rows = await getTaxTotalsByLocation({ startDate: '2026-08-01', endDate: '2026-08-31' });
+describe('getRevenueByJurisdiction', () => {
+  let colorado;
+  let larimer;
 
-    expect(rows.find((r) => r.city_state === 'Berthoud, CO')).not.toHaveProperty('day_of_week');
-    expect(rows.find((r) => r.city_state === 'Berthoud, CO').tax_money_cents).toBe('300');
-    expect(rows.find((r) => r.city_state === 'Fort Collins, CO').tax_money_cents).toBe('80');
+  beforeAll(async () => {
+    [colorado, larimer] = await Promise.all([
+      pool
+        .query(
+          `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+           VALUES ('Colorado', 'state', 2.9, 'monthly', 20) RETURNING *`
+        )
+        .then((r) => r.rows[0]),
+      pool
+        .query(
+          `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+           VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`
+        )
+        .then((r) => r.rows[0]),
+    ]);
+    // Colorado applies to both fixture locations; Larimer only to Berthoud
+    // (Odd13/Fort Collins is in Larimer County too in real life, but
+    // deliberately left unlinked here so the "stacking" and "one
+    // jurisdiction, multiple locations" cases are both covered).
+    await pool.query(
+      'INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2), ($3, $2), ($1, $4)',
+      [seeded.berthoud.id, colorado.id, seeded.odd13.id, larimer.id]
+    );
   });
 
-  it('merges two venues that share a city/state into one row', async () => {
-    const [venueA, venueB] = await Promise.all([
-      createLocation('Bayou Smokehouse @ Venue A', 'Loveland, CO'),
-      createLocation('Bayou Smokehouse @ Venue B', 'Loveland, CO'),
-    ]);
-    const [dayA, dayB] = await Promise.all([
-      createSalesDay({ saleDate: '2026-08-24', locationId: venueA.id, summary: venueA.name }),
-      createSalesDay({ saleDate: '2026-08-25', locationId: venueB.id, summary: venueB.name }),
-    ]);
-    await Promise.all([
-      createOrder({ salesDayId: dayA.id, totalCents: 500, taxCents: 40, tipCents: 0, items: [] }),
-      createOrder({ salesDayId: dayB.id, totalCents: 700, taxCents: 60, tipCents: 0, items: [] }),
-    ]);
+  it('sums gross sales across every location linked to a jurisdiction', async () => {
+    const rows = await getRevenueByJurisdiction({ startDate: '2026-08-01', endDate: '2026-08-31' });
 
-    const rows = await getTaxTotalsByLocation({ startDate: '2026-08-24', endDate: '2026-08-25' });
+    // Colorado: Berthoud (2500-300-200=2000) + (1500-150-100=1250) + Odd13 (1000-100-80=820)
+    const coloradoRow = rows.find((r) => r.jurisdiction_id === colorado.id);
+    expect(Number(coloradoRow.gross_sales_cents)).toBe(2000 + 1250 + 820);
 
-    expect(rows).toHaveLength(1);
-    expect(rows[0].city_state).toBe('Loveland, CO');
-    expect(rows[0].visit_count).toBe('2');
-    expect(rows[0].tax_money_cents).toBe('100');
+    // Larimer: only Berthoud's two visits
+    const larimerRow = rows.find((r) => r.jurisdiction_id === larimer.id);
+    expect(Number(larimerRow.gross_sales_cents)).toBe(2000 + 1250);
   });
 
-  it('falls back to the venue name when city_state could not be parsed', async () => {
-    const noAddress = await createLocation('Bayou Smokehouse @ No Address Venue', null);
-    const day = await createSalesDay({ saleDate: '2026-08-26', locationId: noAddress.id, summary: noAddress.name });
-    await createOrder({ salesDayId: day.id, totalCents: 300, taxCents: 25, tipCents: 0, items: [] });
+  it('reports $0 for a jurisdiction with no locations linked or no activity in range, rather than omitting it', async () => {
+    const unused = await pool
+      .query(
+        `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+         VALUES ('Town of Nowhere', 'municipality', 3.0, 'monthly', 20) RETURNING *`
+      )
+      .then((r) => r.rows[0]);
 
-    const rows = await getTaxTotalsByLocation({ startDate: '2026-08-26', endDate: '2026-08-26' });
+    const rows = await getRevenueByJurisdiction({ startDate: '2026-08-01', endDate: '2026-08-31' });
 
-    expect(rows).toHaveLength(1);
-    expect(rows[0].city_state).toBe('Bayou Smokehouse @ No Address Venue');
+    const unusedRow = rows.find((r) => r.jurisdiction_id === unused.id);
+    expect(unusedRow).toBeDefined();
+    expect(Number(unusedRow.gross_sales_cents)).toBe(0);
+  });
+
+  it('excludes activity outside the requested date range', async () => {
+    const rows = await getRevenueByJurisdiction({ startDate: '2026-08-15', endDate: '2026-08-15' });
+
+    // Only Odd13's 8/15 visit falls in range, and only Colorado applies to it.
+    const coloradoRow = rows.find((r) => r.jurisdiction_id === colorado.id);
+    expect(Number(coloradoRow.gross_sales_cents)).toBe(820);
+    const larimerRow = rows.find((r) => r.jurisdiction_id === larimer.id);
+    expect(Number(larimerRow.gross_sales_cents)).toBe(0);
+  });
+});
+
+describe('estimateTaxCents', () => {
+  it('rounds to the nearest cent', () => {
+    expect(estimateTaxCents(100000, 2.9)).toBe(2900);
+    expect(estimateTaxCents(333, 8.845)).toBe(29); // 333 * 0.08845 = 29.454...
   });
 });
 

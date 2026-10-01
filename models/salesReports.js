@@ -79,31 +79,6 @@ async function getTopItems({ startDate, endDate, locationId, limit = 5 } = {}) {
   return result.rows;
 }
 
-// Tax totals grouped by city/state, not individual venue — sales tax is
-// a city/county-level jurisdiction concern, not a per-venue one, and
-// multiple venues can share a jurisdiction. Locations with no parseable
-// address fall back to grouping under their own name so nothing is lost.
-async function getTaxTotalsByLocation({ startDate, endDate, locationId } = {}) {
-  const result = await pool.query(
-    `SELECT
-        COALESCE(l.city_state, l.name) AS city_state,
-        COUNT(DISTINCT sd.id) AS visit_count,
-        COUNT(o.id) AS order_count,
-        COALESCE(SUM(o.total_money_cents - o.tip_money_cents - o.tax_money_cents
-                     - o.service_charge_money_cents + o.discount_money_cents), 0)::bigint AS gross_sales_cents,
-        COALESCE(SUM(o.tax_money_cents), 0)::bigint AS tax_money_cents
-     FROM sales_days sd
-     JOIN sales_locations l ON l.id = sd.location_id
-     LEFT JOIN square_orders o ON o.sales_day_id = sd.id
-     WHERE sd.sale_date BETWEEN $1 AND $2
-       AND ($3::int IS NULL OR l.id = $3)
-     GROUP BY COALESCE(l.city_state, l.name)
-     ORDER BY COALESCE(l.city_state, l.name)`,
-    [startDate, endDate, locationId || null]
-  );
-  return result.rows;
-}
-
 // Tip totals by location and day of week.
 async function getTipTotalsByLocation({ startDate, endDate, locationId } = {}) {
   const result = await pool.query(
@@ -274,13 +249,20 @@ async function getRevenueByJurisdiction({ startDate, endDate }) {
   return result.rows;
 }
 
+// Shared with services/monthlyTaxReminder.js, so the "how do we turn
+// revenue into an owed-tax estimate" rounding rule only lives in one
+// place.
+function estimateTaxCents(grossSalesCents, taxRatePercent) {
+  return Math.round(Number(grossSalesCents) * (Number(taxRatePercent) / 100));
+}
+
 module.exports = {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
   getTopItems,
-  getTaxTotalsByLocation,
   getTipTotalsByLocation,
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
   getRevenueByJurisdiction,
+  estimateTaxCents,
 };

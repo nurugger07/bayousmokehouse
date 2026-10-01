@@ -1,6 +1,6 @@
 const { subMonths, startOfMonth, endOfMonth } = require('date-fns');
 const { toZonedTime, fromZonedTime, formatInTimeZone } = require('date-fns-tz');
-const { getRevenueByJurisdiction } = require('../models/salesReports');
+const { getRevenueByJurisdiction, estimateTaxCents } = require('../models/salesReports');
 const { upsertRevenueEstimate } = require('../models/taxPayments');
 const { sendAdminAlert } = require('./mailer');
 
@@ -90,7 +90,7 @@ async function runMonthlyTaxReminder(now = new Date()) {
       continue;
     }
     const grossSalesCents = Number(row.gross_sales_cents);
-    const estimatedTaxCents = Math.round(grossSalesCents * (Number(row.tax_rate_percent) / 100));
+    const estimatedTaxCents = estimateTaxCents(grossSalesCents, row.tax_rate_percent);
     await upsertRevenueEstimate(row.jurisdiction_id, {
       periodStart: dateKey(monthlyPeriod.periodStart),
       periodEnd: dateKey(monthlyPeriod.periodEnd),
@@ -105,7 +105,7 @@ async function runMonthlyTaxReminder(now = new Date()) {
       continue;
     }
     const grossSalesCents = Number(row.gross_sales_cents);
-    const estimatedTaxCents = Math.round(grossSalesCents * (Number(row.tax_rate_percent) / 100));
+    const estimatedTaxCents = estimateTaxCents(grossSalesCents, row.tax_rate_percent);
     await upsertRevenueEstimate(row.jurisdiction_id, {
       periodStart: dateKey(quarterlyPeriod.periodStart),
       periodEnd: dateKey(quarterlyPeriod.periodEnd),

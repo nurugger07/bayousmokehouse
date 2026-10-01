@@ -66,14 +66,23 @@ describe('admin sales reports', () => {
     await pool.query(
       "INSERT INTO square_order_line_items (square_order_id, name, quantity, total_money_cents) SELECT id, 'Pork Belly Sliders', 2, 2500 FROM square_orders WHERE square_order_id = 'sq_test_order'"
     );
+    const jurisdiction = await pool.query(
+      `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
+       VALUES ('Colorado', 'state', 10, 'monthly', 20) RETURNING *`
+    );
+    await pool.query('INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2)', [
+      location.id,
+      jurisdiction.rows[0].id,
+    ]);
     const agent = await loggedInAgent();
 
     const items = await agent.get('/admin/sales/items?startDate=2026-08-14&endDate=2026-08-14');
     expect(items.text).toContain('Pork Belly Sliders');
 
     const tax = await agent.get('/admin/sales/tax?startDate=2026-08-14&endDate=2026-08-14');
+    expect(tax.text).toContain('Colorado');
     expect(tax.text).toContain('$20.00'); // gross sales
-    expect(tax.text).toContain('$2.00'); // tax collected
+    expect(tax.text).toContain('$2.00'); // estimated tax at 10%
 
     const tips = await agent.get('/admin/sales/tips?startDate=2026-08-14&endDate=2026-08-14');
     expect(tips.text).toContain('$3.00');

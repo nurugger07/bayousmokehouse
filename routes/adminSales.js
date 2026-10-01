@@ -5,10 +5,11 @@ const {
   getSalesTotalsByLocation,
   getItemSalesByLocation,
   getTopItems,
-  getTaxTotalsByLocation,
   getTipTotalsByLocation,
   getWeeklyTotals,
   groupWeeklyTotalsByMonth,
+  getRevenueByJurisdiction,
+  estimateTaxCents,
 } = require('../models/salesReports');
 const {
   listLocations,
@@ -80,8 +81,13 @@ router.get('/sales/items', async (req, res, next) => {
 router.get('/sales/tax', async (req, res, next) => {
   try {
     const filters = resolveFilters(req.query);
-    const [rows, locations] = await Promise.all([getTaxTotalsByLocation(filters), listLocations()]);
-    res.render('admin/sales-tax', { rows, locations, filters });
+    const rawRows = await getRevenueByJurisdiction(filters);
+    const rows = rawRows.map((row) => ({
+      ...row,
+      grossSalesCents: Number(row.gross_sales_cents),
+      estimatedTaxCents: estimateTaxCents(row.gross_sales_cents, row.tax_rate_percent),
+    }));
+    res.render('admin/sales-tax', { rows, filters });
   } catch (err) {
     next(err);
   }

@@ -9,50 +9,54 @@
 <main>
   <section class="content">
     <div class="container">
-      <h1>Tax Totals by City, State</h1>
-      <p>Grouped by tax jurisdiction (city/state) rather than individual venue, since sales tax is collected at that level.</p>
+      <h1>Tax Totals by Jurisdiction</h1>
+      <p>
+        Revenue and estimated tax owed per jurisdiction, based on which locations are assigned to each on
+        <a href="/admin/sales/locations">Manage Locations</a>. A single day's sales can count toward more than one
+        jurisdiction at once (state, county, and municipality can all apply to the same visit).
+      </p>
 
-      <%- include('../partials/salesFilterForm', { action: '/admin/sales/tax', locations, filters }) %>
+      <%- include('../partials/salesFilterForm', { action: '/admin/sales/tax', filters }) %>
 
       <% if (rows.length === 0) { %>
-        <p>No sales in this range.</p>
+        <p>No tax jurisdictions set up yet. Add one at <a href="/admin/tax/jurisdictions">Tax Jurisdictions</a>.</p>
       <% } %>
 
       <% if (rows.length > 0) {
-        var totalVisits = rows.reduce(function(sum, row) { return sum + Number(row.visit_count); }, 0);
-        var totalOrders = rows.reduce(function(sum, row) { return sum + Number(row.order_count); }, 0);
-        var totalGrossCents = rows.reduce(function(sum, row) { return sum + Number(row.gross_sales_cents); }, 0);
-        var totalCents = rows.reduce(function(sum, row) { return sum + Number(row.tax_money_cents); }, 0);
+        var totalGrossCents = rows.reduce(function(sum, row) { return sum + row.grossSalesCents; }, 0);
+        var totalTaxCents = rows.reduce(function(sum, row) { return sum + row.estimatedTaxCents; }, 0);
       %>
         <div class="table-scroll">
           <table class="admin-table" data-sortable>
             <thead>
               <tr>
-                <th>City, State</th>
-                <th data-sort-type="number">Visits</th>
-                <th data-sort-type="number">Orders</th>
+                <th>Jurisdiction</th>
+                <th>Level</th>
                 <th data-sort-type="number">Gross Sales</th>
-                <th data-sort-type="number">Tax Collected</th>
+                <th data-sort-type="number">Tax Rate</th>
+                <th data-sort-type="number">Estimated Tax</th>
+                <th>Schedule</th>
               </tr>
             </thead>
             <tbody>
               <% rows.forEach(function(row) { %>
                 <tr>
-                  <td><%= row.city_state %></td>
-                  <td><%= row.visit_count %></td>
-                  <td><%= row.order_count %></td>
-                  <td data-sort-value="<%= row.gross_sales_cents %>">$<%= (row.gross_sales_cents / 100).toFixed(2) %></td>
-                  <td data-sort-value="<%= row.tax_money_cents %>">$<%= (row.tax_money_cents / 100).toFixed(2) %></td>
+                  <td><a href="/admin/tax/jurisdictions/<%= row.jurisdiction_id %>"><%= row.jurisdiction_name %></a></td>
+                  <td><%= row.level %></td>
+                  <td data-sort-value="<%= row.grossSalesCents %>">$<%= (row.grossSalesCents / 100).toFixed(2) %></td>
+                  <td data-sort-value="<%= row.tax_rate_percent %>"><%= Number(row.tax_rate_percent).toFixed(3) %>%</td>
+                  <td data-sort-value="<%= row.estimatedTaxCents %>">$<%= (row.estimatedTaxCents / 100).toFixed(2) %></td>
+                  <td><%= row.schedule %></td>
                 </tr>
               <% }); %>
             </tbody>
             <tfoot>
               <tr>
-                <td>Total</td>
-                <td><%= totalVisits %></td>
-                <td><%= totalOrders %></td>
+                <td colspan="2">Total</td>
                 <td>$<%= (totalGrossCents / 100).toFixed(2) %></td>
-                <td>$<%= (totalCents / 100).toFixed(2) %></td>
+                <td></td>
+                <td>$<%= (totalTaxCents / 100).toFixed(2) %></td>
+                <td></td>
               </tr>
             </tfoot>
           </table>
