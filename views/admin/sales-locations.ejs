@@ -27,84 +27,102 @@
         <p class="form-message form-message--error"><%= error %></p>
       <% } %>
 
+      <h2><%= editingLocation ? 'Edit Location' : 'Add Location' %></h2>
+
+      <form
+        class="contact-form"
+        method="POST"
+        action="<%= editingLocation ? '/admin/sales/locations/' + editingLocation.id : '/admin/sales/locations' %>"
+      >
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="contact-form__row">
+          <div>
+            <label for="name">Name <span class="required-mark" aria-hidden="true">*</span></label>
+            <input type="text" id="name" name="name" value="<%= editingLocation ? editingLocation.name : '' %>" required>
+          </div>
+          <div>
+            <label for="cityState">City, State (or paste a full address)</label>
+            <input type="text" id="cityState" name="cityState" value="<%= editingLocation ? (editingLocation.city_state || '') : '' %>" placeholder="e.g. Loveland, CO">
+          </div>
+        </div>
+
+        <% if (jurisdictions.length > 0) { %>
+          <label>Tax Jurisdictions</label>
+          <% jurisdictions.forEach(function(j) { %>
+            <p style="margin: 0.25rem 0;">
+              <label for="jurisdiction-<%= j.id %>" style="font-weight: normal;">
+                <input
+                  type="checkbox"
+                  id="jurisdiction-<%= j.id %>"
+                  name="jurisdictionIds"
+                  value="<%= j.id %>"
+                  <%= editingJurisdictionIds.includes(j.id) ? 'checked' : '' %>
+                >
+                <%= j.name %> (<%= j.level %>)
+              </label>
+            </p>
+          <% }); %>
+        <% } %>
+
+        <button type="submit" class="btn btn--primary"><%= editingLocation ? 'Save Changes' : 'Add Location' %></button>
+        <% if (editingLocation) { %>
+          <a href="/admin/sales/locations" class="btn btn--secondary">Cancel</a>
+        <% } %>
+      </form>
+
+      <h2>Locations</h2>
+
       <% if (locations.length === 0) { %>
         <p>No locations yet.</p>
       <% } %>
 
       <% if (locations.length > 0) { %>
-        <div class="menu-list">
-          <% locations.forEach(function(location) { %>
-            <div class="menu-item">
-              <div class="menu-item__summary" style="cursor: default;">
-                <span class="menu-item__name"><%= location.name %></span>
-                <span class="menu-item__price"><%= location.city_state || 'No city/state set' %></span>
-              </div>
-              <div class="menu-item__panel">
-                <form method="POST" action="/admin/sales/locations/<%= location.id %>/rename" class="contact-form" style="margin-top: 0;">
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <div class="contact-form__row">
-                    <div>
-                      <label for="name-<%= location.id %>">Name</label>
-                      <input type="text" id="name-<%= location.id %>" name="name" value="<%= location.name %>" required>
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn--small btn--secondary">Rename</button>
-                </form>
-
-                <form method="POST" action="/admin/sales/locations/<%= location.id %>/city-state" class="contact-form">
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <div class="contact-form__row">
-                    <div>
-                      <label for="cityState-<%= location.id %>">City, State (or paste a full address)</label>
-                      <input type="text" id="cityState-<%= location.id %>" name="cityState" value="<%= location.city_state || '' %>" placeholder="e.g. Loveland, CO">
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn--small btn--primary">Save</button>
-                </form>
-
-                <% if (jurisdictions.length > 0) { %>
-                  <% var assignedIds = jurisdictionIdsByLocation.get(location.id) || []; %>
-                  <form method="POST" action="/admin/sales/locations/<%= location.id %>/tax-jurisdictions" class="contact-form">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <label>Tax Jurisdictions</label>
-                    <% jurisdictions.forEach(function(j) { %>
-                      <p style="margin: 0.25rem 0;">
-                        <label for="jurisdiction-<%= location.id %>-<%= j.id %>" style="font-weight: normal;">
-                          <input
-                            type="checkbox"
-                            id="jurisdiction-<%= location.id %>-<%= j.id %>"
-                            name="jurisdictionIds"
-                            value="<%= j.id %>"
-                            <%= assignedIds.includes(j.id) ? 'checked' : '' %>
-                          >
-                          <%= j.name %> (<%= j.level %>)
-                        </label>
-                      </p>
-                    <% }); %>
-                    <button type="submit" class="btn btn--small btn--secondary">Save Jurisdictions</button>
-                  </form>
-                <% } %>
-
+        <div class="table-scroll">
+          <table class="admin-table" data-sortable>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>City, State</th>
+                <th>Tax Jurisdictions</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% locations.forEach(function(location) { %>
+                <% var assignedIds = jurisdictionIdsByLocation.get(location.id) || []; %>
+                <% var assignedNames = jurisdictions.filter(function(j) { return assignedIds.includes(j.id); }).map(function(j) { return j.name; }); %>
                 <% var otherLocations = locations.filter(function(other) { return other.id !== location.id; }); %>
-                <% if (otherLocations.length > 0) { %>
-                  <form method="GET" action="/admin/sales/locations/<%= location.id %>/merge" class="contact-form">
-                    <div class="contact-form__row">
-                      <div>
-                        <label for="targetId-<%= location.id %>">Merge this location into&hellip;</label>
-                        <select id="targetId-<%= location.id %>" name="targetId" required>
-                          <option value="" disabled selected>Choose a location</option>
-                          <% otherLocations.forEach(function(other) { %>
-                            <option value="<%= other.id %>"><%= other.name %></option>
-                          <% }); %>
-                        </select>
-                      </div>
+                <tr>
+                  <td><%= location.name %></td>
+                  <td><%= location.city_state || 'Not set' %></td>
+                  <td><%= assignedNames.length > 0 ? assignedNames.join(', ') : 'None' %></td>
+                  <td>
+                    <div class="admin-table__actions">
+                      <a href="/admin/sales/locations?editId=<%= location.id %>" class="btn btn--small btn--secondary">Edit</a>
+
+                      <form method="POST" action="/admin/sales/locations/<%= location.id %>/delete" style="display:inline" onsubmit="return confirm('Delete &quot;<%= location.name %>&quot;? This cannot be undone.');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn--small btn--secondary">Delete</button>
+                      </form>
+
+                      <% if (otherLocations.length > 0) { %>
+                        <form method="GET" action="/admin/sales/locations/<%= location.id %>/merge" style="display:inline">
+                          <select name="targetId" required aria-label="Merge <%= location.name %> into&hellip;">
+                            <option value="" disabled selected>Merge into&hellip;</option>
+                            <% otherLocations.forEach(function(other) { %>
+                              <option value="<%= other.id %>"><%= other.name %></option>
+                            <% }); %>
+                          </select>
+                          <button type="submit" class="btn btn--small btn--secondary">Merge</button>
+                        </form>
+                      <% } %>
                     </div>
-                    <button type="submit" class="btn btn--small btn--secondary">Review Merge&hellip;</button>
-                  </form>
-                <% } %>
-              </div>
-            </div>
-          <% }); %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
         </div>
       <% } %>
     </div>

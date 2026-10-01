@@ -12,9 +12,10 @@ const {
 } = require('../models/salesReports');
 const {
   listLocations,
-  updateCityState,
   getLocationById,
-  renameLocation,
+  createLocation,
+  updateLocation,
+  deleteLocation,
   mergeLocations,
 } = require('../models/salesLocations');
 const {
@@ -107,6 +108,21 @@ router.get('/sales/weekly', async (req, res, next) => {
   }
 });
 
+// cityState accepts either a full address (re-parsed the same way the
+// nightly sync does) or an already-clean "City, ST" — getShortLocation
+// passes the latter through unchanged since it won't split into 3+
+// comma-separated parts.
+function locationFieldsFromBody(body) {
+  return {
+    name: body.name || '',
+    cityState: getShortLocation((body.cityState || '').trim()),
+  };
+}
+
+function jurisdictionIdsFromBody(body) {
+  return [].concat(body.jurisdictionIds || []).map(Number);
+}
+
 router.get('/sales/locations', async (req, res, next) => {
   try {
     const [locations, jurisdictions, jurisdictionIdsByLocation] = await Promise.all([
@@ -114,10 +130,17 @@ router.get('/sales/locations', async (req, res, next) => {
       listJurisdictions(),
       listJurisdictionIdsByLocation(),
     ]);
+
+    const editId = req.query.editId ? Number(req.query.editId) : null;
+    const editingLocation = editId ? locations.find((l) => l.id === editId) || null : null;
+    const editingJurisdictionIds = editingLocation ? jurisdictionIdsByLocation.get(editId) || [] : [];
+
     res.render('admin/sales-locations', {
       locations,
       jurisdictions,
       jurisdictionIdsByLocation,
+      editingLocation,
+      editingJurisdictionIds,
       error: req.query.error,
     });
   } catch (err) {
@@ -125,36 +148,38 @@ router.get('/sales/locations', async (req, res, next) => {
   }
 });
 
-router.post('/sales/locations/:id/tax-jurisdictions', async (req, res, next) => {
+router.post('/sales/locations', async (req, res, next) => {
   try {
-    const jurisdictionIds = [].concat(req.body.jurisdictionIds || []).map(Number);
-    await setLocationJurisdictions(req.params.id, jurisdictionIds);
-    res.redirect('/admin/sales/locations');
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post('/sales/locations/:id/city-state', async (req, res, next) => {
-  try {
-    // Accepts either a full address (re-parsed the same way the nightly
-    // sync does) or an already-clean "City, ST" — getShortLocation
-    // passes the latter through unchanged since it won't split into 3+
-    // comma-separated parts.
-    const cityState = getShortLocation((req.body.cityState || '').trim());
-    await updateCityState(req.params.id, cityState);
-    res.redirect('/admin/sales/locations');
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post('/sales/locations/:id/rename', async (req, res, next) => {
-  try {
-    await renameLocation(req.params.id, req.body.name || '');
+    const location = await createLocation(locationFieldsFromBody(req.body));
+    await setLocationJurisdictions(location.id, jurisdictionIdsFromBody(req.body));
     res.redirect('/admin/sales/locations');
   } catch (err) {
     if (err.code === 'DUPLICATE_NAME') {
+      return res.redirect(`/admin/sales/locations?error=${encodeURIComponent(err.message)}`);
+    }
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id', async (req, res, next) => {
+  try {
+    await updateLocation(req.params.id, locationFieldsFromBody(req.body));
+    await setLocationJurisdictions(req.params.id, jurisdictionIdsFromBody(req.body));
+    res.redirect('/admin/sales/locations');
+  } catch (err) {
+    if (err.code === 'DUPLICATE_NAME') {
+      return res.redirect(`/admin/sales/locations?error=${encodeURIComponent(err.message)}`);
+    }
+    next(err);
+  }
+});
+
+router.post('/sales/locations/:id/delete', async (req, res, next) => {
+  try {
+    await deleteLocation(req.params.id);
+    res.redirect('/admin/sales/locations');
+  } catch (err) {
+    if (err.code === 'HAS_SALES_HISTORY') {
       return res.redirect(`/admin/sales/locations?error=${encodeURIComponent(err.message)}`);
     }
     next(err);

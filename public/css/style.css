@@ -715,6 +715,16 @@ main {
   background-color: var(--color-cream);
 }
 
+/* Edit/Delete/Merge controls packed into one admin-table cell, e.g.
+   Manage Locations — each is its own small <form>, so this just lines
+   them up instead of letting them stack or wrap awkwardly. */
+.admin-table__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
 /* ===== 10. Header & Nav ===== */
 .site-header {
   background-color: var(--color-charcoal);

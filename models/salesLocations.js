@@ -40,46 +40,75 @@ async function listLocations() {
   return result.rows;
 }
 
-// Manual correction for a location's city_state — needed because it's
-// only ever parsed once, at creation (see findOrCreateByName above), so
-// fixing the calendar event's address later and re-syncing does NOT
-// retroactively fix an already-created location's city_state. This is
-// the durable fix for that: re-parse it here, or type in the right
-// value directly if the address still won't parse into "City, ST".
-async function updateCityState(id, cityState) {
-  const result = await pool.query(
-    'UPDATE sales_locations SET city_state = $2 WHERE id = $1 RETURNING *',
-    [id, cityState || null]
-  );
-  return result.rows[0];
-}
-
 async function getLocationById(id) {
   const result = await pool.query('SELECT * FROM sales_locations WHERE id = $1', [id]);
   return result.rows[0];
 }
 
-// Renaming only changes what's displayed — it does NOT change how
-// future syncs match calendar events. If Johnny keeps typing the old
-// name in the calendar going forward, the next sync recreates it,
-// since findOrCreateByName matches on whatever text the event has.
-// Blocked (not silently merged) if another location already has that
-// name — merge is the deliberate operation for combining two, not a
-// side effect of a rename.
-async function renameLocation(id, newName) {
-  const trimmed = newName.trim();
-
-  const collision = await pool.query('SELECT id FROM sales_locations WHERE lower(name) = lower($1) AND id != $2', [
-    trimmed,
-    id,
+async function nameCollision(name, excludeId) {
+  const result = await pool.query('SELECT id FROM sales_locations WHERE lower(name) = lower($1) AND id != $2', [
+    name,
+    excludeId || 0,
   ]);
-  if (collision.rows[0]) {
-    const err = new Error(`Another location is already named "${trimmed}" — use Merge instead of renaming.`);
+  return Boolean(result.rows[0]);
+}
+
+// Manually adding a location (as opposed to one auto-created by the
+// nightly sync the first time its calendar event is seen — see
+// findOrCreateByName). Blocked on a name collision the same way
+// renaming is, so there's one consistent "this name's taken" story.
+async function createLocation({ name, cityState }) {
+  const trimmed = (name || '').trim();
+  if (await nameCollision(trimmed, null)) {
+    const err = new Error(`A location named "${trimmed}" already exists.`);
     err.code = 'DUPLICATE_NAME';
     throw err;
   }
 
-  const result = await pool.query('UPDATE sales_locations SET name = $2 WHERE id = $1 RETURNING *', [id, trimmed]);
+  const result = await pool.query(
+    'INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *',
+    [trimmed, cityState || null]
+  );
+  return result.rows[0];
+}
+
+// Updating a location's name only changes what's displayed — it does
+// NOT change how future syncs match calendar events. If Johnny keeps
+// typing the old name in the calendar going forward, the next sync
+// recreates it, since findOrCreateByName matches on whatever text the
+// event has. Blocked (not silently merged) if another location already
+// has that name — merge is the deliberate operation for combining two,
+// not a side effect of an edit. city_state has no such retroactive
+// behavior to worry about (see findOrCreateByName above for why it's
+// only ever parsed once, at creation).
+async function updateLocation(id, { name, cityState }) {
+  const trimmed = (name || '').trim();
+  if (await nameCollision(trimmed, id)) {
+    const err = new Error(`Another location is already named "${trimmed}": use Merge instead of renaming.`);
+    err.code = 'DUPLICATE_NAME';
+    throw err;
+  }
+
+  const result = await pool.query(
+    'UPDATE sales_locations SET name = $2, city_state = $3 WHERE id = $1 RETURNING *',
+    [id, trimmed, cityState || null]
+  );
+  return result.rows[0];
+}
+
+// Deleting only makes sense for a location with no sales history —
+// one with visits should be merged into another (or just left alone),
+// never deleted outright, since that would silently orphan real sales
+// data. Blocked the same way a colliding rename is blocked, with the
+// same "use Merge instead" guidance.
+async function deleteLocation(id) {
+  const visitCount = await pool.query('SELECT count(*)::int AS count FROM sales_days WHERE location_id = $1', [id]);
+  if (visitCount.rows[0].count > 0) {
+    const err = new Error('This location has sales history: use Merge instead of deleting it.');
+    err.code = 'HAS_SALES_HISTORY';
+    throw err;
+  }
+  const result = await pool.query('DELETE FROM sales_locations WHERE id = $1 RETURNING *', [id]);
   return result.rows[0];
 }
 
@@ -112,8 +141,9 @@ module.exports = {
   findOrCreateByName,
   findByName,
   listLocations,
-  updateCityState,
   getLocationById,
-  renameLocation,
+  createLocation,
+  updateLocation,
+  deleteLocation,
   mergeLocations,
 };
