@@ -50,18 +50,16 @@
         <% if (jurisdictions.length > 0) { %>
           <label>Tax Jurisdictions</label>
           <% jurisdictions.forEach(function(j) { %>
-            <p style="margin: 0.25rem 0;">
-              <label for="jurisdiction-<%= j.id %>" style="font-weight: normal;">
-                <input
-                  type="checkbox"
-                  id="jurisdiction-<%= j.id %>"
-                  name="jurisdictionIds"
-                  value="<%= j.id %>"
-                  <%= editingJurisdictionIds.includes(j.id) ? 'checked' : '' %>
-                >
-                <%= j.name %> (<%= j.level %>)
-              </label>
-            </p>
+            <label for="jurisdiction-<%= j.id %>" class="checkbox-field">
+              <input
+                type="checkbox"
+                id="jurisdiction-<%= j.id %>"
+                name="jurisdictionIds"
+                value="<%= j.id %>"
+                <%= editingJurisdictionIds.includes(j.id) ? 'checked' : '' %>
+              >
+              <%= j.name %> (<%= j.level %>)
+            </label>
           <% }); %>
         <% } %>
 
@@ -108,7 +106,7 @@
 
                       <% if (otherLocations.length > 0) { %>
                         <form method="GET" action="/admin/sales/locations/<%= location.id %>/merge" style="display:inline">
-                          <select name="targetId" required aria-label="Merge <%= location.name %> into&hellip;">
+                          <select name="targetId" required aria-label="Merge <%= location.name %> into&hellip;" class="select--inline">
                             <option value="" disabled selected>Merge into&hellip;</option>
                             <% otherLocations.forEach(function(other) { %>
                               <option value="<%= other.id %>"><%= other.name %></option>
