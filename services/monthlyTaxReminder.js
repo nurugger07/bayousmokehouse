@@ -12,6 +12,14 @@ function isLastMonthOfQuarter(zonedDate) {
   return QUARTER_ENDING_MONTHS.includes(zonedDate.getMonth());
 }
 
+// Heroku Scheduler has no true monthly frequency (only every-10-minutes,
+// hourly, or daily), so this job is scheduled daily and self-gates on
+// the day of month instead -- the CLI script calls this once per day
+// and quietly skips every day that isn't targetDay.
+function isReminderDay(targetDay, now = new Date()) {
+  return toZonedTime(now, TIME_ZONE).getDate() === targetDay;
+}
+
 function quarterStart(zonedDate) {
   return new Date(zonedDate.getFullYear(), Math.floor(zonedDate.getMonth() / 3) * 3, 1);
 }
@@ -136,4 +144,4 @@ async function runMonthlyTaxReminder(now = new Date()) {
   return { dueRows };
 }
 
-module.exports = { runMonthlyTaxReminder };
+module.exports = { runMonthlyTaxReminder, isReminderDay };
