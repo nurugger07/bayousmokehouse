@@ -56,7 +56,10 @@
           </div>
           <div>
             <label for="isHomeRule">Home Rule</label>
-            <p><input type="checkbox" id="isHomeRule" name="isHomeRule" <%= jurisdiction && jurisdiction.is_home_rule ? 'checked' : '' %>> This jurisdiction self-administers its sales tax</p>
+            <label for="isHomeRule" class="checkbox-field">
+              <input type="checkbox" id="isHomeRule" name="isHomeRule" <%= jurisdiction && jurisdiction.is_home_rule ? 'checked' : '' %>>
+              This jurisdiction self-administers its sales tax
+            </label>
           </div>
         </div>
 
