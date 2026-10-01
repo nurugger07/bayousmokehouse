@@ -526,6 +526,32 @@ main {
   min-height: 8rem;
 }
 
+/* The text-field rule above matches input[type=checkbox] too, which
+   forces it to the same full-width, padded, bordered box meant for
+   text fields -- a checkbox needs its native small square back. */
+.contact-form input[type='checkbox'] {
+  width: auto;
+  margin-top: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+}
+
+/* A checkbox's own label, e.g. "Town of Berthoud (municipality)" next
+   to its checkbox -- reads as a sentence, not a shouty uppercase field
+   label like .contact-form label above, and lays the box and text out
+   side by side instead of stacking (the default block flow once the
+   checkbox stopped being forced to its own full-width line). */
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-1) 0;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 /* Two (or three) fields sharing one row, e.g. event date + start/end
    time — collapses to a single column on narrow screens. */
 .contact-form__row {
@@ -723,6 +749,25 @@ main {
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+}
+
+/* The merge target <select> inside .admin-table__actions sits in a
+   plain <form>, not a .contact-form, so without this it's a bare
+   unstyled native dropdown next to the styled Edit/Delete/Merge
+   buttons. Sized and bordered to match those buttons' height. */
+.select--inline {
+  width: auto;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-parchment);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-family: inherit;
+  color: var(--color-wood-dark);
+}
+
+.select--inline:focus {
+  border-color: var(--color-ember);
 }
 
 /* ===== 10. Header & Nav ===== */
