@@ -152,9 +152,7 @@ describe('static pages', () => {
 
     expect(res.text).toContain('<details');
     expect(res.text).toContain('301 Link Ln, Fort Collins, CO');
-    expect(res.text).toMatch(
-      /href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=301%20Link%20Ln"/
-    );
+    expect(res.text).toMatch(/href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=301%20Link%20Ln"/);
   });
 
   it('GET / does not render an expand toggle for an event with neither a description nor a location', async () => {

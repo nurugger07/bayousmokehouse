@@ -19,11 +19,7 @@ const {
   deleteLocation,
   mergeLocations,
 } = require('../models/salesLocations');
-const {
-  listJurisdictions,
-  listJurisdictionIdsByLocation,
-  setLocationJurisdictions,
-} = require('../models/taxJurisdictions');
+const { listJurisdictions, listJurisdictionIdsByLocation, setLocationJurisdictions } = require('../models/taxJurisdictions');
 const { getShortLocation } = require('../services/googleCalendar');
 const { listUnmatched, setLocation, countForLocation } = require('../models/salesDays');
 

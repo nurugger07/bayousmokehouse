@@ -1,10 +1,7 @@
 const { pool } = require('../config/db');
 
 async function listPaymentsForJurisdiction(jurisdictionId) {
-  const result = await pool.query(
-    'SELECT * FROM tax_payments WHERE jurisdiction_id = $1 ORDER BY period_start DESC',
-    [jurisdictionId]
-  );
+  const result = await pool.query('SELECT * FROM tax_payments WHERE jurisdiction_id = $1 ORDER BY period_start DESC', [jurisdictionId]);
   return result.rows;
 }
 

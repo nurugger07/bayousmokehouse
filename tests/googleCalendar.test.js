@@ -193,10 +193,7 @@ describe('getEventsForDateRange', () => {
       },
     });
 
-    const events = await googleCalendar.getEventsForDateRange(
-      new Date('2026-08-01T00:00:00Z'),
-      new Date('2026-08-31T23:59:59Z')
-    );
+    const events = await googleCalendar.getEventsForDateRange(new Date('2026-08-01T00:00:00Z'), new Date('2026-08-31T23:59:59Z'));
 
     expect(events).toHaveLength(1);
     expect(events[0].date).toBe('2026-08-14');

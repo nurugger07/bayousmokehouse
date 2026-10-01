@@ -135,11 +135,7 @@ function resultLine(result) {
 
 async function sendLiveRunSummary(plan, results) {
   const anyFailures = results.some((r) => !r.ok);
-  const lines = [
-    `Sales tax toggle for ${plan.dateLabel}. Today's location: ${plan.location.name}`,
-    '',
-    ...results.map(resultLine),
-  ];
+  const lines = [`Sales tax toggle for ${plan.dateLabel}. Today's location: ${plan.location.name}`, '', ...results.map(resultLine)];
   await sendAdminAlert({
     subject: `Sales tax toggle ${anyFailures ? 'needs attention' : 'complete'}: ${plan.dateLabel}`,
     body: lines.join('\n'),

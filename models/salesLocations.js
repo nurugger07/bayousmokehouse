@@ -46,10 +46,7 @@ async function getLocationById(id) {
 }
 
 async function nameCollision(name, excludeId) {
-  const result = await pool.query('SELECT id FROM sales_locations WHERE lower(name) = lower($1) AND id != $2', [
-    name,
-    excludeId || 0,
-  ]);
+  const result = await pool.query('SELECT id FROM sales_locations WHERE lower(name) = lower($1) AND id != $2', [name, excludeId || 0]);
   return Boolean(result.rows[0]);
 }
 
@@ -65,10 +62,10 @@ async function createLocation({ name, cityState }) {
     throw err;
   }
 
-  const result = await pool.query(
-    'INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *',
-    [trimmed, cityState || null]
-  );
+  const result = await pool.query('INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *', [
+    trimmed,
+    cityState || null,
+  ]);
   return result.rows[0];
 }
 
@@ -89,10 +86,11 @@ async function updateLocation(id, { name, cityState }) {
     throw err;
   }
 
-  const result = await pool.query(
-    'UPDATE sales_locations SET name = $2, city_state = $3 WHERE id = $1 RETURNING *',
-    [id, trimmed, cityState || null]
-  );
+  const result = await pool.query('UPDATE sales_locations SET name = $2, city_state = $3 WHERE id = $1 RETURNING *', [
+    id,
+    trimmed,
+    cityState || null,
+  ]);
   return result.rows[0];
 }
 

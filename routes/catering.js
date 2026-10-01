@@ -29,8 +29,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const REQUIRED_FIELDS = ['name', 'email', 'phone', 'eventType', 'eventDate', 'startTime', 'location', 'guestCount', 'message'];
 
 router.post('/catering', async (req, res, next) => {
-  const { name, email, phone, eventType, eventDate, startTime, endTime, location, guestCount, message, company } =
-    req.body;
+  const { name, email, phone, eventType, eventDate, startTime, endTime, location, guestCount, message, company } = req.body;
 
   // Honeypot: real users never see or fill this field; bots that
   // auto-fill every input will. Pretend success so they don't retry.

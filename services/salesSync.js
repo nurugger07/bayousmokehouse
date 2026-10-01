@@ -17,9 +17,7 @@ const EVENT_WINDOW_BUFFER_MS = 30 * 60 * 1000;
 function listDateStrings(startDate, endDate) {
   const zonedStart = toZonedTime(startDate, TIME_ZONE);
   const zonedEnd = toZonedTime(endDate, TIME_ZONE);
-  return eachDayOfInterval({ start: zonedStart, end: zonedEnd }).map((day) =>
-    formatInTimeZone(day, 'UTC', 'yyyy-MM-dd')
-  );
+  return eachDayOfInterval({ start: zonedStart, end: zonedEnd }).map((day) => formatInTimeZone(day, 'UTC', 'yyyy-MM-dd'));
 }
 
 function groupByDateKey(rows, dateField, formatAsDateOnly) {

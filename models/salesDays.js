@@ -5,10 +5,10 @@ const { pool } = require('../config/db');
 // match or an admin's manual correction is never clobbered by a
 // later sync of the same date range.
 async function findOrCreateForEvent({ saleDate, calendarEventSummary, eventStartTime, eventEndTime, locationId }) {
-  const existing = await pool.query(
-    'SELECT * FROM sales_days WHERE sale_date = $1 AND calendar_event_summary = $2',
-    [saleDate, calendarEventSummary]
-  );
+  const existing = await pool.query('SELECT * FROM sales_days WHERE sale_date = $1 AND calendar_event_summary = $2', [
+    saleDate,
+    calendarEventSummary,
+  ]);
   if (existing.rows[0]) {
     return existing.rows[0];
   }
@@ -27,10 +27,7 @@ async function findOrCreateForEvent({ saleDate, calendarEventSummary, eventStart
 // NULL, so this can't rely on the (sale_date, calendar_event_summary)
 // unique constraint (NULL never equals NULL); dedupe by checking first.
 async function findOrCreateUnmatched({ saleDate }) {
-  const existing = await pool.query(
-    'SELECT * FROM sales_days WHERE sale_date = $1 AND calendar_event_summary IS NULL',
-    [saleDate]
-  );
+  const existing = await pool.query('SELECT * FROM sales_days WHERE sale_date = $1 AND calendar_event_summary IS NULL', [saleDate]);
   if (existing.rows[0]) {
     return existing.rows[0];
   }

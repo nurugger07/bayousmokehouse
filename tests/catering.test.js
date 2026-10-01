@@ -12,7 +12,10 @@ const { getCsrfToken } = require('./helpers/csrf');
 async function postCatering(data) {
   const agent = request.agent(app);
   const _csrf = await getCsrfToken(agent, '/catering');
-  return agent.post('/catering').type('form').send({ ...data, _csrf });
+  return agent
+    .post('/catering')
+    .type('form')
+    .send({ ...data, _csrf });
 }
 
 const VALID_SUBMISSION = {

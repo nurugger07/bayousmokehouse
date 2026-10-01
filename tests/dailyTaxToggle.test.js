@@ -80,9 +80,7 @@ describe('planTodaysTaxes', () => {
   });
 
   it('resolves the jurisdictions to enable/disable for a known location', async () => {
-    getEventsForDateRange.mockResolvedValue([
-      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
-    ]);
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' }]);
     findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
     listJurisdictionsForLocation.mockResolvedValue([COLORADO, LARIMER, BERTHOUD]);
 
@@ -128,9 +126,7 @@ describe('runDailyTaxToggle', () => {
   });
 
   it('in dry-run mode, emails the plan without calling Square', async () => {
-    getEventsForDateRange.mockResolvedValue([
-      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
-    ]);
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' }]);
     findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
     listJurisdictionsForLocation.mockResolvedValue([COLORADO, LARIMER]);
 
@@ -146,9 +142,7 @@ describe('runDailyTaxToggle', () => {
   });
 
   it('in live mode, enables and disables the right taxes and skips ones with no Square ID', async () => {
-    getEventsForDateRange.mockResolvedValue([
-      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
-    ]);
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' }]);
     findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
     listJurisdictionsForLocation.mockResolvedValue([COLORADO, LARIMER, BERTHOUD]);
     setCatalogTaxEnabled.mockResolvedValue({});
@@ -167,9 +161,7 @@ describe('runDailyTaxToggle', () => {
   });
 
   it('reports a Square failure for one jurisdiction without stopping the rest', async () => {
-    getEventsForDateRange.mockResolvedValue([
-      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
-    ]);
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' }]);
     findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
     listJurisdictionsForLocation.mockResolvedValue([COLORADO, LARIMER]);
     setCatalogTaxEnabled.mockImplementation((id) => {
@@ -191,9 +183,7 @@ describe('runDailyTaxToggle', () => {
   });
 
   it('reports a Square failure on the disable side too', async () => {
-    getEventsForDateRange.mockResolvedValue([
-      { date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' },
-    ]);
+    getEventsForDateRange.mockResolvedValue([{ date: '2026-09-23', summary: 'Bayou Smokehouse @ Berthoud Brewery' }]);
     findByName.mockResolvedValue({ id: 10, name: 'Bayou Smokehouse @ Berthoud Brewery' });
     listJurisdictionsForLocation.mockResolvedValue([COLORADO]);
     setCatalogTaxEnabled.mockImplementation((id) => {

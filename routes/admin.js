@@ -1,13 +1,6 @@
 const express = require('express');
 const requireAdminAuth = require('../middleware/requireAdminAuth');
-const {
-  listMessages,
-  getMessageById,
-  markRead,
-  archiveMessage,
-  softDeleteMessage,
-  restoreMessage,
-} = require('../models/contactMessages');
+const { listMessages, getMessageById, markRead, archiveMessage, softDeleteMessage, restoreMessage } = require('../models/contactMessages');
 const { addNote, listNotesForMessage } = require('../models/messageNotes');
 
 const router = express.Router();

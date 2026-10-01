@@ -88,10 +88,10 @@ async function setLocationJurisdictions(locationId, jurisdictionIds) {
     await client.query('BEGIN');
     await client.query('DELETE FROM location_tax_jurisdictions WHERE location_id = $1', [locationId]);
     for (const jurisdictionId of jurisdictionIds) {
-      await client.query(
-        'INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2)',
-        [locationId, jurisdictionId]
-      );
+      await client.query('INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2)', [
+        locationId,
+        jurisdictionId,
+      ]);
     }
     await client.query('COMMIT');
   } catch (err) {

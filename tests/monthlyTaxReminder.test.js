@@ -11,26 +11,24 @@ const { runMonthlyTaxReminder } = require('../services/monthlyTaxReminder');
 // as UTC midnight) is fragile on any machine whose local TZ isn't UTC.
 // Reading the column back as text sidesteps that entirely.
 async function periodTextFor(jurisdictionId) {
-  const result = await pool.query(
-    "SELECT period_start::text, period_end::text FROM tax_payments WHERE jurisdiction_id = $1",
-    [jurisdictionId]
-  );
+  const result = await pool.query('SELECT period_start::text, period_end::text FROM tax_payments WHERE jurisdiction_id = $1', [
+    jurisdictionId,
+  ]);
   return result.rows[0];
 }
 
 async function seedLocationWithJurisdiction(jurisdictionId, saleDate, totalCents) {
-  const location = await pool.query(
-    `INSERT INTO sales_locations (name) VALUES ($1) RETURNING *`,
-    [`Bayou Smokehouse @ Test Venue ${saleDate}-${totalCents}`]
-  );
+  const location = await pool.query(`INSERT INTO sales_locations (name) VALUES ($1) RETURNING *`, [
+    `Bayou Smokehouse @ Test Venue ${saleDate}-${totalCents}`,
+  ]);
   await pool.query('INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2)', [
     location.rows[0].id,
     jurisdictionId,
   ]);
-  const day = await pool.query(
-    `INSERT INTO sales_days (sale_date, location_id, location_source) VALUES ($1, $2, 'calendar') RETURNING *`,
-    [saleDate, location.rows[0].id]
-  );
+  const day = await pool.query(`INSERT INTO sales_days (sale_date, location_id, location_source) VALUES ($1, $2, 'calendar') RETURNING *`, [
+    saleDate,
+    location.rows[0].id,
+  ]);
   await pool.query(
     `INSERT INTO square_orders (square_order_id, sales_day_id, ordered_at, total_money_cents)
      VALUES ($1, $2, now(), $3)`,
@@ -85,7 +83,12 @@ describe('runMonthlyTaxReminder', () => {
   });
 
   it('records a quarterly jurisdiction every month but only reminds in the quarter-ending month', async () => {
-    const jurisdiction = await createJurisdiction({ name: 'Town of Longmont', level: 'municipality', taxRatePercent: 3.5, schedule: 'quarterly' });
+    const jurisdiction = await createJurisdiction({
+      name: 'Town of Longmont',
+      level: 'municipality',
+      taxRatePercent: 3.5,
+      schedule: 'quarterly',
+    });
     await seedLocationWithJurisdiction(jurisdiction.id, '2026-10-10', 50000);
 
     // Reference month = October (quarter start, not quarter-ending) -- recorded, not reminded.

@@ -31,9 +31,7 @@ function denverDayRange(dateStr) {
 
 afterEach(async () => {
   jest.clearAllMocks();
-  await pool.query(
-    'TRUNCATE square_order_line_items, square_orders, square_returns, sales_days, sales_locations RESTART IDENTITY CASCADE'
-  );
+  await pool.query('TRUNCATE square_order_line_items, square_orders, square_returns, sales_days, sales_locations RESTART IDENTITY CASCADE');
 });
 
 afterAll(async () => {
@@ -41,7 +39,7 @@ afterAll(async () => {
 });
 
 describe('syncDateRange', () => {
-  it('creates a location + sales day from a single calendar event and syncs that day\'s order under it', async () => {
+  it("creates a location + sales day from a single calendar event and syncs that day's order under it", async () => {
     getEventsForDateRange.mockResolvedValueOnce([
       {
         date: '2026-08-14',

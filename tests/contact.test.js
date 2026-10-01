@@ -12,7 +12,10 @@ const { getCsrfToken } = require('./helpers/csrf');
 async function postContact(data) {
   const agent = request.agent(app);
   const _csrf = await getCsrfToken(agent, '/contact');
-  return agent.post('/contact').type('form').send({ ...data, _csrf });
+  return agent
+    .post('/contact')
+    .type('form')
+    .send({ ...data, _csrf });
 }
 
 beforeEach(() => {
@@ -31,12 +34,12 @@ afterAll(async () => {
 describe('POST /contact', () => {
   it('saves a valid submission and redirects with a success indicator', async () => {
     const res = await postContact({
-        name: 'Jane Doe',
-        email: 'jane@example.com',
-        phone: '555-1234',
-        message: 'Do you cater?',
-        category: 'private_event',
-      });
+      name: 'Jane Doe',
+      email: 'jane@example.com',
+      phone: '555-1234',
+      message: 'Do you cater?',
+      category: 'private_event',
+    });
 
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain('submitted=1');
@@ -121,17 +124,14 @@ describe('POST /contact', () => {
     expect(rows).toHaveLength(0);
   });
 
-  it.each(['private_event', 'brewery_event', 'general_inquiry'])(
-    'accepts and saves the "%s" category',
-    async (category) => {
-      const res = await postContact({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
+  it.each(['private_event', 'brewery_event', 'general_inquiry'])('accepts and saves the "%s" category', async (category) => {
+    const res = await postContact({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
 
-      expect(res.status).toBe(302);
+    expect(res.status).toBe(302);
 
-      const { rows } = await pool.query('SELECT category FROM contact_messages');
-      expect(rows[0].category).toBe(category);
-    }
-  );
+    const { rows } = await pool.query('SELECT category FROM contact_messages');
+    expect(rows[0].category).toBe(category);
+  });
 
   it('does not leak a stack trace or internal error details on an unexpected failure', async () => {
     // Reject only the actual contact-message insert, not pool.query calls

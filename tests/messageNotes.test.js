@@ -38,9 +38,7 @@ describe('addNote / listNotesForMessage', () => {
 
     await pool.query('DELETE FROM contact_messages WHERE id = $1', [message.id]);
 
-    const { rows } = await pool.query('SELECT * FROM contact_message_notes WHERE contact_message_id = $1', [
-      message.id,
-    ]);
+    const { rows } = await pool.query('SELECT * FROM contact_message_notes WHERE contact_message_id = $1', [message.id]);
     expect(rows).toHaveLength(0);
   });
 });

@@ -1,11 +1,6 @@
 const express = require('express');
 const requireAdminAuth = require('../middleware/requireAdminAuth');
-const {
-  listJurisdictions,
-  getJurisdictionById,
-  createJurisdiction,
-  updateJurisdiction,
-} = require('../models/taxJurisdictions');
+const { listJurisdictions, getJurisdictionById, createJurisdiction, updateJurisdiction } = require('../models/taxJurisdictions');
 const { listPaymentsForJurisdiction, createPayment } = require('../models/taxPayments');
 const { listCatalogTaxes } = require('../services/square');
 
@@ -74,10 +69,7 @@ router.post('/tax/jurisdictions', async (req, res, next) => {
 
 router.get('/tax/jurisdictions/:id', async (req, res, next) => {
   try {
-    const [jurisdiction, payments] = await Promise.all([
-      getJurisdictionById(req.params.id),
-      listPaymentsForJurisdiction(req.params.id),
-    ]);
+    const [jurisdiction, payments] = await Promise.all([getJurisdictionById(req.params.id), listPaymentsForJurisdiction(req.params.id)]);
     if (!jurisdiction) {
       return res.status(404).render('errors/404');
     }

@@ -25,14 +25,7 @@ jest.mock('square', () => {
 
 function loadService() {
   jest.resetModules();
-  const {
-    SquareClient,
-    __mockSearch,
-    __mockList,
-    __mockCatalogList,
-    __mockCatalogGet,
-    __mockCatalogUpsert,
-  } = require('square');
+  const { SquareClient, __mockSearch, __mockList, __mockCatalogList, __mockCatalogGet, __mockCatalogUpsert } = require('square');
   const square = require('../services/square');
   return {
     square,
@@ -123,9 +116,7 @@ describe('listPayments', () => {
 describe('listCatalogTaxes', () => {
   it('lists all TAX-type catalog objects', async () => {
     const { square, mockCatalogList } = loadService();
-    mockCatalogList.mockResolvedValueOnce([
-      { id: 'tax_1', type: 'TAX', taxData: { name: 'Colorado', enabled: true } },
-    ]);
+    mockCatalogList.mockResolvedValueOnce([{ id: 'tax_1', type: 'TAX', taxData: { name: 'Colorado', enabled: true } }]);
 
     const taxes = await square.listCatalogTaxes();
 

@@ -133,9 +133,7 @@ async function getEventsForDateRange(startDate, endDate) {
 
   return events.map((event) => {
     const isAllDay = Boolean(event.start.date);
-    const dateKey = isAllDay
-      ? event.start.date
-      : formatInTimeZone(new Date(event.start.dateTime), TIME_ZONE, 'yyyy-MM-dd');
+    const dateKey = isAllDay ? event.start.date : formatInTimeZone(new Date(event.start.dateTime), TIME_ZONE, 'yyyy-MM-dd');
 
     return {
       date: dateKey,

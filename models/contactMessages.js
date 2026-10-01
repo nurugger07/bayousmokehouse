@@ -1,18 +1,6 @@
 const { pool } = require('../config/db');
 
-async function createMessage({
-  name,
-  email,
-  phone,
-  message,
-  category,
-  eventType,
-  eventDate,
-  startTime,
-  endTime,
-  location,
-  guestCount,
-}) {
+async function createMessage({ name, email, phone, message, category, eventType, eventDate, startTime, endTime, location, guestCount }) {
   // Column list is built from fixed, hardcoded names only (never from
   // user input) — safe to interpolate; values stay fully parameterized.
   const columns = ['name', 'email', 'phone', 'message'];
@@ -79,34 +67,22 @@ async function getMessageById(id) {
 }
 
 async function markRead(id) {
-  const result = await pool.query(
-    `UPDATE contact_messages SET status = 'read', updated_at = now() WHERE id = $1 RETURNING *`,
-    [id]
-  );
+  const result = await pool.query(`UPDATE contact_messages SET status = 'read', updated_at = now() WHERE id = $1 RETURNING *`, [id]);
   return result.rows[0];
 }
 
 async function archiveMessage(id) {
-  const result = await pool.query(
-    `UPDATE contact_messages SET status = 'archived', updated_at = now() WHERE id = $1 RETURNING *`,
-    [id]
-  );
+  const result = await pool.query(`UPDATE contact_messages SET status = 'archived', updated_at = now() WHERE id = $1 RETURNING *`, [id]);
   return result.rows[0];
 }
 
 async function softDeleteMessage(id) {
-  const result = await pool.query(
-    `UPDATE contact_messages SET deleted_at = now(), updated_at = now() WHERE id = $1 RETURNING *`,
-    [id]
-  );
+  const result = await pool.query(`UPDATE contact_messages SET deleted_at = now(), updated_at = now() WHERE id = $1 RETURNING *`, [id]);
   return result.rows[0];
 }
 
 async function restoreMessage(id) {
-  const result = await pool.query(
-    `UPDATE contact_messages SET deleted_at = NULL, updated_at = now() WHERE id = $1 RETURNING *`,
-    [id]
-  );
+  const result = await pool.query(`UPDATE contact_messages SET deleted_at = NULL, updated_at = now() WHERE id = $1 RETURNING *`, [id]);
   return result.rows[0];
 }
 
