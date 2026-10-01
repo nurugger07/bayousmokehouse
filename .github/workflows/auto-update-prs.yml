@@ -1,0 +1,27 @@
+name: Auto-update PR branches
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge main into every open PR branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr list --base main --state open --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"' | \
+          while read -r number branch; do
+            echo "Updating PR #$number ($branch)..."
+            if gh api -X PUT "repos/$REPO/pulls/$number/update-branch" >/dev/null 2>&1; then
+              echo "  updated"
+            else
+              echo "  skipped -- likely a merge conflict or already up to date, needs a human look"
+            fi
+          done
