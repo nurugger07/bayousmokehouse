@@ -15,9 +15,10 @@ npm run format:check
 
 ## Contributing
 
-Changes land on `main` via pull request, not direct pushes. A PR must:
+Changes land on `main` via pull request, not direct pushes. A PR must pass three required checks before it can merge:
 
-- Pass CI (lint + test)
-- Have a title in [Conventional Commits](https://www.conventionalcommits.org/) style, e.g. `feat: add location address sync`, `fix: fixed a security issue`, `chore: updated dependency X`
+- `lint` — ESLint + Prettier
+- `test` — the Jest suite
+- `check-title` — the PR title must be in [Conventional Commits](https://www.conventionalcommits.org/) style, e.g. `feat: add location address sync`, `fix: fixed a security issue`, `chore: updated dependency X`
 
 Merging to `main` auto-deploys to Heroku once CI passes.
