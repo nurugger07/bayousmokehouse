@@ -16,8 +16,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          gh pr list --base main --state open --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"' | \
-          while read -r number branch; do
+          set -euo pipefail
+
+          # --repo is required: this job has no checkout step (nothing
+          # to build/test here), so there's no local .git for `gh` to
+          # infer the repo from.
+          prs=$(gh pr list --repo "$REPO" --base main --state open --json number,headRefName --jq '.[] | "\(.number) \(.headRefName)"')
+
+          if [ -z "$prs" ]; then
+            echo "No open PRs targeting main."
+            exit 0
+          fi
+
+          echo "$prs" | while read -r number branch; do
             echo "Updating PR #$number ($branch)..."
             if gh api -X PUT "repos/$REPO/pulls/$number/update-branch" >/dev/null 2>&1; then
               echo "  updated"
