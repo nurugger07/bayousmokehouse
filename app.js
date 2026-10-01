@@ -86,7 +86,9 @@ app.use((err, req, res, next) => {
 // Generic error handler — never expose stack traces or internal error
 // details to the client, regardless of NODE_ENV. Details go to the
 // server log only.
-app.use((err, req, res, next) => {
+// Express only recognizes error-handling middleware by its 4-argument
+// arity — _next must stay declared even though it's never called.
+app.use((err, req, res, _next) => {
   console.error(err);
   res.status(500).render('errors/500');
 });

@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+public/css/
+package-lock.json
+*.md
+*.yml
+*.yaml
+*.ejs

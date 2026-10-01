@@ -13,23 +13,18 @@ afterAll(async () => {
 });
 
 describe('admin login rate limiting', () => {
-  it(
-    'blocks further attempts after 10 failed logins from the same client',
-    async () => {
-      const agent = request.agent(app);
-      const _csrf = await getCsrfToken(agent, '/admin/login');
+  it('blocks further attempts after 10 failed logins from the same client', async () => {
+    const agent = request.agent(app);
+    const _csrf = await getCsrfToken(agent, '/admin/login');
 
-      for (let i = 0; i < 10; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await agent.post('/admin/login').type('form').send({ password: 'wrong', _csrf });
-      }
+    for (let i = 0; i < 10; i += 1) {
+      await agent.post('/admin/login').type('form').send({ password: 'wrong', _csrf });
+    }
 
-      const res = await agent.post('/admin/login').type('form').send({ password: 'wrong', _csrf });
+    const res = await agent.post('/admin/login').type('form').send({ password: 'wrong', _csrf });
 
-      expect(res.status).toBe(429);
-    },
-    // 11 sequential bcrypt compares (intentionally slow by design) can
-    // exceed Jest's 5s default under load — this isn't a logic issue.
-    15000
-  );
+    expect(res.status).toBe(429);
+  }, // 11 sequential bcrypt compares (intentionally slow by design) can
+  // exceed Jest's 5s default under load — this isn't a logic issue.
+  15000);
 });

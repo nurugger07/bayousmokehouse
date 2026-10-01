@@ -12,10 +12,7 @@ const {
 } = require('../models/salesReports');
 
 async function createLocation(name, cityState) {
-  const result = await pool.query('INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *', [
-    name,
-    cityState || null,
-  ]);
+  const result = await pool.query('INSERT INTO sales_locations (name, city_state) VALUES ($1, $2) RETURNING *', [name, cityState || null]);
   return result.rows[0];
 }
 
@@ -169,8 +166,6 @@ describe('getItemSalesByLocation', () => {
   });
 
   it('excludes sales days with no orders (inner join, not left join)', async () => {
-    const { berthoud } = seeded;
-
     const rows = await getItemSalesByLocation({ startDate: '2026-08-28', endDate: '2026-08-28' });
 
     expect(rows).toHaveLength(0);
@@ -200,10 +195,12 @@ describe('getRevenueByJurisdiction', () => {
     // (Odd13/Fort Collins is in Larimer County too in real life, but
     // deliberately left unlinked here so the "stacking" and "one
     // jurisdiction, multiple locations" cases are both covered).
-    await pool.query(
-      'INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2), ($3, $2), ($1, $4)',
-      [seeded.berthoud.id, colorado.id, seeded.odd13.id, larimer.id]
-    );
+    await pool.query('INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2), ($3, $2), ($1, $4)', [
+      seeded.berthoud.id,
+      colorado.id,
+      seeded.odd13.id,
+      larimer.id,
+    ]);
   });
 
   it('sums gross sales across every location linked to a jurisdiction', async () => {
@@ -288,9 +285,7 @@ describe('getWeeklyTotals / groupWeeklyTotalsByMonth', () => {
   // requires a valid sales_day_id — this location/day is throwaway
   // plumbing, not something the report cares about.
   async function createThrowawayDay(saleDate) {
-    const loc = await pool.query('INSERT INTO sales_locations (name) VALUES ($1) RETURNING *', [
-      `Throwaway ${Math.random()}`,
-    ]);
+    const loc = await pool.query('INSERT INTO sales_locations (name) VALUES ($1) RETURNING *', [`Throwaway ${Math.random()}`]);
     const day = await pool.query(
       `INSERT INTO sales_days (sale_date, location_id, location_source, calendar_event_summary)
        VALUES ($1, $2, 'calendar', $3) RETURNING *`,

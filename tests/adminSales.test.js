@@ -14,9 +14,7 @@ async function loggedInAgent() {
 }
 
 async function seedOneVisitWithAnOrder() {
-  const location = await pool.query(
-    "INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Berthoud Brewery') RETURNING *"
-  );
+  const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Berthoud Brewery') RETURNING *");
   const day = await pool.query(
     `INSERT INTO sales_days (sale_date, location_id, location_source, calendar_event_summary)
      VALUES ('2026-08-14', $1, 'calendar', $2) RETURNING *`,
@@ -90,7 +88,7 @@ describe('admin sales reports', () => {
     expect(location.name).toBeTruthy(); // sanity — location exists for the filter dropdown
   });
 
-  it('filters out a location\'s visit when the date range excludes it', async () => {
+  it("filters out a location's visit when the date range excludes it", async () => {
     await seedOneVisitWithAnOrder();
     const agent = await loggedInAgent();
 
@@ -124,14 +122,11 @@ describe('admin manage locations', () => {
   it('adds a new location, re-parsing a pasted full address into city/state', async () => {
     const agent = await loggedInAgent();
 
-    const res = await agent
-      .post('/admin/sales/locations')
-      .type('form')
-      .send({
-        name: 'Bayou Smokehouse @ Test Venue',
-        cityState: '123 Main St, Loveland, CO 80537, USA',
-        _csrf: agent.csrfToken,
-      });
+    const res = await agent.post('/admin/sales/locations').type('form').send({
+      name: 'Bayou Smokehouse @ Test Venue',
+      cityState: '123 Main St, Loveland, CO 80537, USA',
+      _csrf: agent.csrfToken,
+    });
 
     expect(res.status).toBe(302);
 
@@ -188,14 +183,14 @@ describe('admin manage locations', () => {
       });
 
     const created = await pool.query("SELECT id FROM sales_locations WHERE name = 'Bayou Smokehouse @ New Spot'");
-    const links = await pool.query('SELECT jurisdiction_id FROM location_tax_jurisdictions WHERE location_id = $1', [
-      created.rows[0].id,
-    ]);
+    const links = await pool.query('SELECT jurisdiction_id FROM location_tax_jurisdictions WHERE location_id = $1', [created.rows[0].id]);
     expect(links.rows.map((r) => r.jurisdiction_id)).toEqual([jurisdiction.rows[0].id]);
   });
 
   it('shows a prefilled edit form for an existing location, including its checked jurisdictions', async () => {
-    const location = await pool.query("INSERT INTO sales_locations (name, city_state) VALUES ('Bayou Smokehouse @ Old Name', 'Berthoud, CO') RETURNING *");
+    const location = await pool.query(
+      "INSERT INTO sales_locations (name, city_state) VALUES ('Bayou Smokehouse @ Old Name', 'Berthoud, CO') RETURNING *"
+    );
     const jurisdiction = await pool.query(
       `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due)
        VALUES ('Colorado', 'state', 2.9, 'monthly', 20) RETURNING *`
@@ -215,7 +210,7 @@ describe('admin manage locations', () => {
     expect(res.text).toMatch(/value="\d+"\s+checked/);
   });
 
-  it('updates a location\'s name, city/state, and jurisdictions together', async () => {
+  it("updates a location's name, city/state, and jurisdictions together", async () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Old Name') RETURNING *");
     const agent = await loggedInAgent();
 
@@ -230,7 +225,7 @@ describe('admin manage locations', () => {
   });
 
   it('blocks an update that collides with an existing location name, with an error surfaced on the list page', async () => {
-    const [locationA, locationB] = await Promise.all([
+    const [locationA] = await Promise.all([
       pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Venue A') RETURNING *"),
       pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Venue B') RETURNING *"),
     ]);
@@ -249,11 +244,15 @@ describe('admin manage locations', () => {
     expect(unchanged.rows[0].name).toBe('Bayou Smokehouse @ Venue A');
   });
 
-  it('replaces a location\'s jurisdiction assignments on update rather than adding to them', async () => {
+  it("replaces a location's jurisdiction assignments on update rather than adding to them", async () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Test Venue') RETURNING *");
     const [colorado, larimer] = await Promise.all([
-      pool.query(`INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Colorado', 'state', 2.9, 'monthly', 20) RETURNING *`),
-      pool.query(`INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`),
+      pool.query(
+        `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Colorado', 'state', 2.9, 'monthly', 20) RETURNING *`
+      ),
+      pool.query(
+        `INSERT INTO tax_jurisdictions (name, level, tax_rate_percent, schedule, day_of_month_due) VALUES ('Larimer County', 'county', 0.8, 'monthly', 20) RETURNING *`
+      ),
     ]);
     await pool.query('INSERT INTO location_tax_jurisdictions (location_id, jurisdiction_id) VALUES ($1, $2)', [
       location.rows[0].id,
@@ -266,9 +265,7 @@ describe('admin manage locations', () => {
       .type('form')
       .send({ name: location.rows[0].name, jurisdictionIds: String(larimer.rows[0].id), _csrf: agent.csrfToken });
 
-    const links = await pool.query('SELECT jurisdiction_id FROM location_tax_jurisdictions WHERE location_id = $1', [
-      location.rows[0].id,
-    ]);
+    const links = await pool.query('SELECT jurisdiction_id FROM location_tax_jurisdictions WHERE location_id = $1', [location.rows[0].id]);
     expect(links.rows.map((r) => r.jurisdiction_id)).toEqual([larimer.rows[0].id]);
   });
 
@@ -276,10 +273,7 @@ describe('admin manage locations', () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Unused Venue') RETURNING *");
     const agent = await loggedInAgent();
 
-    const res = await agent
-      .post(`/admin/sales/locations/${location.rows[0].id}/delete`)
-      .type('form')
-      .send({ _csrf: agent.csrfToken });
+    const res = await agent.post(`/admin/sales/locations/${location.rows[0].id}/delete`).type('form').send({ _csrf: agent.csrfToken });
 
     expect(res.status).toBe(302);
     const remaining = await pool.query('SELECT id FROM sales_locations WHERE id = $1', [location.rows[0].id]);
@@ -288,10 +282,9 @@ describe('admin manage locations', () => {
 
   it('blocks deleting a location with sales history, with an error surfaced on the list page', async () => {
     const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Berthoud Brewery') RETURNING *");
-    await pool.query(
-      "INSERT INTO sales_days (sale_date, location_id, location_source) VALUES ('2026-08-14', $1, 'calendar')",
-      [location.rows[0].id]
-    );
+    await pool.query("INSERT INTO sales_days (sale_date, location_id, location_source) VALUES ('2026-08-14', $1, 'calendar')", [
+      location.rows[0].id,
+    ]);
     const agent = await loggedInAgent();
 
     const res = await agent
@@ -318,9 +311,7 @@ describe('admin manage locations', () => {
     );
     const agent = await loggedInAgent();
 
-    const confirmPage = await agent.get(
-      `/admin/sales/locations/${duplicate.rows[0].id}/merge?targetId=${target.rows[0].id}`
-    );
+    const confirmPage = await agent.get(`/admin/sales/locations/${duplicate.rows[0].id}/merge?targetId=${target.rows[0].id}`);
     expect(confirmPage.status).toBe(200);
     expect(confirmPage.text).toContain('<strong>1</strong> visit(s)');
     expect(confirmPage.text).toContain('Duplicate Spelling');
@@ -341,12 +332,8 @@ describe('admin manage locations', () => {
 
 describe('admin sales unmatched-day cleanup', () => {
   it('lists a sales day with no calendar match, and assigning a location removes it from the list', async () => {
-    const location = await pool.query(
-      "INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Some Venue') RETURNING *"
-    );
-    const day = await pool.query(
-      "INSERT INTO sales_days (sale_date, location_source) VALUES ('2026-08-15', 'unmatched') RETURNING *"
-    );
+    const location = await pool.query("INSERT INTO sales_locations (name) VALUES ('Bayou Smokehouse @ Some Venue') RETURNING *");
+    const day = await pool.query("INSERT INTO sales_days (sale_date, location_source) VALUES ('2026-08-15', 'unmatched') RETURNING *");
     const agent = await loggedInAgent();
 
     const before = await agent.get('/admin/sales/unmatched');
