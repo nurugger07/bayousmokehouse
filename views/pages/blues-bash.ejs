@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Berthoud Blues Bash | Bayou Smokehouse</title>
+<meta name="description" content="A free day of blues, brews, and Southern food in Berthoud, CO. Saturday, November 14, 2026 at City Star Brewing.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bree+Serif&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/blues-bash.css">
+</head>
+<body>
+<header class="bb-header">
+  <div class="bb-header__inner">
+    <a href="#top" class="bb-header__brand">Berthoud Blues Bash</a>
+    <nav class="bb-nav" id="bb-primary-nav">
+      <a href="#lineup">Lineup</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#location">Location</a>
+      <a href="#food">Food &amp; Drink</a>
+      <a href="#sponsors">Sponsors</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <button type="button" class="bb-nav-toggle" aria-expanded="false" aria-controls="bb-primary-nav" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="bb-hero" id="top">
+    <div class="bb-hero__image" style="background-image: url('/images/blues-bash/delta-sonics-pic3.png');"></div>
+    <div class="bb-hero__overlay"></div>
+    <div class="bb-hero__content">
+      <img src="/images/blues-bash/Berthoud-Blues-Bash-logo-web.png" alt="Berthoud Blues Bash" class="bb-hero__logo">
+      <p class="bb-hero__presented">Presented by Bayou Smokehouse &amp; City Star Brewing</p>
+      <p class="bb-hero__tagline">A Day of Blues, Brews, and the Best Damn Southern Food</p>
+      <p class="bb-hero__details">
+        Saturday, November 14, 2026 &bull; 12:00 PM&ndash;8:00 PM<br>
+        City Star Brewing &bull; 321 Mountain Ave, Berthoud, CO 80513
+      </p>
+      <div class="bb-hero__cta-row">
+        <span class="bb-hero__badge">Free Admission</span>
+        <a href="#lineup" class="bb-hero__scroll-cta" aria-label="Scroll down to the lineup">
+          <span>More</span>
+          <svg class="bb-hero__scroll-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bb-section" id="lineup">
+    <div class="bb-container">
+      <h2>The Lineup</h2>
+      <p class="bb-section__intro">Five acts, one stage, a full day of blues. Read more to meet each artist.</p>
+
+      <div class="bb-lineup-carousel">
+        <button type="button" class="bb-lineup-arrow bb-lineup-arrow--prev" data-lineup-prev aria-label="Scroll to previous artist">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+
+        <div class="bb-lineup-track" id="bb-lineup-track">
+          <% artists.forEach(function(artist) { %>
+            <article class="bb-artist-card">
+              <div class="bb-artist-card__photo">
+                <img src="<%= artist.photo %>" alt="<%= artist.name %> performing" loading="lazy" style="object-position: center <%= artist.photoPosition || 'center' %>;">
+                <% if (artist.isHeadliner) { %><span class="bb-artist-card__badge">Headliner</span><% } %>
+              </div>
+              <div class="bb-artist-card__body">
+                <h3><%= artist.name %></h3>
+                <p class="bb-artist-card__time"><%= artist.setStart %>&ndash;<%= artist.setEnd %></p>
+                <p class="bb-artist-card__bio-preview"><%= artist.tileBio %></p>
+                <button
+                  type="button"
+                  class="bb-artist-card__more"
+                  data-artist-modal-trigger
+                  data-name="<%= artist.name %>"
+                  data-photo="<%= artist.photo %>"
+                  data-photo-position="<%= artist.modalPhotoPosition || 'top' %>"
+                  data-bio="<%= artist.popupBio %>"
+                  data-time="<%= artist.setStart %>&ndash;<%= artist.setEnd %>"
+                  data-headliner="<%= artist.isHeadliner ? '1' : '' %>"
+                  <% if (artist.musicUrl) { %>data-music-url="<%= artist.musicUrl %>"<% } %>
+                  <% if (artist.websiteUrl) { %>data-website-url="<%= artist.websiteUrl %>"<% } %>
+                >Read More</button>
+              </div>
+            </article>
+          <% }); %>
+        </div>
+
+        <button type="button" class="bb-lineup-arrow bb-lineup-arrow--next" data-lineup-next aria-label="Scroll to next artist">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <dialog class="bb-artist-modal" id="bb-artist-modal">
+    <button type="button" class="bb-artist-modal__close" data-artist-modal-close aria-label="Close">&times;</button>
+    <img class="bb-artist-modal__photo" id="bb-artist-modal-photo" src="" alt="">
+    <div class="bb-artist-modal__body">
+      <span class="bb-artist-card__badge bb-artist-modal__badge" id="bb-artist-modal-badge" hidden>Headliner</span>
+      <h3 id="bb-artist-modal-name"></h3>
+      <p class="bb-artist-card__time" id="bb-artist-modal-time"></p>
+      <div id="bb-artist-modal-bio"></div>
+      <div class="bb-artist-modal__links" id="bb-artist-modal-links"></div>
+    </div>
+  </dialog>
+
+  <section class="bb-section bb-section--alt" id="schedule">
+    <div class="bb-container">
+      <h2>Schedule</h2>
+      <ul class="bb-timeline">
+        <li class="bb-timeline__row">
+          <span class="bb-timeline__time">12:00 PM</span>
+          <span class="bb-timeline__event">Doors Open</span>
+        </li>
+        <% artists.forEach(function(artist) { %>
+          <li class="bb-timeline__row">
+            <span class="bb-timeline__time"><%= artist.setStart %>&ndash;<%= artist.setEnd %></span>
+            <span class="bb-timeline__event">
+              <%= artist.name %>
+              <% if (artist.isHeadliner) { %><em class="bb-timeline__tag">Headliner</em><% } %>
+            </span>
+            <% if (artist.musicUrl) { %>
+              <a href="<%= artist.musicUrl %>" class="bb-timeline__listen" target="_blank" rel="noopener noreferrer">Listen</a>
+            <% } %>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bb-section" id="location">
+    <div class="bb-container">
+      <h2>Location &amp; Venue</h2>
+      <p>
+        City Star Brewing<br>
+        321 Mountain Ave, Berthoud, CO 80513
+      </p>
+      <p>Parking is in downtown Berthoud rather than at the venue itself: look for the lots on 3rd St, plus street parking nearby. Carpooling and rideshare are welcome.</p>
+      <div class="bb-map">
+        <iframe
+          src="https://www.google.com/maps?q=City+Star+Brewing,321+Mountain+Ave,Berthoud,CO+80513&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Map to City Star Brewing"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section class="bb-section bb-section--alt" id="food">
+    <div class="bb-container">
+      <h2>Food &amp; Drink</h2>
+      <p>
+        Bayou Smokehouse will be on site all day serving up Southern and Cajun favorites, smoked low and slow. City
+        Star Brewing's taproom keeps the craft beer flowing right where the music is happening.
+      </p>
+    </div>
+  </section>
+
+  <section class="bb-section" id="sponsors">
+    <div class="bb-container">
+      <h2>Sponsors</h2>
+
+      <div class="bb-sponsor-logos">
+        <% sponsors.forEach(function(sponsor) { %>
+          <% if (sponsor.logo && sponsor.url) { %>
+            <a href="<%= sponsor.url %>" target="_blank" rel="noopener noreferrer" class="bb-sponsor-logos__item">
+              <img src="<%= sponsor.logo %>" alt="<%= sponsor.name %>">
+            </a>
+          <% } else if (sponsor.logo) { %>
+            <span class="bb-sponsor-logos__item"><img src="<%= sponsor.logo %>" alt="<%= sponsor.name %>"></span>
+          <% } else { %>
+            <span class="bb-sponsor-logos__item bb-sponsor-logos__item--text"><%= sponsor.name %></span>
+          <% } %>
+        <% }); %>
+      </div>
+
+      <div class="bb-founding-sponsor">
+        <h3>Founding Community Sponsor: $100</h3>
+        <p class="bb-founding-sponsor__tag">Available exclusively for our inaugural year</p>
+        <p>
+          Individuals, families, and businesses can become part of Berthoud Blues Bash history by helping us get the
+          very first one off the ground.
+        </p>
+        <ul>
+          <li>One official Berthoud Blues Bash event T-shirt</li>
+          <li>Two complimentary beverages at City Star Brewing on the day of the event</li>
+          <li>Name listed as a Founding Member of the Berthoud Blues Bash</li>
+          <li>Recognition on the 2026 Founding Members display</li>
+          <li>Inclusion in our Founding Sponsors social media recognition</li>
+        </ul>
+        <p class="bb-founding-sponsor__note">
+          The Founding Member designation is exclusive to supporters of the First Annual Berthoud Blues Bash.
+        </p>
+        <a href="/contact?category=founding_sponsor" class="bb-btn bb-btn--primary">Become a Founding Sponsor</a>
+      </div>
+
+      <p class="bb-sponsor-cta">
+        Interested in a larger sponsorship package? We're putting together a full sponsor pack for local
+        businesses.<br>
+        <a href="/contact?category=sponsorship" class="bb-btn bb-btn--primary">Contact Us About Sponsoring</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="bb-section bb-section--alt" id="faq">
+    <div class="bb-container">
+      <h2>FAQ</h2>
+
+      <details class="bb-faq-item">
+        <summary>When and where is the Berthoud Blues Bash?</summary>
+        <p>Saturday, November 14, 2026, 12:00 PM to 8:00 PM, at City Star Brewing, 321 Mountain Ave, Berthoud, CO 80513.</p>
+      </details>
+
+      <details class="bb-faq-item">
+        <summary>Do I need a ticket?</summary>
+        <p>
+          Nope. The Berthoud Blues Bash is a free event, open to everyone. If you'd like to help support the
+          festival's first year, check out becoming a Founding Community Sponsor below.
+        </p>
+      </details>
+
+      <details class="bb-faq-item">
+        <summary>Is the festival indoors or outdoors?</summary>
+        <p>
+          The event takes place rain, snow, or shine. Dress for Colorado's unpredictable November weather. Check
+          back here closer to the date for specifics on indoor and outdoor space at City Star Brewing.
+        </p>
+      </details>
+
+      <details class="bb-faq-item">
+        <summary>Are children allowed to attend?</summary>
+        <p>
+          The Berthoud Blues Bash is an all-ages event. Attendees under 18 must be accompanied by a parent or legal
+          guardian.
+        </p>
+      </details>
+
+      <details class="bb-faq-item">
+        <summary>Where can I park?</summary>
+        <p>
+          Parking is in downtown Berthoud rather than at the venue itself. There are a couple of lots on 3rd St,
+          plus street parking nearby, on a first-come, first-served basis. Carpooling and rideshare are encouraged.
+        </p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="bb-footer">
+  <div class="bb-container bb-footer__inner">
+    <p>
+      Presented by
+      <a href="https://www.bayousmokehouseco.com">Bayou Smokehouse</a>
+      &amp;
+      City Star Brewing
+    </p>
+    <p>&copy; 2026 Berthoud Blues Bash</p>
+    <a href="/" class="bb-footer__back">&larr; Back to Bayou Smokehouse</a>
+  </div>
+</footer>
+
+<script src="/js/blues-bash.js" defer></script>
+</body>
+</html>
