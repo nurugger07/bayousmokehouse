@@ -1,0 +1,786 @@
+/* =============================================================
+   BERTHOUD BLUES BASH — EVENT PAGE STYLESHEET
+   Deliberately separate from style.css: this page's brand (vintage
+   American blues poster meets Colorado Front Range) is its own thing,
+   not a Bayou Smokehouse sub-brand, so nothing here should leak into
+   or depend on the main site's design system.
+
+   Fonts required in <head> (see views/pages/blues-bash.ejs):
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bree+Serif&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+   Table of contents:
+     1. Color Palette & Variables
+     2. Reset & Base
+     3. Layout & Container
+     4. Buttons
+     5. Header & Nav
+     6. Hero
+     7. Page Sections
+     8. Artist Cards (flip)
+     9. Timeline
+    10. Map
+    11. Sponsors
+    12. FAQ
+    13. Footer
+
+   Breakpoints (mobile-first, min-width): sm 480px, md 768px, lg 1024px.
+   ============================================================= */
+
+/* ===== 1. Color Palette & Variables ===== */
+:root {
+  --bb-midnight-ink: #07151b;
+  --bb-vintage-cream: #f3dfc0;
+  --bb-blues-blue: #4e94b5;
+  --bb-bash-gold: #e99a27;
+  --bb-mountain-blue: #1d5971;
+  --bb-ember-orange: #c96025;
+  --bb-tobacco-brown: #754225;
+  --bb-weathered-steel: #a6a39a;
+
+  --bb-font-display: 'Alfa Slab One', serif;
+  --bb-font-heading: 'Bree Serif', serif;
+  --bb-font-body: 'Source Sans 3', sans-serif;
+
+  --bb-space-1: 0.25rem;
+  --bb-space-2: 0.5rem;
+  --bb-space-3: 0.75rem;
+  --bb-space-4: 1.25rem;
+  --bb-space-5: 2rem;
+  --bb-space-6: 3rem;
+  --bb-space-8: 4.5rem;
+
+  --bb-radius: 8px;
+  --bb-container-width: 1100px;
+  --bb-shadow: 0 6px 18px rgba(7, 21, 27, 0.35);
+}
+
+/* ===== 2. Reset & Base ===== */
+.bb-header *,
+.bb-header *::before,
+.bb-header *::after,
+main *,
+main *::before,
+main *::after,
+.bb-footer *,
+.bb-footer *::before,
+.bb-footer *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bb-midnight-ink);
+  color: var(--bb-vintage-cream);
+  font-family: var(--bb-font-body);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  margin: 0 0 var(--bb-space-3);
+  color: var(--bb-vintage-cream);
+}
+
+h2 {
+  font-family: var(--bb-font-heading);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  color: var(--bb-bash-gold);
+}
+
+h3 {
+  font-family: var(--bb-font-heading);
+  font-size: 1.3rem;
+  color: var(--bb-blues-blue);
+}
+
+p {
+  margin: 0 0 var(--bb-space-3);
+}
+
+a {
+  color: var(--bb-blues-blue);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ===== 3. Layout & Container ===== */
+.bb-container {
+  max-width: var(--bb-container-width);
+  margin-inline: auto;
+  padding-inline: var(--bb-space-4);
+}
+
+.bb-section {
+  padding-block: var(--bb-space-6);
+}
+
+.bb-section--alt {
+  background-color: #0c232c;
+}
+
+/* Section headings and top-level copy (heading, intro, standalone
+   paragraphs) are centered for the vintage-flyer look -- structured
+   content that reads poorly centered (timeline rows, the founding
+   sponsor card's bullet list) opts back out further down. */
+.bb-section .bb-container {
+  text-align: center;
+}
+
+.bb-container > p {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.bb-section__intro {
+  color: var(--bb-weathered-steel);
+}
+
+/* ===== 4. Buttons ===== */
+.bb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--bb-font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  padding: var(--bb-space-3) var(--bb-space-5);
+  border-radius: var(--bb-radius);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.bb-btn:hover {
+  transform: translateY(-2px);
+}
+
+.bb-btn--primary {
+  background-color: var(--bb-bash-gold);
+  color: var(--bb-midnight-ink);
+  box-shadow: var(--bb-shadow);
+}
+
+.bb-btn--small {
+  padding: var(--bb-space-2) var(--bb-space-4);
+  font-size: 0.9rem;
+}
+
+.bb-btn--outline {
+  background-color: transparent;
+  border-color: var(--bb-blues-blue);
+  color: var(--bb-blues-blue);
+}
+
+.bb-btn--outline:hover {
+  background-color: var(--bb-blues-blue);
+  color: var(--bb-midnight-ink);
+}
+
+/* ===== 5. Header & Nav ===== */
+.bb-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--bb-midnight-ink);
+  border-bottom: 1px solid rgba(243, 223, 192, 0.15);
+}
+
+.bb-header__inner {
+  max-width: var(--bb-container-width);
+  margin-inline: auto;
+  padding: var(--bb-space-3) var(--bb-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bb-space-4);
+}
+
+.bb-header__brand {
+  font-family: var(--bb-font-display);
+  font-size: 1.1rem;
+  color: var(--bb-vintage-cream);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.bb-nav {
+  display: none;
+  align-items: center;
+  gap: var(--bb-space-4);
+}
+
+.bb-nav a {
+  color: var(--bb-vintage-cream);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.bb-nav a:hover {
+  color: var(--bb-bash-gold);
+}
+
+.bb-nav-toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bb-nav-toggle span {
+  display: block;
+  height: 2px;
+  background-color: var(--bb-vintage-cream);
+  border-radius: 2px;
+}
+
+.bb-nav--open {
+  display: flex;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: var(--bb-midnight-ink);
+  padding: var(--bb-space-3) var(--bb-space-4) var(--bb-space-4);
+  border-bottom: 1px solid rgba(243, 223, 192, 0.15);
+  gap: var(--bb-space-3);
+}
+
+@media (min-width: 768px) {
+  .bb-nav {
+    display: flex;
+  }
+
+  .bb-nav-toggle {
+    display: none;
+  }
+}
+
+/* ===== 6. Hero ===== */
+.bb-hero {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bb-hero__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 20%;
+  filter: grayscale(0.85) contrast(1.05);
+}
+
+.bb-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 21, 27, 0.55) 0%, rgba(7, 21, 27, 0.75) 60%, rgba(7, 21, 27, 0.92) 100%);
+}
+
+.bb-hero__content {
+  position: relative;
+  text-align: center;
+  padding: var(--bb-space-6) var(--bb-space-4);
+  max-width: 46rem;
+}
+
+.bb-hero__logo {
+  width: min(70vw, 320px);
+  margin-inline: auto;
+  margin-bottom: var(--bb-space-3);
+}
+
+.bb-hero__presented {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(243, 223, 192, 0.65);
+  margin-bottom: var(--bb-space-3);
+}
+
+.bb-hero__tagline {
+  font-family: var(--bb-font-heading);
+  font-size: clamp(1.1rem, 0.85rem + 1.1vw, 1.4rem);
+  color: var(--bb-vintage-cream);
+}
+
+@media (min-width: 560px) {
+  .bb-hero__tagline {
+    white-space: nowrap;
+  }
+}
+
+.bb-hero__details {
+  font-weight: 600;
+  color: var(--bb-vintage-cream);
+}
+
+.bb-hero__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bb-space-5);
+  margin-top: var(--bb-space-4);
+}
+
+.bb-hero__badge {
+  display: inline-block;
+  background: transparent;
+  border: 2px solid var(--bb-blues-blue);
+  color: var(--bb-blues-blue);
+  font-family: var(--bb-font-display);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: var(--bb-space-2) var(--bb-space-4);
+  border-radius: 4px;
+  transform: rotate(-6deg);
+}
+
+.bb-hero__scroll-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bb-space-1);
+  color: var(--bb-vintage-cream);
+  text-decoration: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+
+.bb-hero__scroll-cta:hover {
+  color: var(--bb-bash-gold);
+}
+
+.bb-hero__scroll-arrow {
+  animation: bb-scroll-bounce 1.8s ease-in-out infinite;
+}
+
+@keyframes bb-scroll-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* ===== 8. Artist Cards & Lineup Carousel ===== */
+.bb-lineup-carousel {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+  margin-top: var(--bb-space-5);
+}
+
+.bb-lineup-track {
+  display: flex;
+  gap: var(--bb-space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-bottom: var(--bb-space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-blues-blue) transparent;
+}
+
+.bb-lineup-arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 2px solid var(--bb-blues-blue);
+  background-color: var(--bb-midnight-ink);
+  color: var(--bb-vintage-cream);
+  cursor: pointer;
+}
+
+.bb-lineup-arrow:hover {
+  background-color: var(--bb-blues-blue);
+  color: var(--bb-midnight-ink);
+}
+
+@media (max-width: 600px) {
+  .bb-lineup-arrow {
+    display: none;
+  }
+}
+
+.bb-artist-card {
+  flex: 0 0 min(80vw, 300px);
+  scroll-snap-align: start;
+  background-color: var(--bb-mountain-blue);
+  border-radius: var(--bb-radius);
+  overflow: hidden;
+  box-shadow: var(--bb-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.bb-artist-card__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+/* Positioned absolutely (rather than width/height: 100%) so the image,
+   a replaced element, can't contribute its own intrinsic size to the
+   flex column's auto-height calculation -- without this, cards with a
+   square or landscape source photo render shorter than the others
+   instead of all sharing the same 4:3 box. */
+.bb-artist-card__photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bb-artist-card__badge {
+  position: absolute;
+  top: var(--bb-space-2);
+  right: var(--bb-space-2);
+  background-color: var(--bb-bash-gold);
+  color: var(--bb-midnight-ink);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: var(--bb-space-1) var(--bb-space-2);
+  border-radius: 999px;
+}
+
+.bb-artist-card__body {
+  padding: var(--bb-space-4);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-space-2);
+}
+
+.bb-artist-card__body h3 {
+  margin-bottom: 0;
+}
+
+.bb-artist-card__time {
+  font-weight: 700;
+  color: var(--bb-bash-gold);
+  margin: 0;
+}
+
+.bb-artist-card__bio-preview {
+  font-size: 0.9rem;
+  color: var(--bb-vintage-cream);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bb-artist-card__more {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--bb-space-1);
+  font-family: var(--bb-font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--bb-blues-blue);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.bb-artist-card__more:hover {
+  color: var(--bb-bash-gold);
+}
+
+/* ===== 8a. Artist Modal ===== */
+.bb-artist-modal {
+  border: none;
+  border-radius: var(--bb-radius);
+  padding: 0;
+  max-width: 34rem;
+  width: calc(100vw - 2.5rem);
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  background-color: var(--bb-mountain-blue);
+  color: var(--bb-vintage-cream);
+  box-shadow: var(--bb-shadow);
+}
+
+.bb-artist-modal::backdrop {
+  background-color: rgba(7, 21, 27, 0.8);
+}
+
+.bb-artist-modal__close {
+  position: absolute;
+  top: var(--bb-space-3);
+  right: var(--bb-space-3);
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(7, 21, 27, 0.6);
+  color: var(--bb-vintage-cream);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.bb-artist-modal__close:hover {
+  background-color: var(--bb-bash-gold);
+  color: var(--bb-midnight-ink);
+}
+
+.bb-artist-modal__photo {
+  width: 100%;
+  max-height: 18rem;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.bb-artist-modal__body {
+  padding: var(--bb-space-5);
+}
+
+.bb-artist-modal__badge {
+  position: static;
+  display: inline-block;
+  margin-bottom: var(--bb-space-2);
+}
+
+.bb-artist-modal__badge[hidden] {
+  display: none;
+}
+
+.bb-artist-modal__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bb-space-3);
+  margin-top: var(--bb-space-4);
+}
+
+/* ===== 9. Timeline ===== */
+.bb-timeline {
+  list-style: none;
+  margin: var(--bb-space-5) 0 0;
+  padding: 0;
+  border-top: 1px solid rgba(243, 223, 192, 0.15);
+  text-align: left;
+}
+
+.bb-timeline__row {
+  display: flex;
+  gap: var(--bb-space-4);
+  padding: var(--bb-space-3) 0;
+  border-bottom: 1px solid rgba(243, 223, 192, 0.15);
+}
+
+.bb-timeline__time {
+  flex: 0 0 9rem;
+  font-weight: 700;
+  color: var(--bb-bash-gold);
+}
+
+.bb-timeline__event {
+  flex: 1 1 auto;
+}
+
+/* flex: 1 1 auto on the event span pushes this to the row's end, so
+   every row's link lands in the same column regardless of how long
+   that row's artist name/badge runs. */
+.bb-timeline__listen {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--bb-blues-blue);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+.bb-timeline__listen:hover {
+  color: var(--bb-bash-gold);
+}
+
+.bb-timeline__tag {
+  display: inline-block;
+  margin-left: var(--bb-space-2);
+  font-style: normal;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bb-blues-blue);
+}
+
+/* ===== 10. Map ===== */
+.bb-map {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  margin-top: var(--bb-space-4);
+  border-radius: var(--bb-radius);
+  overflow: hidden;
+  box-shadow: var(--bb-shadow);
+}
+
+.bb-map iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ===== 11. Sponsors ===== */
+.bb-sponsor-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bb-space-5);
+  margin-top: var(--bb-space-5);
+}
+
+.bb-sponsor-logos__item {
+  display: block;
+  max-width: 220px;
+}
+
+.bb-sponsor-logos__item img {
+  max-height: 90px;
+  width: auto;
+}
+
+.bb-sponsor-logos__item--text {
+  font-family: var(--bb-font-heading);
+  font-size: 1.3rem;
+  color: var(--bb-vintage-cream);
+}
+
+.bb-founding-sponsor {
+  background-color: var(--bb-midnight-ink);
+  border: 2px solid var(--bb-bash-gold);
+  border-radius: var(--bb-radius);
+  padding: var(--bb-space-5);
+  margin-top: var(--bb-space-6);
+  margin-inline: auto;
+  max-width: 36rem;
+  text-align: left;
+}
+
+.bb-founding-sponsor__tag {
+  color: var(--bb-bash-gold);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.bb-founding-sponsor ul {
+  padding-left: 1.2rem;
+}
+
+.bb-founding-sponsor li {
+  margin-bottom: var(--bb-space-2);
+}
+
+.bb-founding-sponsor__note {
+  font-style: italic;
+  color: var(--bb-weathered-steel);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.bb-founding-sponsor .bb-btn {
+  display: block;
+  width: fit-content;
+  margin: var(--bb-space-4) auto 0;
+}
+
+.bb-sponsor-cta {
+  margin-top: var(--bb-space-5);
+  font-weight: 600;
+}
+
+.bb-sponsor-cta .bb-btn {
+  margin-top: var(--bb-space-3);
+}
+
+/* ===== 12. FAQ ===== */
+.bb-faq-item {
+  border-bottom: 1px solid rgba(243, 223, 192, 0.15);
+  padding: var(--bb-space-3) 0;
+}
+
+.bb-faq-item summary {
+  cursor: pointer;
+  font-family: var(--bb-font-heading);
+  font-size: 1.05rem;
+  color: var(--bb-vintage-cream);
+}
+
+.bb-faq-item summary:hover {
+  color: var(--bb-bash-gold);
+}
+
+.bb-faq-item p {
+  margin-top: var(--bb-space-2);
+  margin-bottom: 0;
+  color: var(--bb-weathered-steel);
+}
+
+/* ===== 13. Footer ===== */
+.bb-footer {
+  background-color: #040d11;
+  padding-block: var(--bb-space-5);
+  text-align: center;
+}
+
+.bb-footer p {
+  color: var(--bb-weathered-steel);
+  font-size: 0.9rem;
+}
+
+.bb-footer a {
+  color: var(--bb-blues-blue);
+}
+
+.bb-footer__back {
+  display: inline-block;
+  margin-top: var(--bb-space-2);
+  font-weight: 600;
+}
+

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     phone           VARCHAR(50),
     message         TEXT NOT NULL,
     category        VARCHAR(20) NOT NULL DEFAULT 'general_inquiry'
-                        CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry', 'catering')),
+                        CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry', 'catering', 'sponsorship', 'founding_sponsor')),
     -- Catering-specific structured fields. NULL for every other category;
     -- populated only when category = 'catering' (enforced at the route
     -- layer, not the database, same as the rest of this table).
@@ -45,7 +45,7 @@ ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS guest_count INTEGER;
 -- values stay valid on databases that already had this table.
 ALTER TABLE contact_messages DROP CONSTRAINT IF EXISTS contact_messages_category_check;
 ALTER TABLE contact_messages ADD CONSTRAINT contact_messages_category_check
-    CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry', 'catering'));
+    CHECK (category IN ('private_event', 'brewery_event', 'general_inquiry', 'catering', 'sponsorship', 'founding_sponsor'));
 
 ALTER TABLE contact_messages DROP CONSTRAINT IF EXISTS contact_messages_event_type_check;
 ALTER TABLE contact_messages ADD CONSTRAINT contact_messages_event_type_check

@@ -8,12 +8,14 @@ const router = express.Router();
 router.use(requireAdminAuth);
 
 const VALID_STATUSES = ['unread', 'read', 'archived', 'deleted'];
-const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'catering'];
+const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'catering', 'sponsorship', 'founding_sponsor'];
 const CATEGORY_LABELS = {
   private_event: 'Private Event',
   brewery_event: 'Brewery Event',
   general_inquiry: 'Comments / Questions',
   catering: 'Catering Request',
+  sponsorship: 'Sponsorship',
+  founding_sponsor: 'Founding Community Sponsor',
 };
 const EVENT_TYPE_LABELS = {
   backyard_party: 'Backyard Party',
