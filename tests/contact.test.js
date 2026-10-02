@@ -124,14 +124,17 @@ describe('POST /contact', () => {
     expect(rows).toHaveLength(0);
   });
 
-  it.each(['private_event', 'brewery_event', 'general_inquiry'])('accepts and saves the "%s" category', async (category) => {
-    const res = await postContact({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
+  it.each(['private_event', 'brewery_event', 'general_inquiry', 'sponsorship', 'founding_sponsor'])(
+    'accepts and saves the "%s" category',
+    async (category) => {
+      const res = await postContact({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
 
-    expect(res.status).toBe(302);
+      expect(res.status).toBe(302);
 
-    const { rows } = await pool.query('SELECT category FROM contact_messages');
-    expect(rows[0].category).toBe(category);
-  });
+      const { rows } = await pool.query('SELECT category FROM contact_messages');
+      expect(rows[0].category).toBe(category);
+    }
+  );
 
   it('does not leak a stack trace or internal error details on an unexpected failure', async () => {
     // Reject only the actual contact-message insert, not pool.query calls
