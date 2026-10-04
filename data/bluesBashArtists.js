@@ -60,9 +60,9 @@ module.exports = [
     photoPosition: 'center',
     modalPhotoPosition: 'center',
     tileBio:
-      'Led by award-winning harmonica player Al Chesis, the Delta Sonics blend Chicago blues with Swing, Delta, New Orleans R&B, and early rock ’n’ roll for a high-energy sound rooted in Colorado blues.',
+      'One of Colorado’s most decorated blues bands, the Delta Sonics blend Chicago blues with Swing, Delta, New Orleans R&B, and early rock ’n’ roll for a high-energy sound honed over thousands of live shows.',
     popupBio:
-      'Led by vocalist and harmonica player Al Chesis, the Delta Sonics build on a Chicago blues foundation seasoned with Swing, Delta blues, New Orleans R&B, and early rock ’n’ roll. A longtime fixture of the Colorado blues scene, the band has performed hundreds of shows and appeared at major festivals throughout the region.\n\nChesis, a longtime Hohner endorser, is a recipient of the Colorado Blues Society Lifetime Achievement Award, while guitarist Bob Pellegrino is a three-time Society honoree for slide guitar. The Delta Sonics have opened for legends including B.B. King, Robert Cray, and Jimmie Vaughan, and backed artists including Pinetop Perkins, Bo Diddley, John Primer, and Ronnie Baker Brooks. They were also International Blues Challenge semifinalists in 2012.',
+      'The Delta Sonics are one of Colorado’s most celebrated blues bands, blending Chicago blues with Swing, Delta, New Orleans R&B, and early rock ’n’ roll. They were named Denver’s Best Blues Band by Westword six years in a row and have been voted Favorite Blues Band by the Colorado Blues Society three of the past four years.\n\nLed by vocalist and harmonica player Al Chesis, the Delta Sonics have opened for B.B. King, Robert Cray, and Jimmie Vaughan, and backed blues greats including Pinetop Perkins, Bo Diddley, John Primer, and Ronnie Baker Brooks. The band reached the semifinals of the International Blues Challenge in Memphis in 2012 and remains one of the hardest-working fixtures of the Colorado blues scene.',
     setStart: '3:30 PM',
     setEnd: '4:30 PM',
     isHeadliner: false,
