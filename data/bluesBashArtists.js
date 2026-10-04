@@ -37,7 +37,7 @@ module.exports = [
     setEnd: '1:30 PM',
     isHeadliner: false,
     musicUrl: 'https://www.youtube.com/watch?v=TrI1mcEmg6E&list=PLR66Ns-dgQ-og_YDzoYwsHn0XkWYkCPH4&index=8',
-    websiteUrl: null,
+    websiteUrl: 'https://coloradocountryblues.com/mdb_duo.htm',
   },
   {
     name: '100LB Housecat',
@@ -52,7 +52,7 @@ module.exports = [
     setEnd: '3:00 PM',
     isHeadliner: false,
     musicUrl: 'https://www.youtube.com/watch?v=N4xKdgY_fQc&list=RDN4xKdgY_fQc',
-    websiteUrl: null,
+    websiteUrl: 'https://www.100lbhousecat.com/',
   },
   {
     name: 'Delta Sonics',
@@ -67,7 +67,7 @@ module.exports = [
     setEnd: '4:30 PM',
     isHeadliner: false,
     musicUrl: 'https://www.youtube.com/watch?v=2WG-oAm8wGY',
-    websiteUrl: null,
+    websiteUrl: 'https://deltasonics.net/',
   },
   {
     name: 'The Johnny O. Band',
@@ -81,7 +81,7 @@ module.exports = [
     setEnd: '6:00 PM',
     isHeadliner: false,
     musicUrl: 'https://www.youtube.com/watch?v=YIZtW_1ZIVA',
-    websiteUrl: null,
+    websiteUrl: 'https://johnnyoband.com/',
   },
   {
     name: 'The Jack Hadley Band',
@@ -94,7 +94,7 @@ module.exports = [
     setStart: '6:30 PM',
     setEnd: '8:00 PM',
     isHeadliner: true,
-    musicUrl: 'https://www.youtube.com/watch?v=-khlYNQC4LI',
-    websiteUrl: null,
+    musicUrl: 'https://www.instagram.com/reels/C5hlyp2tpcX/',
+    websiteUrl: 'https://jackhadleymusic.net/',
   },
 ];
