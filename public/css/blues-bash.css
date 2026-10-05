@@ -393,6 +393,91 @@ img {
   }
 }
 
+/* ===== 7a. Quotes Rotator ===== */
+.bb-quotes {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+  max-width: 42rem;
+  margin: var(--bb-space-5) auto 0;
+}
+
+.bb-quotes__arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--bb-blues-blue);
+  background-color: transparent;
+  color: var(--bb-vintage-cream);
+  cursor: pointer;
+}
+
+.bb-quotes__arrow:hover {
+  background-color: var(--bb-blues-blue);
+  color: var(--bb-midnight-ink);
+}
+
+.bb-quotes__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bb-quotes__slide {
+  cursor: pointer;
+  opacity: 0;
+  border-radius: var(--bb-radius);
+}
+
+.bb-quotes__slide.is-active {
+  opacity: 1;
+}
+
+/* No transition by default (instant swap) -- only animate the
+   crossfade for visitors who haven't asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .bb-quotes__slide {
+    transition: opacity 400ms ease;
+  }
+}
+
+.bb-quotes__slide:focus-visible {
+  outline: 3px solid var(--bb-bash-gold);
+  outline-offset: 4px;
+}
+
+.bb-quotes__quote {
+  margin: 0;
+  text-align: center;
+}
+
+.bb-quotes__text {
+  font-family: var(--bb-font-heading);
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--bb-vintage-cream);
+  margin: 0 0 var(--bb-space-2);
+}
+
+.bb-quotes__footer {
+  font-size: 0.85rem;
+  color: var(--bb-weathered-steel);
+}
+
+.bb-quotes__footer cite {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--bb-bash-gold);
+}
+
+.bb-quotes__artist {
+  display: block;
+  margin-top: 2px;
+}
+
 /* ===== 8. Artist Cards & Lineup Carousel ===== */
 .bb-lineup-carousel {
   display: flex;

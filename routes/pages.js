@@ -2,6 +2,7 @@ const express = require('express');
 const menuSections = require('../data/menu');
 const bluesBashArtists = require('../data/bluesBashArtists');
 const bluesBashSponsors = require('../data/bluesBashSponsors');
+const bluesBashQuotes = require('../data/bluesBashQuotes');
 const { getWeekSchedule } = require('../services/googleCalendar');
 
 const router = express.Router();
@@ -24,7 +25,7 @@ router.get('/menu', (req, res) => {
 });
 
 router.get('/berthoud-blues-bash', (req, res) => {
-  res.render('pages/blues-bash', { artists: bluesBashArtists, sponsors: bluesBashSponsors });
+  res.render('pages/blues-bash', { artists: bluesBashArtists, sponsors: bluesBashSponsors, quotes: bluesBashQuotes });
 });
 
 module.exports = router;
