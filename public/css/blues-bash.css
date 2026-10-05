@@ -776,19 +776,20 @@ img {
 }
 
 /* ===== 10. Map ===== */
+/* Mobile: each box keeps its own 16:9 crop, stacked. Desktop: the row
+   gets an explicit shared height so the photo and map match exactly --
+   a plain aspect-ratio on each wouldn't, since they render at
+   different widths (1fr vs 2fr). */
 .bb-location__media {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--bb-space-4);
   margin-top: var(--bb-space-4);
 }
 
 .bb-location__photo {
-  flex: 1 1 240px;
-  max-width: 300px;
-  aspect-ratio: 3 / 4;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: var(--bb-radius);
   box-shadow: var(--bb-shadow);
@@ -796,11 +797,24 @@ img {
 
 .bb-map {
   position: relative;
-  flex: 2 1 400px;
-  padding-top: 56.25%;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: var(--bb-radius);
   overflow: hidden;
   box-shadow: var(--bb-shadow);
+}
+
+@media (min-width: 700px) {
+  .bb-location__media {
+    grid-template-columns: 1fr 2fr;
+    height: clamp(280px, 28vw, 420px);
+  }
+
+  .bb-location__photo,
+  .bb-map {
+    aspect-ratio: auto;
+    height: 100%;
+  }
 }
 
 .bb-map iframe {
