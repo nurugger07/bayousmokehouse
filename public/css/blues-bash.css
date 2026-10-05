@@ -777,14 +777,20 @@ img {
 
 /* ===== 10. Map ===== */
 /* Mobile: each box keeps its own 16:9 crop, stacked. Desktop: the row
-   gets an explicit shared height so the photo and map match exactly --
-   a plain aspect-ratio on each wouldn't, since they render at
-   different widths (1fr vs 2fr). */
+   gets an explicit shared height and align-items: stretch (flex's
+   default, not relying on percentage-height resolution the way a grid
+   item's height: 100% does) so the photo and map match exactly -- a
+   plain aspect-ratio on each wouldn't, since they render at different
+   widths (1fr vs 2fr).
+   overflow: hidden here is a safety net: without it, anything that
+   doesn't stretch as expected bleeds past this section's bottom edge
+   into Food & Drink instead of just looking wrong within its own box. */
 .bb-location__media {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--bb-space-4);
   margin-top: var(--bb-space-4);
+  overflow: hidden;
 }
 
 .bb-location__photo {
@@ -806,14 +812,20 @@ img {
 
 @media (min-width: 700px) {
   .bb-location__media {
-    grid-template-columns: 1fr 2fr;
+    flex-direction: row;
     height: clamp(280px, 28vw, 420px);
   }
 
-  .bb-location__photo,
-  .bb-map {
+  .bb-location__photo {
+    flex: 1 1 0;
     aspect-ratio: auto;
-    height: 100%;
+    width: auto;
+  }
+
+  .bb-map {
+    flex: 2 1 0;
+    aspect-ratio: auto;
+    width: auto;
   }
 }
 
