@@ -56,7 +56,37 @@
   <section class="bb-section" id="lineup">
     <div class="bb-container">
       <h2>The Lineup</h2>
-      <p class="bb-section__intro">Five acts, one stage, a full day of blues. Read more to meet each artist.</p>
+      <p class="bb-section__intro">Five acts, one stage, a full day of blues. See what people are sayin&rsquo; or click Read more to meet each artist.</p>
+
+      <div class="bb-quotes" id="bb-quotes">
+        <button type="button" class="bb-quotes__arrow bb-quotes__arrow--prev" data-quotes-prev aria-label="Previous quote">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+
+        <div class="bb-quotes__viewport">
+          <% quotes.forEach(function(quote, i) { %>
+            <div
+              class="bb-quotes__slide<% if (i === 0) { %> is-active<% } %>"
+              role="button"
+              tabindex="0"
+              aria-label="Show next quote"
+              <% if (i !== 0) { %>hidden<% } %>
+            >
+              <blockquote class="bb-quotes__quote">
+                <p class="bb-quotes__text"><% if (quote.type === 'quote') { %>&ldquo;<%= quote.text %>&rdquo;<% } else { %><%= quote.text %><% } %></p>
+                <footer class="bb-quotes__footer">
+                  <cite><%= quote.attribution %></cite>
+                  <% if (quote.artist) { %><span class="bb-quotes__artist">on <%= quote.artist %></span><% } %>
+                </footer>
+              </blockquote>
+            </div>
+          <% }); %>
+        </div>
+
+        <button type="button" class="bb-quotes__arrow bb-quotes__arrow--next" data-quotes-next aria-label="Next quote">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
 
       <div class="bb-lineup-carousel">
         <button type="button" class="bb-lineup-arrow bb-lineup-arrow--prev" data-lineup-prev aria-label="Scroll to previous artist">
