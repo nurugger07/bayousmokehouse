@@ -165,6 +165,16 @@
     </div>
   </section>
 
+  <section class="bb-gallery" aria-label="More photos from this year's artists">
+    <div class="bb-gallery__track">
+      <% galleryPhotos.forEach(function(photo) { %>
+        <div class="bb-gallery__item">
+          <img src="<%= photo.src %>" alt="<%= photo.alt %>" loading="lazy">
+        </div>
+      <% }); %>
+    </div>
+  </section>
+
   <section class="bb-section" id="location">
     <div class="bb-container">
       <h2>Location &amp; Venue</h2>

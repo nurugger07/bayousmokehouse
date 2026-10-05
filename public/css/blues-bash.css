@@ -730,6 +730,51 @@ img {
   color: var(--bb-blues-blue);
 }
 
+/* ===== 9a. Band Photo Gallery Strip ===== */
+.bb-gallery {
+  padding-block: var(--bb-space-5);
+  overflow: hidden;
+}
+
+.bb-gallery__track {
+  display: flex;
+  gap: var(--bb-space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-inline: var(--bb-space-4);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-blues-blue) transparent;
+}
+
+.bb-gallery__item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 170px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bb-radius);
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+
+.bb-gallery__item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Blue tint over every photo (via the darker of the two brand blues)
+   so a grab-bag of differently-lit candid shots reads as one cohesive
+   strip instead of a mismatched grid. */
+.bb-gallery__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--bb-mountain-blue);
+  opacity: 0.3;
+}
+
 /* ===== 10. Map ===== */
 .bb-map {
   position: relative;
