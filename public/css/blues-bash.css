@@ -776,11 +776,28 @@ img {
 }
 
 /* ===== 10. Map ===== */
+.bb-location__media {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--bb-space-4);
+  margin-top: var(--bb-space-4);
+}
+
+.bb-location__photo {
+  flex: 1 1 240px;
+  max-width: 300px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
+}
+
 .bb-map {
   position: relative;
-  width: 100%;
+  flex: 2 1 400px;
   padding-top: 56.25%;
-  margin-top: var(--bb-space-4);
   border-radius: var(--bb-radius);
   overflow: hidden;
   box-shadow: var(--bb-shadow);
@@ -792,6 +809,24 @@ img {
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+/* ===== 10a. Food & Drink Photos ===== */
+.bb-food__photos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bb-space-4);
+  margin-top: var(--bb-space-5);
+}
+
+.bb-food__photo {
+  flex: 1 1 280px;
+  max-width: 360px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
 }
 
 /* ===== 11. Sponsors ===== */
