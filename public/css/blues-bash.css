@@ -730,15 +730,103 @@ img {
   color: var(--bb-blues-blue);
 }
 
+/* ===== 9a. Band Photo Gallery Strip ===== */
+.bb-gallery {
+  padding-block: var(--bb-space-5);
+  overflow: hidden;
+}
+
+.bb-gallery__track {
+  display: flex;
+  gap: var(--bb-space-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-inline: var(--bb-space-4);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-blues-blue) transparent;
+}
+
+.bb-gallery__item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 170px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bb-radius);
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+
+.bb-gallery__item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Blue tint over every photo (via the darker of the two brand blues)
+   so a grab-bag of differently-lit candid shots reads as one cohesive
+   strip instead of a mismatched grid. */
+.bb-gallery__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--bb-mountain-blue);
+  opacity: 0.45;
+}
+
 /* ===== 10. Map ===== */
+/* Mobile: each box keeps its own 16:9 crop, stacked. Desktop: the row
+   gets an explicit shared height and align-items: stretch (flex's
+   default, not relying on percentage-height resolution the way a grid
+   item's height: 100% does) so the photo and map match exactly -- a
+   plain aspect-ratio on each wouldn't, since they render at different
+   widths (1fr vs 2fr).
+   overflow: hidden here is a safety net: without it, anything that
+   doesn't stretch as expected bleeds past this section's bottom edge
+   into Food & Drink instead of just looking wrong within its own box. */
+.bb-location__media {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-space-4);
+  margin-top: var(--bb-space-4);
+  overflow: hidden;
+}
+
+.bb-location__photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
+}
+
 .bb-map {
   position: relative;
   width: 100%;
-  padding-top: 56.25%;
-  margin-top: var(--bb-space-4);
+  aspect-ratio: 16 / 9;
   border-radius: var(--bb-radius);
   overflow: hidden;
   box-shadow: var(--bb-shadow);
+}
+
+@media (min-width: 700px) {
+  .bb-location__media {
+    flex-direction: row;
+    height: clamp(280px, 28vw, 420px);
+  }
+
+  .bb-location__photo {
+    flex: 1 1 0;
+    aspect-ratio: auto;
+    width: auto;
+  }
+
+  .bb-map {
+    flex: 2 1 0;
+    aspect-ratio: auto;
+    width: auto;
+  }
 }
 
 .bb-map iframe {
@@ -747,6 +835,24 @@ img {
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+/* ===== 10a. Food & Drink Photos ===== */
+.bb-food__photos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--bb-space-4);
+  margin-top: var(--bb-space-5);
+}
+
+.bb-food__photo {
+  flex: 1 1 280px;
+  max-width: 360px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--bb-radius);
+  box-shadow: var(--bb-shadow);
 }
 
 /* ===== 11. Sponsors ===== */
