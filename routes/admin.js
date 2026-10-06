@@ -8,7 +8,15 @@ const router = express.Router();
 router.use(requireAdminAuth);
 
 const VALID_STATUSES = ['unread', 'read', 'archived', 'deleted'];
-const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'catering', 'sponsorship', 'founding_sponsor'];
+const VALID_CATEGORIES = [
+  'private_event',
+  'brewery_event',
+  'general_inquiry',
+  'catering',
+  'sponsorship',
+  'founding_sponsor',
+  'business_sponsorship',
+];
 const CATEGORY_LABELS = {
   private_event: 'Private Event',
   brewery_event: 'Brewery Event',
@@ -16,6 +24,7 @@ const CATEGORY_LABELS = {
   catering: 'Catering Request',
   sponsorship: 'Sponsorship',
   founding_sponsor: 'Founding Community Sponsor',
+  business_sponsorship: 'Business Sponsorship',
 };
 const EVENT_TYPE_LABELS = {
   backyard_party: 'Backyard Party',
