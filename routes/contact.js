@@ -14,7 +14,7 @@ router.get('/contact', (req, res) => {
 
 const FIELD_LIMITS = { name: 255, email: 255, phone: 50 };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'sponsorship', 'founding_sponsor'];
+const VALID_CATEGORIES = ['private_event', 'brewery_event', 'general_inquiry', 'sponsorship', 'founding_sponsor', 'business_sponsorship'];
 
 router.post('/contact', async (req, res, next) => {
   const { name, email, phone, message, category, company } = req.body;
