@@ -885,12 +885,14 @@ img {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
   gap: var(--bb-space-5);
   margin-top: var(--bb-space-6);
 }
 
 .bb-founding-sponsor {
+  display: flex;
+  flex-direction: column;
   background-color: var(--bb-midnight-ink);
   border: 2px solid var(--bb-bash-gold);
   border-radius: var(--bb-radius);
@@ -927,6 +929,7 @@ img {
   display: block;
   width: fit-content;
   margin: var(--bb-space-4) auto 0;
+  margin-top: auto;
 }
 
 .bb-sponsor-cta {
