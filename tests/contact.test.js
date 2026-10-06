@@ -124,7 +124,7 @@ describe('POST /contact', () => {
     expect(rows).toHaveLength(0);
   });
 
-  it.each(['private_event', 'brewery_event', 'general_inquiry', 'sponsorship', 'founding_sponsor'])(
+  it.each(['private_event', 'brewery_event', 'general_inquiry', 'sponsorship', 'founding_sponsor', 'business_sponsorship'])(
     'accepts and saves the "%s" category',
     async (category) => {
       const res = await postContact({ name: 'Jane Doe', email: 'jane@example.com', message: 'hi', category });
