@@ -64,6 +64,13 @@
   --color-border: rgba(30, 23, 18, 0.15);
   --color-border-dark: rgba(251, 243, 227, 0.15);
   --color-focus-ring: var(--color-ember);
+
+  /* Borrowed from the Blues Bash page's own palette
+     (public/css/blues-bash.css's --bb-blues-blue), not part of this
+     site's normal brand colors -- used only on the handful of elements
+     that specifically tie back to that page's branding (the homepage
+     promo divider, the header nav stamp). */
+  --promo-blues-blue: #4e94b5;
 }
 
 /* ===== 2. Typography Variables & Spacing/Sizing Scale ===== */
@@ -925,6 +932,34 @@ main {
   gap: var(--space-4);
 }
 
+/* Rotated "stamp" badge, matching the Free Admission stamp on the
+   Blues Bash hero -- same rotated-rectangle treatment, same borrowed
+   blue, scaled down to sit comfortably in the header bar. */
+.blues-bash-nav-stamp {
+  display: inline-block;
+  border: 2px solid var(--promo-blues-blue);
+  border-radius: 4px;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--promo-blues-blue);
+  transform: rotate(-6deg);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.blues-bash-nav-stamp:hover {
+  background-color: var(--promo-blues-blue);
+  color: var(--color-charcoal);
+  transform: rotate(-6deg) translateY(-2px);
+}
+
 .header-social {
   display: flex;
   align-items: center;
@@ -1454,11 +1489,6 @@ main {
 
 /* ===== 13a. Blues Bash Promo ===== */
 .blues-bash-promo {
-  --promo-blues-blue: #4e94b5; /* borrowed from the Blues Bash page's own
-                                   palette (public/css/blues-bash.css),
-                                   not part of this site's normal palette --
-                                   used here specifically to tie this promo
-                                   visually back to that page's branding. */
   position: relative;
   background-color: var(--color-bg-alt);
   padding-block: var(--space-7);
