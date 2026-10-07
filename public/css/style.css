@@ -64,6 +64,13 @@
   --color-border: rgba(30, 23, 18, 0.15);
   --color-border-dark: rgba(251, 243, 227, 0.15);
   --color-focus-ring: var(--color-ember);
+
+  /* Borrowed from the Blues Bash page's own palette
+     (public/css/blues-bash.css's --bb-blues-blue), not part of this
+     site's normal brand colors -- used only on the handful of elements
+     that specifically tie back to that page's branding (the homepage
+     promo divider, the header nav stamp). */
+  --promo-blues-blue: #4e94b5;
 }
 
 /* ===== 2. Typography Variables & Spacing/Sizing Scale ===== */
@@ -925,6 +932,34 @@ main {
   gap: var(--space-4);
 }
 
+/* Rotated "stamp" badge, matching the Free Admission stamp on the
+   Blues Bash hero -- same rotated-rectangle treatment, same borrowed
+   blue, scaled down to sit comfortably in the header bar. */
+.blues-bash-nav-stamp {
+  display: inline-block;
+  border: 2px solid var(--promo-blues-blue);
+  border-radius: 4px;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--promo-blues-blue);
+  transform: rotate(-6deg);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.blues-bash-nav-stamp:hover {
+  background-color: var(--promo-blues-blue);
+  color: var(--color-charcoal);
+  transform: rotate(-6deg) translateY(-2px);
+}
+
 .header-social {
   display: flex;
   align-items: center;
@@ -1449,6 +1484,115 @@ main {
 @media (max-width: 767px) {
   .form-columns {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ===== 13a. Blues Bash Promo ===== */
+.blues-bash-promo {
+  position: relative;
+  background-color: var(--color-bg-alt);
+  padding-block: var(--space-7);
+  text-align: center;
+  overflow: hidden;
+}
+
+/* Faint paper grain -- a pure-CSS noise texture (inline SVG
+   feTurbulence, no image asset needed) at low opacity so it reads as
+   texture, not the heavier burnt-parchment look used elsewhere. */
+.blues-bash-promo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
+}
+
+.blues-bash-promo__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.blues-bash-promo__logo {
+  width: min(75vw, 260px);
+  margin-bottom: var(--space-2);
+}
+
+.blues-bash-promo__headline {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.blues-bash-promo__details {
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-wood-dark);
+  margin: 0;
+}
+
+.blues-bash-promo__tagline {
+  font-size: var(--fs-md);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.blues-bash-promo__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 26rem;
+  margin-top: var(--space-2);
+}
+
+.blues-bash-promo__divider-line {
+  flex: 1 1 auto;
+  height: 2px;
+  background-color: var(--promo-blues-blue);
+}
+
+.blues-bash-promo__divider-text {
+  flex: 0 0 auto;
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--promo-blues-blue);
+  white-space: nowrap;
+}
+
+.blues-bash-promo__cta {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: var(--space-2);
+}
+
+.blues-bash-promo__artists {
+  font-size: clamp(0.65rem, 0.4rem + 0.8vw, 0.875rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--promo-blues-blue);
+  max-width: 100%;
+  margin: var(--space-3) 0 0;
+}
+
+@media (min-width: 700px) {
+  .blues-bash-promo__artists {
+    white-space: nowrap;
   }
 }
 
