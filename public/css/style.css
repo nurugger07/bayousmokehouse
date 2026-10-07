@@ -1551,13 +1551,19 @@ main {
 }
 
 .blues-bash-promo__artists {
-  font-size: var(--fs-sm);
+  font-size: clamp(0.65rem, 0.4rem + 0.8vw, 0.875rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--promo-blues-blue);
-  max-width: 50rem;
+  max-width: 100%;
   margin: var(--space-3) 0 0;
+}
+
+@media (min-width: 700px) {
+  .blues-bash-promo__artists {
+    white-space: nowrap;
+  }
 }
 
 /* ===== 14. Schedule ===== */
