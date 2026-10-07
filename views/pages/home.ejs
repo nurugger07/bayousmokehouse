@@ -55,6 +55,24 @@
     </div>
   </div>
 
+  <section class="blues-bash-promo" id="blues-bash-promo">
+    <div class="container blues-bash-promo__inner">
+      <img src="/images/blues-bash/Berthoud-Blues-Bash-logo-web.png" alt="Berthoud Blues Bash" class="blues-bash-promo__logo">
+      <h2 class="blues-bash-promo__headline">Five Bands. One Day. Free Admission.</h2>
+      <p class="blues-bash-promo__details">Saturday, November 14 &bull; City Star Brewing</p>
+      <p class="blues-bash-promo__tagline">Live Colorado Blues &bull; Southern Food &bull; Local Beer</p>
+      <div class="blues-bash-promo__divider">
+        <span class="blues-bash-promo__divider-line" aria-hidden="true"></span>
+        <span class="blues-bash-promo__divider-text">First Annual &bull; 2026</span>
+        <span class="blues-bash-promo__divider-line" aria-hidden="true"></span>
+      </div>
+      <a href="/berthoud-blues-bash" class="btn btn--primary blues-bash-promo__cta">Explore the Blues Bash</a>
+      <p class="blues-bash-promo__artists">
+        <% bluesBashArtists.forEach(function(artist, i) { %><%= artist.name %><% if (i < bluesBashArtists.length - 1) { %> &bull; <% } %><% }); %>
+      </p>
+    </div>
+  </section>
+
   <section id="schedule" class="schedule">
     <div class="container schedule__layout">
       <div class="schedule__intro">

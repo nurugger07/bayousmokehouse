@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', async (req, res, next) => {
   try {
     const schedule = await getWeekSchedule();
-    res.render('pages/home', { schedule });
+    res.render('pages/home', { schedule, bluesBashArtists });
   } catch (err) {
     next(err);
   }
