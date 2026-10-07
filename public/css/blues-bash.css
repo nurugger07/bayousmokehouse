@@ -207,6 +207,22 @@ img {
   gap: var(--bb-space-4);
 }
 
+.bb-header__brand-group {
+  display: flex;
+  align-items: center;
+  gap: var(--bb-space-3);
+}
+
+.bb-header__logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.bb-header__logo {
+  height: 2rem;
+  width: auto;
+}
+
 .bb-header__brand {
   font-family: var(--bb-font-display);
   font-size: 1.1rem;
