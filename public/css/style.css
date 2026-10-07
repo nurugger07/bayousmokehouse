@@ -1454,28 +1454,110 @@ main {
 
 /* ===== 13a. Blues Bash Promo ===== */
 .blues-bash-promo {
+  --promo-blues-blue: #4e94b5; /* borrowed from the Blues Bash page's own
+                                   palette (public/css/blues-bash.css),
+                                   not part of this site's normal palette --
+                                   used here specifically to tie this promo
+                                   visually back to that page's branding. */
+  position: relative;
   background-color: var(--color-bg-alt);
-  padding-block: var(--space-6);
+  padding-block: var(--space-7);
   text-align: center;
+  overflow: hidden;
+}
+
+/* Faint paper grain -- a pure-CSS noise texture (inline SVG
+   feTurbulence, no image asset needed) at low opacity so it reads as
+   texture, not the heavier burnt-parchment look used elsewhere. */
+.blues-bash-promo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
 }
 
 .blues-bash-promo__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .blues-bash-promo__logo {
-  width: min(60vw, 180px);
+  width: min(75vw, 260px);
+  margin-bottom: var(--space-2);
 }
 
-.blues-bash-promo__text {
+.blues-bash-promo__headline {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.blues-bash-promo__details {
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
-  color: var(--color-text);
-  max-width: 40ch;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-wood-dark);
   margin: 0;
+}
+
+.blues-bash-promo__tagline {
+  font-size: var(--fs-md);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.blues-bash-promo__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 26rem;
+  margin-top: var(--space-2);
+}
+
+.blues-bash-promo__divider-line {
+  flex: 1 1 auto;
+  height: 2px;
+  background-color: var(--promo-blues-blue);
+}
+
+.blues-bash-promo__divider-text {
+  flex: 0 0 auto;
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--promo-blues-blue);
+  white-space: nowrap;
+}
+
+.blues-bash-promo__cta {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: var(--space-2);
+}
+
+.blues-bash-promo__artists {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--promo-blues-blue);
+  max-width: 50rem;
+  margin: var(--space-3) 0 0;
 }
 
 /* ===== 14. Schedule ===== */
