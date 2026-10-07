@@ -1452,6 +1452,32 @@ main {
   }
 }
 
+/* ===== 13a. Blues Bash Promo ===== */
+.blues-bash-promo {
+  background-color: var(--color-bg-alt);
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+.blues-bash-promo__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.blues-bash-promo__logo {
+  width: min(60vw, 180px);
+}
+
+.blues-bash-promo__text {
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-text);
+  max-width: 40ch;
+  margin: 0;
+}
+
 /* ===== 14. Schedule ===== */
 /* Weekly schedule — clean, scannable day rows in Bayou's rustic
    palette (layout inspired by simple day-by-day schedule lists,
