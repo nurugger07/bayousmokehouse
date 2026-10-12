@@ -238,18 +238,41 @@
     <div class="bb-container">
       <h2>Sponsors</h2>
 
-      <div class="bb-sponsor-logos">
-        <% sponsors.forEach(function(sponsor) { %>
-          <% if (sponsor.logo && sponsor.url) { %>
-            <a href="<%= sponsor.url %>" target="_blank" rel="noopener noreferrer" class="bb-sponsor-logos__item">
-              <img src="<%= sponsor.logo %>" alt="<%= sponsor.name %>">
-            </a>
-          <% } else if (sponsor.logo) { %>
-            <span class="bb-sponsor-logos__item"><img src="<%= sponsor.logo %>" alt="<%= sponsor.name %>"></span>
-          <% } else { %>
-            <span class="bb-sponsor-logos__item bb-sponsor-logos__item--text"><%= sponsor.name %></span>
-          <% } %>
-        <% }); %>
+      <p>
+        The Berthoud Blues Bash wouldn&rsquo;t be possible without the businesses and organizations who stepped up
+        to support our very first year. Their generosity helps us keep the Bash free, support the incredible
+        musicians taking the stage, and bring a full day of live blues to downtown Berthoud.
+      </p>
+      <p>
+        To every one of our sponsors, thank you for believing in what we&rsquo;re building and helping us turn the
+        first Berthoud Blues Bash into the beginning of a new community tradition.
+      </p>
+
+      <div class="bb-sponsor-photos">
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-presented-by.jpg" alt="Berthoud Blues Bash, presented by Bayou Smokehouse and City Star Brewing" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://www.bayousmokehouseco.com" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--bayou" aria-label="Bayou Smokehouse"></a>
+          <a href="https://citystarbrewing.com/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--citystar" aria-label="City Star Brewing"></a>
+        </div>
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-stage-sponsor.jpg" alt="Berthoud Blues Bash Stage Sponsor: Bryant Robertson, RE/MAX Town &amp; Country" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://www.remax.com/usa/en/real-estate-agents/bryant-robertson-berthoud-co/102530868" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--bryant" aria-label="Bryant Robertson, RE/MAX Town &amp; Country"></a>
+        </div>
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-blues-community.jpg" alt="Berthoud Blues Bash Blues Community Sponsor: Colorado Blues Society" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://www.coblues.org/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--cbs" aria-label="Colorado Blues Society"></a>
+        </div>
+      </div>
+
+      <div class="bb-sponsor-cta">
+        <h3>Want to Help Us Build Year One?</h3>
+        <p>There&rsquo;s still room to be part of the very first Berthoud Blues Bash.</p>
+        <p>
+          Whether you&rsquo;re a local business, organization, family, or just someone who wants to help bring more
+          live music to Berthoud, your support helps us keep the Blues Bash free and build something we hope will be
+          here for years to come.
+        </p>
+        <p>Take a look at the sponsorship opportunities below and become part of Blues Bash history.</p>
       </div>
 
       <div class="bb-sponsor-tiers">
