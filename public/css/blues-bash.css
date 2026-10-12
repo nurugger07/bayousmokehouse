@@ -867,6 +867,7 @@ img {
   align-items: center;
   gap: var(--bb-space-5);
   margin-top: var(--bb-space-4);
+  margin-bottom: var(--bb-space-5);
 }
 
 .bb-food__logo-link {
@@ -888,7 +889,15 @@ img {
    them. Little to no padding lets it fill the full circle width,
    staying clip-safe since contain still guarantees no cropping. */
 .bb-food__logo-link--wide {
-  padding: var(--bb-space-1);
+  padding: 0;
+}
+
+/* contain alone still letterboxes top/bottom since the badge art is
+   landscape-shaped -- a modest zoom fills more of the circle without
+   cropping all the way out to the gator's tail or the text band, which
+   full cover would do on this logo. */
+.bb-food__logo-link--wide .bb-food__logo {
+  transform: scale(1.25);
 }
 
 /* Louisiana Glynn's is a candid photo, not a text-based badge, so a
