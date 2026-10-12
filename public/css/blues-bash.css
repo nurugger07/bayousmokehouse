@@ -853,7 +853,36 @@ img {
   border: 0;
 }
 
-/* ===== 10a. Food & Drink Photos ===== */
+/* ===== 10a. Food & Drink Logos ===== */
+/* Cropped into circles (object-fit: cover) so the three logos read as
+   one consistent set side by side, even though their source images
+   aren't all the same shape -- Bayou Smokehouse's is landscape,
+   City Star's and Louisiana Glynn's are already square. */
+.bb-food__logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--bb-space-5);
+  margin-top: var(--bb-space-4);
+}
+
+.bb-food__logo-link {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: var(--bb-shadow);
+}
+
+.bb-food__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== 10b. Food & Drink Photos ===== */
 .bb-food__photos {
   display: flex;
   flex-wrap: wrap;
