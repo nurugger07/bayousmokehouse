@@ -853,7 +853,64 @@ img {
   border: 0;
 }
 
-/* ===== 10a. Food & Drink Photos ===== */
+/* ===== 10a. Food & Drink Logos ===== */
+/* All three circles are the same fixed size regardless of source
+   image shape. object-fit: contain (not cover) plus a little padding
+   so nothing gets cropped -- cover was cutting real content off
+   Bayou Smokehouse's landscape logo, and clipping the corners off
+   City Star's and Louisiana Glynn's square logos, which fill their
+   canvas edge to edge. */
+.bb-food__logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--bb-space-5);
+  margin-top: var(--bb-space-4);
+  margin-bottom: var(--bb-space-5);
+}
+
+.bb-food__logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  padding: var(--bb-space-3);
+  background-color: var(--bb-vintage-cream);
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: var(--bb-shadow);
+}
+
+/* Bayou Smokehouse's logo is landscape (600x406), so contain scales it
+   to the box's width, leaving noticeable empty space above/below --
+   same padding as the square logos left it looking much smaller than
+   them. Little to no padding lets it fill the full circle width,
+   staying clip-safe since contain still guarantees no cropping. */
+.bb-food__logo-link--wide {
+  padding: 0;
+}
+
+/* Louisiana Glynn's is a candid photo, not a text-based badge, so a
+   tighter cover crop (vs. the shared contain treatment) is safe here
+   -- it fills the circle completely with no visible square edges/
+   corners, without the content-loss risk a text logo would have. */
+.bb-food__logo-link--zoom {
+  padding: 0;
+}
+
+.bb-food__logo-link--zoom .bb-food__logo {
+  object-fit: cover;
+}
+
+.bb-food__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ===== 10b. Food & Drink Photos ===== */
 .bb-food__photos {
   display: flex;
   flex-wrap: wrap;
@@ -863,8 +920,16 @@ img {
 }
 
 .bb-food__photo {
+  /* min-width: 0 overrides the flex default of min-width: auto, which
+     for an <img> resolves to its own natural pixel width (e.g. 1206px
+     for catfish-plate.jpg) -- without it, flex-shrink can't compress
+     the image below that, so each one claims far more than its
+     280px basis and the row wraps one-per-line even at full width.
+     max-width keeps 3 of them within the container at once rather
+     than growing to fill it alone when there's room to spare. */
   flex: 1 1 280px;
-  max-width: 360px;
+  min-width: 0;
+  max-width: 340px;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: var(--bb-radius);
