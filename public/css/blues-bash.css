@@ -892,14 +892,6 @@ img {
   padding: 0;
 }
 
-/* contain alone still letterboxes top/bottom since the badge art is
-   landscape-shaped -- a modest zoom fills more of the circle without
-   cropping all the way out to the gator's tail or the text band, which
-   full cover would do on this logo. */
-.bb-food__logo-link--wide .bb-food__logo {
-  transform: scale(1.25);
-}
-
 /* Louisiana Glynn's is a candid photo, not a text-based badge, so a
    tighter cover crop (vs. the shared contain treatment) is safe here
    -- it fills the circle completely with no visible square edges/
