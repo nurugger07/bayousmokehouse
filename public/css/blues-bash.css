@@ -882,6 +882,27 @@ img {
   box-shadow: var(--bb-shadow);
 }
 
+/* Bayou Smokehouse's logo is landscape (600x406), so contain scales it
+   to the box's width, leaving noticeable empty space above/below --
+   same padding as the square logos left it looking much smaller than
+   them. Little to no padding lets it fill the full circle width,
+   staying clip-safe since contain still guarantees no cropping. */
+.bb-food__logo-link--wide {
+  padding: var(--bb-space-1);
+}
+
+/* Louisiana Glynn's is a candid photo, not a text-based badge, so a
+   tighter cover crop (vs. the shared contain treatment) is safe here
+   -- it fills the circle completely with no visible square edges/
+   corners, without the content-loss risk a text logo would have. */
+.bb-food__logo-link--zoom {
+  padding: 0;
+}
+
+.bb-food__logo-link--zoom .bb-food__logo {
+  object-fit: cover;
+}
+
 .bb-food__logo {
   width: 100%;
   height: 100%;
