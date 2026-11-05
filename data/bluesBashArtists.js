@@ -24,6 +24,10 @@
 // shorter) photo crop, which needs its own anchor independent of the
 // tile's -- defaults to 'top'; override per artist when 'top' crops
 // too high and shows only the tops of heads.
+//
+// sponsor is the optional Artist Sponsor shown as a small logo badge in
+// the tile's bottom-right corner ({ name, logo, url }). Omit it for
+// artists without one -- the template skips the badge entirely.
 module.exports = [
   {
     name: 'Mad Dog Blues Duo',
@@ -68,6 +72,11 @@ module.exports = [
     isHeadliner: false,
     musicUrl: 'https://www.youtube.com/watch?v=2WG-oAm8wGY',
     websiteUrl: 'https://deltasonics.net/',
+    sponsor: {
+      name: 'Blue Frog Roofing',
+      logo: '/images/blues-bash/blue-frog-roofing.png',
+      url: 'https://bluefrogroofing.com/',
+    },
   },
   {
     name: 'The Johnny O. Band',
@@ -96,5 +105,10 @@ module.exports = [
     isHeadliner: true,
     musicUrl: 'https://www.instagram.com/reels/C5hlyp2tpcX/',
     websiteUrl: 'https://jackhadleymusic.net/',
+    sponsor: {
+      name: 'Brandon Dodge Chrysler Jeep Ram',
+      logo: '/images/blues-bash/brandon-dodge-logo-web.png',
+      url: 'https://www.brandondcjr.com/',
+    },
   },
 ];
