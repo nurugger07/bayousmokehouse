@@ -157,6 +157,8 @@
   var time = document.getElementById('bb-artist-modal-time');
   var bio = document.getElementById('bb-artist-modal-bio');
   var links = document.getElementById('bb-artist-modal-links');
+  var sponsor = document.getElementById('bb-artist-modal-sponsor');
+  var sponsorLogo = document.getElementById('bb-artist-modal-sponsor-logo');
   var closeBtn = modal.querySelector('[data-artist-modal-close]');
 
   function addLink(href, label) {
@@ -197,6 +199,13 @@
       links.innerHTML = '';
       if (data.musicUrl) addLink(data.musicUrl, 'Listen');
       if (data.websiteUrl) addLink(data.websiteUrl, 'Website');
+
+      sponsor.hidden = !data.sponsorUrl;
+      if (data.sponsorUrl) {
+        sponsor.href = data.sponsorUrl;
+        sponsorLogo.src = data.sponsorLogo;
+        sponsorLogo.alt = data.sponsorName;
+      }
 
       modal.showModal();
     });
