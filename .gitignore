@@ -9,3 +9,6 @@ coverage/
 !package.json
 !package-lock.json
 !.prettierrc.json
+
+# Full-size source images; only the -web versions are committed
+originals/
