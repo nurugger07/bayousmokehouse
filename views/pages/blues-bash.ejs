@@ -109,6 +109,7 @@
                 <h3><%= artist.name %></h3>
                 <p class="bb-artist-card__time"><%= artist.setStart %>&ndash;<%= artist.setEnd %></p>
                 <p class="bb-artist-card__bio-preview"><%= artist.tileBio %></p>
+                <div class="bb-artist-card__footer">
                 <button
                   type="button"
                   class="bb-artist-card__more"
@@ -121,7 +122,15 @@
                   data-headliner="<%= artist.isHeadliner ? '1' : '' %>"
                   <% if (artist.musicUrl) { %>data-music-url="<%= artist.musicUrl %>"<% } %>
                   <% if (artist.websiteUrl) { %>data-website-url="<%= artist.websiteUrl %>"<% } %>
+                  <% if (artist.sponsor) { %>data-sponsor-name="<%= artist.sponsor.name %>" data-sponsor-logo="<%= artist.sponsor.logo %>" data-sponsor-url="<%= artist.sponsor.url %>"<% } %>
                 >Read More</button>
+                <% if (artist.sponsor) { %>
+                  <a href="<%= artist.sponsor.url %>" target="_blank" rel="noopener noreferrer" class="bb-artist-card__sponsor">
+                    <span class="bb-artist-card__sponsor-label">Sponsored by</span>
+                    <img src="<%= artist.sponsor.logo %>" alt="<%= artist.sponsor.name %>" loading="lazy">
+                  </a>
+                <% } %>
+                </div>
               </div>
             </article>
           <% }); %>
@@ -142,7 +151,13 @@
       <h3 id="bb-artist-modal-name"></h3>
       <p class="bb-artist-card__time" id="bb-artist-modal-time"></p>
       <div id="bb-artist-modal-bio"></div>
-      <div class="bb-artist-modal__links" id="bb-artist-modal-links"></div>
+      <div class="bb-artist-modal__footer">
+        <div class="bb-artist-modal__links" id="bb-artist-modal-links"></div>
+        <a target="_blank" rel="noopener noreferrer" class="bb-artist-card__sponsor" id="bb-artist-modal-sponsor" hidden>
+          <span class="bb-artist-card__sponsor-label">Sponsored by</span>
+          <img alt="" id="bb-artist-modal-sponsor-logo">
+        </a>
+      </div>
     </div>
   </dialog>
 
@@ -259,8 +274,21 @@
           <a href="https://www.remax.com/usa/en/real-estate-agents/bryant-robertson-berthoud-co/102530868" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--bryant" aria-label="Bryant Robertson, RE/MAX Town &amp; Country"></a>
         </div>
         <div class="bb-sponsor-photo-frame">
-          <img src="/images/blues-bash/sponsors-blues-community.jpg" alt="Berthoud Blues Bash Blues Community Sponsor: Colorado Blues Society" class="bb-sponsor-photo" loading="lazy">
+          <img src="/images/blues-bash/sponsors-blues-community.jpg" alt="Berthoud Blues Bash Blues Community Sponsors: Colorado Blues Society and High Plains Blues Society" class="bb-sponsor-photo" loading="lazy">
           <a href="https://www.coblues.org/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--cbs" aria-label="Colorado Blues Society"></a>
+          <a href="https://highplainsbluessociety.org/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--hpbs" aria-label="High Plains Blues Society"></a>
+        </div>
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-artist-brandon-dodge.jpg" alt="Berthoud Blues Bash Artist Sponsor: Brandon Dodge Chrysler Jeep Ram, sponsoring The Jack Hadley Band" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://www.brandondcjr.com/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--brandon" aria-label="Brandon Dodge Chrysler Jeep Ram"></a>
+        </div>
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-artist-blue-frog-roofing.jpg" alt="Berthoud Blues Bash Artist Sponsor: Blue Frog Roofing, sponsoring The Delta Sonics" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://bluefrogroofing.com/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--bluefrog" aria-label="Blue Frog Roofing"></a>
+        </div>
+        <div class="bb-sponsor-photo-frame">
+          <img src="/images/blues-bash/sponsors-business-b-town.jpg" alt="Berthoud Blues Bash Business Sponsor: B-Town Automotive" class="bb-sponsor-photo" loading="lazy">
+          <a href="https://www.btownautomotive.com/" target="_blank" rel="noopener noreferrer" class="bb-sponsor-hotspot bb-sponsor-hotspot--btown" aria-label="B-Town Automotive"></a>
         </div>
       </div>
 
