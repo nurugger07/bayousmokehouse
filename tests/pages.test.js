@@ -4,6 +4,7 @@ const request = require('supertest');
 const app = require('../app');
 const { pool } = require('../config/db');
 const { getWeekSchedule } = require('../services/googleCalendar');
+const bluesBashArtists = require('../data/bluesBashArtists');
 
 const EMPTY_WEEK = { weekStart: 'Sep 7', weekEnd: 'Sep 13', days: [], unavailable: false };
 
@@ -218,5 +219,49 @@ describe('static pages', () => {
     const res = await request(app).get('/nonexistent-page');
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('Berthoud Blues Bash page', () => {
+  const sponsoredArtists = bluesBashArtists.filter((artist) => artist.sponsor);
+
+  it('GET /berthoud-blues-bash responds with 200', async () => {
+    const res = await request(app).get('/berthoud-blues-bash');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('id="sponsors"');
+  });
+
+  it('shows a sponsor badge linking to the sponsor only on tiles for artists with a sponsor', async () => {
+    const res = await request(app).get('/berthoud-blues-bash');
+
+    // Tile badges carry the class directly on the <a>; the modal's shared
+    // badge is the one extra match, identified by its id.
+    const tileBadges = res.text.match(/<a href="[^"]*"[^>]*class="bb-artist-card__sponsor"/g) || [];
+    expect(tileBadges).toHaveLength(sponsoredArtists.length);
+
+    sponsoredArtists.forEach(({ sponsor }) => {
+      expect(res.text).toContain(`<a href="${sponsor.url}" target="_blank" rel="noopener noreferrer" class="bb-artist-card__sponsor">`);
+      expect(res.text).toContain(`src="${sponsor.logo}" alt="${sponsor.name}"`);
+    });
+  });
+
+  it('passes each sponsor to the artist modal via its Read More trigger', async () => {
+    const res = await request(app).get('/berthoud-blues-bash');
+
+    expect(res.text).toContain('id="bb-artist-modal-sponsor"');
+    expect(res.text.match(/data-sponsor-url="/g) || []).toHaveLength(sponsoredArtists.length);
+    sponsoredArtists.forEach(({ sponsor }) => {
+      expect(res.text).toContain(`data-sponsor-url="${sponsor.url}"`);
+    });
+  });
+
+  it('links each new sponsor graphic to the sponsor site', async () => {
+    const res = await request(app).get('/berthoud-blues-bash');
+
+    expect(res.text).toContain('href="https://www.brandondcjr.com/"');
+    expect(res.text).toContain('href="https://bluefrogroofing.com/"');
+    expect(res.text).toContain('href="https://www.btownautomotive.com/"');
+    expect(res.text).toContain('href="https://highplainsbluessociety.org/"');
   });
 });

@@ -583,6 +583,7 @@ img {
 }
 
 .bb-artist-card__body {
+  flex: 1;
   padding: var(--bb-space-4);
   text-align: left;
   display: flex;
@@ -611,11 +612,9 @@ img {
 }
 
 .bb-artist-card__more {
-  align-self: flex-start;
   background: none;
   border: none;
   padding: 0;
-  margin-top: var(--bb-space-1);
   font-family: var(--bb-font-body);
   font-weight: 700;
   font-size: 0.9rem;
@@ -626,6 +625,52 @@ img {
 
 .bb-artist-card__more:hover {
   color: var(--bb-bash-gold);
+}
+
+/* Read More on the left, Artist Sponsor badge pinned bottom-right.
+   margin-top: auto pushes the row to the bottom of the card so badges
+   line up across tiles even if a bio runs shorter. */
+.bb-artist-card__footer {
+  margin-top: auto;
+  padding-top: var(--bb-space-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bb-space-2);
+}
+
+/* Cream chip (same cream as the sponsor graphics) because both sponsor
+   logos are blue/dark and would vanish against the mountain-blue card. */
+.bb-artist-card__sponsor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background-color: var(--bb-vintage-cream);
+  border-radius: 6px;
+  padding: var(--bb-space-1) var(--bb-space-2);
+  text-decoration: none;
+}
+
+/* The modal's badge is toggled with [hidden], which display: flex
+   above would otherwise override. */
+.bb-artist-card__sponsor[hidden] {
+  display: none;
+}
+
+.bb-artist-card__sponsor-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bb-midnight-ink);
+}
+
+.bb-artist-card__sponsor img {
+  display: block;
+  height: 32px;
+  max-width: 140px;
+  object-fit: contain;
 }
 
 /* ===== 8a. Artist Modal ===== */
@@ -687,11 +732,26 @@ img {
   display: none;
 }
 
+/* Listen/Website buttons on the left, Artist Sponsor badge (shared
+   .bb-artist-card__sponsor styling) bottom-right -- same layout as
+   the lineup tile's footer. */
+.bb-artist-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bb-space-3);
+  margin-top: var(--bb-space-4);
+}
+
+.bb-artist-modal__footer .bb-artist-card__sponsor {
+  margin-left: auto;
+}
+
 .bb-artist-modal__links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--bb-space-3);
-  margin-top: var(--bb-space-4);
 }
 
 /* ===== 9. Timeline ===== */
@@ -995,8 +1055,36 @@ img {
 }
 
 .bb-sponsor-hotspot--cbs {
+  left: 5%;
+  top: 61.5%;
+  width: 51.3%;
+  height: 30.4%;
+}
+
+.bb-sponsor-hotspot--hpbs {
+  left: 60%;
+  top: 60.2%;
+  width: 33.1%;
+  height: 32.5%;
+}
+
+.bb-sponsor-hotspot--brandon {
+  left: 1%;
+  top: 67.3%;
+  width: 98%;
+  height: 17.8%;
+}
+
+.bb-sponsor-hotspot--bluefrog {
+  left: 33.8%;
+  top: 68.5%;
+  width: 33.1%;
+  height: 28.4%;
+}
+
+.bb-sponsor-hotspot--btown {
   left: 15.4%;
-  top: 57.5%;
+  top: 56.5%;
   width: 69.3%;
   height: 41.4%;
 }
